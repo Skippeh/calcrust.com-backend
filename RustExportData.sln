@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RustExportData", "RustExportData\RustExportData.csproj", "{1ACADCCD-1872-483C-BE1F-183E42609BD3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageResizer", "ImageResizer\ImageResizer.csproj", "{8E57F08F-CB37-4EC8-A1C2-05F2A3A6BA34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPI", "WebAPI\WebAPI.csproj", "{853794C8-3A1A-453C-A033-3103C6351D09}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1ACADCCD-1872-483C-BE1F-183E42609BD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ACADCCD-1872-483C-BE1F-183E42609BD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ACADCCD-1872-483C-BE1F-183E42609BD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ACADCCD-1872-483C-BE1F-183E42609BD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E57F08F-CB37-4EC8-A1C2-05F2A3A6BA34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E57F08F-CB37-4EC8-A1C2-05F2A3A6BA34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E57F08F-CB37-4EC8-A1C2-05F2A3A6BA34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E57F08F-CB37-4EC8-A1C2-05F2A3A6BA34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{853794C8-3A1A-453C-A033-3103C6351D09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{853794C8-3A1A-453C-A033-3103C6351D09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{853794C8-3A1A-453C-A033-3103C6351D09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{853794C8-3A1A-453C-A033-3103C6351D09}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
