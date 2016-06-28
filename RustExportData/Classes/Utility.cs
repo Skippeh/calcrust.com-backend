@@ -109,5 +109,39 @@ namespace Oxide.Classes
 
             return builder.ToString();
         }
+
+        public static string GetFileName(string path)
+        {
+            int index = path.LastIndexOf("/");
+
+            if (index == -1)
+                return path;
+
+            return path.Substring(index + 1);
+        }
+
+        public static string GetFileNameWithoutExtension(string path)
+        {
+            string fileName = GetFileName(path);
+            int index = fileName.LastIndexOf(".");
+
+            if (index == -1)
+                return path;
+
+            return fileName.Substring(0, index);
+        }
+
+        public static string ToCamelCaseString(this object obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+
+            string str = obj.ToString();
+
+            if (str.Length <= 1)
+                return str.ToLower();
+
+            return str.Substring(0, 1).ToLower() + str.Substring(1);
+        }
     }
 }
