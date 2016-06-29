@@ -13,6 +13,7 @@ namespace WebAPI.Models
         public Dictionary<string, Recipe> Recipes { get; set; } 
         public Meta Meta { get; set; }
         public Dictionary<string, Cookable> Cookables { get; set; }
+        public Dictionary<string, DamageInfo> DamageInfo { get; set; }  
 
         public void Dispose()
         {

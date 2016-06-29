@@ -53,6 +53,11 @@ namespace WebAPI
             Get["/cookables/search/{term}"] = WrapMethod((dynamic _) => SearchCookables(_.term, false));
             Get["/cookables/search/{term}/detailed"] = WrapMethod((dynamic _) => SearchCookables(_.term, true));
 
+            // Damage info
+            Get["/damages"] = WrapMethod((dynamic _) => GetDamageInfos(false));
+            Get["/damages/detailed"] = WrapMethod((dynamic _) => GetDamageInfos(true));
+            Get["/damages/{shortname}"] = WrapMethod((dynamic _) => GetDamageInfo(_.shortname));
+
             // Search all
             Get["/search/{term}"] = WrapMethod((dynamic _) => SearchAll(_.term, false));
             Get["/search/{term}/detailed"] = WrapMethod((dynamic _) => SearchAll(_.term, true));
@@ -115,6 +120,37 @@ namespace WebAPI
                 recipes,
                 cookables
             });
+        }
+
+        private ApiResponse GetDamageInfo(string shortnames)
+        {
+            Dictionary<string, DamageInfo> result = new Dictionary<string, DamageInfo>();
+            string[] splitShortnames = shortnames.ToLower().Split('&');
+
+            foreach (string shortname in splitShortnames)
+            {
+                if (data.DamageInfo.ContainsKey(shortname))
+                {
+                    result.Add(shortname, data.DamageInfo[shortname]);
+                }
+                else
+                {
+                    return Error(HttpStatusCode.NotFound, "Could not find an item with the shortname: '" + shortname + "'.");
+                }
+            }
+
+            return new ApiResponse(result);
+        }
+
+        private ApiResponse GetDamageInfos(bool detailed)
+        {
+            return new ApiResponse(data.DamageInfo.Keys.Select(shortname =>
+            {
+                if (detailed)
+                    return (object) data.Items[shortname];
+
+                return shortname;
+            }).ToList());
         }
 
         private ApiResponse GetCookables(bool detailed)

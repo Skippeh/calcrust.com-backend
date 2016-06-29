@@ -371,6 +371,9 @@ namespace Oxide.Plugins
 
             foreach (var item in ItemManager.itemList)
             {
+                if (excludeList.Contains(item.shortname))
+                    continue;
+
                 var projectileMod = item.GetComponent<ItemModProjectile>();
                 var entityMod = item.GetComponent<ItemModEntity>();
                 List<DamageTypeEntry> damageTypes = null;
