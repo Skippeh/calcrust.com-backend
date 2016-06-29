@@ -4,8 +4,9 @@ using Newtonsoft.Json;
 using RustExportData;
 using System.Linq;
 using System.Reflection;
-using ConVar;
+using Oxide.Classes;
 using Oxide.Core.Libraries;
+using Oxide.Plugins;
 using Rust;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -16,12 +17,28 @@ namespace Oxide.Plugins
 {
     public class RustExportData : RustPlugin
     {
+        // debug
+        [ChatCommand("look")]
+        void ChatCmd_Look(BasePlayer player)
+        {
+            var lookObject = PhysicsUtility.GetLookTarget(player);
+
+            if (lookObject == null)
+            {
+                player.ChatMessage("Nothing found.");
+                return;
+            }
+
+            string layerName = LayerMask.LayerToName(lookObject.layer);
+            player.ChatMessage("[" + lookObject.tag + "] " + layerName + ": " + lookObject.name + " (" + String.Join(", ", (lookObject.transform.GetComponents<Component>().Select(comp => comp.GetType().Name)).ToArray()) + ")");
+        }
+
         private static readonly string[] excludeList =
         {
             "ammo.rocket.smoke", // WIP Smoke Rocket
             "generator.wind.scrap", // Wind Turbine
-            "salt.water", // Salt water
-            "water", // Water
+            //"salt.water", // Salt water
+            //"water", // Water
         };
 
         private static readonly Dictionary<string, float> ovenTemperatures = new Dictionary<string, float>();
@@ -44,7 +61,7 @@ namespace Oxide.Plugins
         {
             if (arg.FromClient)
                 return;
-
+            
             string data = JsonConvert.SerializeObject(ParseData());
             data = Utility.EncodeDataUri(data);
             webrequest.EnqueuePost(Utility.API_URL, "data=" + data, (statusCode, result) =>
@@ -56,91 +73,61 @@ namespace Oxide.Plugins
         private RustData ParseData()
         {
             var startTime = Time.realtimeSinceStartup;
-
             var data = new RustData();
 
-            var buildingsToTest =
-                GameManager.server.FindPrefabNames("assets/prefabs/building core/")
-                    .Where(s => !s.EndsWith(".twig.prefab") && !s.EndsWith(".wood.prefab") && !s.EndsWith(".stone.prefab") && !s.EndsWith(".metal.prefab") && !s.EndsWith(".toptier.prefab"))
-                    .ToArray();
-            
-            //// Fix file paths because they don't match the actual prefab paths for some reason.
-            buildingsToTest = buildingsToTest.Select(prefabPath =>
+            // Parse damage data
             {
-                string filenameWithExtension = prefabPath.Substring(prefabPath.LastIndexOf("/") + 1);
-                string fileName = filenameWithExtension.Substring(0, filenameWithExtension.LastIndexOf("."));
-                string path = prefabPath.Substring(0, prefabPath.LastIndexOf("/"));
-            
-                return path + "/" + fileName + "/" + filenameWithExtension;
-            }).ToArray();
+                // Get a list of all building blocks
+                List<BuildingBlock> buildingBlocks = new List<BuildingBlock>();
 
-            // Add building damage data
-            foreach (var prefabPath in buildingsToTest)
-            {
-                var prefab = GameManager.server.FindPrefab(prefabPath);
-            
-                if (prefab == null)
-                    continue;
-            
-                var instance = GameObject.Instantiate(prefab);
-                var buildingBlock = instance.GetComponent<global::BuildingBlock>();
-            
-                if (buildingBlock != null)
-                {
-                    buildingBlock.Spawn(true);
-                    var definition = buildingBlock.blockDefinition;
-            
-                    //Debug.Log(definition.info.name.english + ":");
-            
-                    var damageInfo = new DamageInfo
-                    {
-                        Type = "buildingBlock"
-                    };
-            
-                    data.DamageInfo.Add(definition.info.name.english, damageInfo);
-            
-                    foreach (var grade in definition.grades)
-                    {
-                        buildingBlock.SetGrade(grade.gradeBase.type);
-            
-                        float maxHealth = grade.maxHealth;
-                        string keyName = grade.gradeBase.type.ToString();
-                        keyName = keyName.Substring(0, 1).ToLower() + keyName.Substring(1);
-            
-                        var scalesInfo = GetScalesInfo(maxHealth, buildingBlock);
-                        damageInfo.Scales.Add(keyName, scalesInfo);
-                    }
-            
-                    buildingBlock.Kill();
-                }
-                else
-                {
-                    Debug.LogError("buildingsToTest contains non BuildingBlock prefab!!");
-                }
-            }
+                var prefabs = new List<string>();
 
-            // Add combat entity damage data
-            foreach (ItemDefinition item in ItemManager.itemList)
-            {
-                if (item.GetComponent<ItemModDeployable>() != null)
+                foreach (var str in GameManifest.Get().pooledStrings)
                 {
-                    var deployableMod = item.GetComponent<ItemModDeployable>();
-                    var deployablePrefab = deployableMod.entityPrefab.Get();
-                    var baseCombatEntity = deployablePrefab.GetComponent<BaseCombatEntity>();
-            
-                    if (baseCombatEntity != null)
+                    if (!str.str.StartsWith("assets/")) continue;
+                    //if (!str.str.StartsWith("assets/prefabs/building") &&
+                    //    !str.str.StartsWith("assets/prefabs/deployable/")) continue;
+                    if (!str.str.StartsWith("assets/prefabs/building")) continue;
+                    if (str.str.EndsWith(".twig.prefab")) continue;
+                    if (str.str.EndsWith(".wood.prefab")) continue;
+                    if (str.str.EndsWith(".stone.prefab")) continue;
+                    if (str.str.EndsWith(".metal.prefab")) continue;
+                    if (str.str.EndsWith(".toptier.prefab")) continue;
+                    if (str.str.EndsWith(".item.prefab")) continue;
+                    if (str.str.EndsWith("close-end.prefab")) continue;
+                    if (str.str.EndsWith("open-end.prefab")) continue;
+                    if (str.str.EndsWith("close-start.prefab")) continue;
+                    if (str.str.EndsWith("open-start.prefab")) continue;
+                    if (str.str.EndsWith("impact.prefab")) continue;
+                    if (str.str.EndsWith("knock.prefab")) continue;
+                    if (str.str.EndsWith("ladder_prop.prefab")) continue;
+                    
+                    prefabs.Add(str.str);
+                }
+                
+                var prefabObjects = prefabs.Select(name => GameManager.server.FindPrefab(name)).ToList();
+                
+                foreach (var prefab in prefabObjects)
+                {
+                    var buildingBlock = prefab.GetComponent<BuildingBlock>();
+                    
+                    if (buildingBlock != null)
                     {
-                        var damageInfo = new DamageInfo
+                        Dictionary<string, DamageInfo> damageInfos = GetDamageInfos(prefab);
+
+                        foreach (var keyval in damageInfos)
                         {
-                            Type = "deployable"
-                        };
-            
-                        data.DamageInfo.Add(item.shortname, damageInfo);
-            
-                        float maxHealth = baseCombatEntity.startHealth;
-            
-                        var scalesInfo = GetScalesInfo(maxHealth, baseCombatEntity);
-                        damageInfo.Scales.Add("default", scalesInfo);
+                            if (data.DamageInfo.ContainsKey(keyval.Key))
+                            {
+                                data.DamageInfo[keyval.Key].MergeWith(keyval.Value);
+                            }
+                            else
+                            {
+                                data.DamageInfo.Add(keyval.Key, keyval.Value);
+                            }
+
+                            //Debug.Log(keyval.Key + ": [" + String.Join(", ", keyval.Value.Damages.Select(kv => kv.Key + "=" + Math.Ceiling(kv.Value.TotalHits)).ToArray()) + "]");
+                        }
                     }
                 }
             }
@@ -374,116 +361,95 @@ namespace Oxide.Plugins
             return data;
         }
 
-        private ScalesInfo GetScalesInfo(float maxHealth, BaseCombatEntity combatEntity)
+        private Dictionary<string, DamageInfo> GetDamageInfos(GameObject prefab)
         {
-            var scalesInfo = new ScalesInfo();
-            scalesInfo.Health = maxHealth;
-            
+            var instance = GameObject.Instantiate(prefab);
+            var baseEntity = instance.GetComponent<BaseEntity>();
+            baseEntity.Spawn();
+
+            var result = new Dictionary<string, DamageInfo>();
+
             foreach (var item in ItemManager.itemList)
             {
-                var hitInfo = new HitInfo();
-                
-                var entityMod = item.GetComponent<ItemModEntity>();
                 var projectileMod = item.GetComponent<ItemModProjectile>();
+                var entityMod = item.GetComponent<ItemModEntity>();
+                List<DamageTypeEntry> damageTypes = null;
+                Projectile projectile = null;
 
                 if (projectileMod != null)
                 {
                     var projectileObject = projectileMod.projectileObject.Get();
-                    var projectile = projectileObject.GetComponent<Projectile>();
-                    var timedExplosive = projectileObject.GetComponent<TimedExplosive>();
 
-                    if (timedExplosive != null)
+                    if (projectileObject == null)
+                        continue;
+
+                    var explosive = projectileObject.GetComponent<TimedExplosive>();
+                    projectile = projectileObject.GetComponent<Projectile>();
+                    
+                    if (explosive != null)
                     {
-                        hitInfo.damageTypes.Add(timedExplosive.damageTypes);
+                        damageTypes = new List<DamageTypeEntry>(explosive.damageTypes);
                     }
-                    else if (projectile != null)
+                    else if (projectile != null && (item.category == ItemCategory.Weapon || item.category == ItemCategory.Tool))
                     {
-                        hitInfo.damageTypes.Add(projectile.damageTypes);
+                        //damageTypes = projectile.damageTypes;
                     }
                 }
                 else if (entityMod != null)
                 {
                     var entityPrefab = entityMod.entityPrefab.Get();
                     var attackEntity = entityPrefab.GetComponent<AttackEntity>();
+                    var thrownWeapon = attackEntity as ThrownWeapon;
 
-                    if (attackEntity == null)
+                    if (thrownWeapon != null)
                     {
-                        continue;
-                    }
-
-                    var asThrownWeapon = attackEntity as ThrownWeapon;
-                    var asMelee = attackEntity as BaseMelee;
-
-                    if (asThrownWeapon != null)
-                    {
-                        var thrownObject = asThrownWeapon.prefabToThrow.Get();
-                        var timedExplosive = thrownObject.GetComponent<TimedExplosive>();
+                        var toThrow = thrownWeapon.prefabToThrow.Get();
+                        var timedExplosive = toThrow.GetComponent<TimedExplosive>();
 
                         if (timedExplosive != null)
                         {
-                            hitInfo.damageTypes.Add(timedExplosive.damageTypes);
+                            damageTypes = new List<DamageTypeEntry>(timedExplosive.damageTypes);
                         }
-                        else
-                        {
-                            Debug.LogError("Unhandled ThrownWeapon type!! (" + item.shortname + ")");
-                            continue;
-                        }
-                    }
-                    else if (asMelee != null)
-                    {
-                        if (asMelee is Hammer)
-                            continue;
-
-                        hitInfo.damageTypes.Add(asMelee.damageTypes);
-                    }
-                    else
-                    {
-                        continue;
                     }
                 }
-                else
-                {
+
+                if (damageTypes == null)
                     continue;
-                }
-
-                var weakHitInfo = new HitInfo();
-                var strongHitInfo = new HitInfo();
-
-                Array.Copy(hitInfo.damageTypes.types, weakHitInfo.damageTypes.types, hitInfo.damageTypes.types.Length);
-                Array.Copy(hitInfo.damageTypes.types, strongHitInfo.damageTypes.types, hitInfo.damageTypes.types.Length);
                 
-                var propDirection = GetField<DirectionProperties[]>(combatEntity, "propDirection");
+                DamageInfo damageInfo = new DamageInfo();
+                result.Add(item.shortname, damageInfo);
 
-                if (propDirection != null)
+                if (baseEntity is BuildingBlock)
                 {
-                    foreach (var properties in propDirection)
+                    var buildingBlock = (BuildingBlock) baseEntity;
+
+                    foreach (BuildingGrade.Enum grade in Enum.GetValues(typeof (BuildingGrade.Enum)))
                     {
-                        properties.extraProtection.Scale(strongHitInfo.damageTypes);
+                        if (grade == BuildingGrade.Enum.None || grade == BuildingGrade.Enum.Count)
+                            continue;
+
+                        buildingBlock.SetGrade(grade);
+                        buildingBlock.SetHealthToMax();
+
+                        var strongHitInfo = new HitInfo();
+                        strongHitInfo.damageTypes.Add(damageTypes);
+                        buildingBlock.ScaleDamage(strongHitInfo);
+                        
+                        float totalDamage = strongHitInfo.damageTypes.Total();
+                        float hits = totalDamage > 0 ? (buildingBlock.MaxHealth() / totalDamage) : -1;
+                        //Debug.Log(item.displayName.english + ": " + totalDamage + "(" + grade + " " + prefab.name + ", " + Math.Ceiling(hits) + " hits)");
+
+                        damageInfo.Damages.Add(prefab.name + ":" + grade.ToCamelCaseString(), new DamageInfo.WeaponInfo
+                        {
+                            DPS = totalDamage,
+                            TotalHits = hits
+                        });
                     }
                 }
-
-                combatEntity.ScaleDamage(weakHitInfo);
-                combatEntity.ScaleDamage(strongHitInfo);
-
-                float weakDamage = weakHitInfo.damageTypes.Total();
-                float strongDamage = strongHitInfo.damageTypes.Total();
-
-                scalesInfo.Damages.Add(item.shortname, new StrongWeakDamageInfo
-                {
-                    WeakSide = new WeaponDamageInfo.Values
-                    {
-                        DamagePerHit = weakDamage,
-                        TotalHits = weakDamage > 0 ? (float) (maxHealth / (double) weakDamage) : -1
-                    },
-                    StrongSide = new WeaponDamageInfo.Values
-                    {
-                        DamagePerHit = strongDamage,
-                        TotalHits = strongDamage > 0 ? (float) (maxHealth / (double) strongDamage) : -1
-                    }
-                });
             }
 
-            return scalesInfo;
+            baseEntity.Kill();
+            return result;
         }
 
         void OnPlayerAttack(BasePlayer attacker, HitInfo info)
@@ -493,15 +459,12 @@ namespace Oxide.Plugins
 
         void OnEntityTakeDamage(BaseCombatEntity entity, HitInfo info)
         {
+            return;
+
             if (entity.name.Contains("/animals/"))
                 return;
-
-            //Debug.Log(entity.name);
-
-            WriteDamageTypes(info.damageTypes);
-
+            
             var total = info.damageTypes.Total();
-            //Debug.Log(total);
 
             if (info.HitEntity != null)
             {
@@ -647,50 +610,28 @@ namespace RustExportData
 
     internal class DamageInfo
     {
-        [JsonProperty("type")]
-        public string Type;
-
-        [JsonProperty("scales")]
-        public Dictionary<string, ScalesInfo> Scales = new Dictionary<string, ScalesInfo>();
-    }
-
-    internal class ScalesInfo
-    {
-        [JsonProperty("health")]
-        public float Health;
-        
-        [JsonProperty("damages")]
-        public Dictionary<string, WeaponDamageInfo> Damages = new Dictionary<string, WeaponDamageInfo>();
-    }
-
-    internal abstract class WeaponDamageInfo
-    {
-        public class Values
+        public class WeaponInfo
         {
+            [JsonProperty("dps")]
+            public float DPS;
+
             [JsonProperty("totalHits")]
             public float TotalHits;
-
-            [JsonProperty("damagePerHit")]
-            public float DamagePerHit;
         }
-    }
 
-    internal class StrongWeakDamageInfo : WeaponDamageInfo
-    {
-        [JsonProperty("strongSide")]
-        public Values StrongSide;
+        [JsonProperty("damages")]
+        public Dictionary<string, WeaponInfo> Damages = new Dictionary<string, WeaponInfo>();
 
-        [JsonProperty("weakSide")]
-        public Values WeakSide;
-    }
+        public void MergeWith(DamageInfo value)
+        {
+            foreach (var keyval in value.Damages)
+            {
+                if (Damages.ContainsKey(keyval.Key))
+                    throw new NotImplementedException();
 
-    internal class CombatEntityDamageInfo : WeaponDamageInfo
-    {
-        [JsonProperty("totalHits")]
-        public float TotalHits;
-
-        [JsonProperty("damagePerHit")]
-        public float DamagePerHit;
+                Damages.Add(keyval.Key, keyval.Value);
+            }
+        }
     }
 
     internal class Meta
@@ -876,7 +817,7 @@ namespace RustExportData
             {
                 var descs = new List<string>();
 
-                descs.Add(Bed.secondsBetweenReuses + " second cooldown between respawns. Triggers cooldown on all beds within " + Server.respawnresetrange + "m.");
+                descs.Add(Bed.secondsBetweenReuses + " second cooldown between respawns. Triggers cooldown on all beds within " + ConVar.Server.respawnresetrange + "m.");
 
                 return descs.ToArray();
             }

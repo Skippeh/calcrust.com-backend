@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\Utility.cs" />
+    <Compile Include="Classes\PhysicsUtility.cs" />
     <Compile Include="Plugins\RustExportData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
