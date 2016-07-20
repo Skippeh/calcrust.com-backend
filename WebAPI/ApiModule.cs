@@ -361,9 +361,10 @@ namespace WebAPI
                     input.Count,
                     item = detailed ? (object)input.Result : input.Result.Shortname
                 }),
-                recipe.Rarity,
-                recipe.Researchable,
-                recipe.TTC
+                recipe.TTC,
+                recipe.Level,
+                recipe.Price,
+                parent = detailed ? (object)recipe.Parent : recipe.Parent?.Shortname
             };
         }
 

@@ -36,6 +36,9 @@
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
+    <Reference Include="Facepunch.Console">
+      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.Console.dll</HintPath>
+    </Reference>
     <Reference Include="Facepunch.Input">
       <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.Input.dll</HintPath>
     </Reference>

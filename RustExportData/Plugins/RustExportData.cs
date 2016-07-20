@@ -98,6 +98,10 @@ namespace Oxide.Plugins
                     if (str.str.EndsWith("open-end.prefab")) continue;
                     if (str.str.EndsWith("close-start.prefab")) continue;
                     if (str.str.EndsWith("open-start.prefab")) continue;
+                    if (str.str.EndsWith("close-end.asset")) continue;
+                    if (str.str.EndsWith("open-end.asset")) continue;
+                    if (str.str.EndsWith("close-start.asset")) continue;
+                    if (str.str.EndsWith("open-start.asset")) continue;
                     if (str.str.EndsWith("impact.prefab")) continue;
                     if (str.str.EndsWith("knock.prefab")) continue;
                     if (str.str.EndsWith("ladder_prop.prefab")) continue;
@@ -132,6 +136,8 @@ namespace Oxide.Plugins
                 }
             }
 
+            Debug.Log("Damage data parsed");
+
             ovenTemperatures.Clear();
 
             // Find ovens and populate oven info
@@ -151,6 +157,8 @@ namespace Oxide.Plugins
                     }
                 }
             }
+
+            Debug.Log("Got oven information...");
 
             // Add cooking and smelting data
             foreach (ItemDefinition item in ItemManager.itemList)
@@ -193,18 +201,20 @@ namespace Oxide.Plugins
                 }
             }
 
+            Debug.Log("Cooking and smelting data parsed");
+
             foreach (ItemDefinition item in ItemManager.itemList)
             {
                 if (excludeList.Contains(item.shortname))
                     continue;
-
+                
                 var newItem = new ExportItem();
                 newItem.Name = item.displayName.english;
                 newItem.Description = item.displayDescription.english;
                 newItem.MaxStack = item.stackable;
                 newItem.Category = item.category.ToString();
                 newItem.Category = newItem.Category.Substring(0, 1).ToLower() + newItem.Category.Substring(1);
-
+                
                 // Set meta depending on item type
                 var consumable = item.GetComponent<ItemModConsumable>();
                 var consume = item.GetComponent<ItemModConsume>();
@@ -246,7 +256,7 @@ namespace Oxide.Plugins
                 {
                     if (wearable.HasProtections())
                     {
-                        var protections = GetField<GameManifest.PrefabProperties>(wearable, "prefabProperties").protections;
+                        var protections = wearable.protectionProperties;
 
                         newItem.Meta = new MetaWearable(item)
                         {
@@ -301,6 +311,8 @@ namespace Oxide.Plugins
                 data.Items.Add(item.shortname, newItem);
             }
 
+            Debug.Log("Items parsed");
+
             foreach (ItemBlueprint blueprint in ItemManager.bpList)
             {
                 if (excludeList.Contains(blueprint.targetItem.shortname))
@@ -309,31 +321,10 @@ namespace Oxide.Plugins
                 var newRecipe = new ExportRecipe();
 
                 newRecipe.TTC = (int) blueprint.time;
-
-                if (blueprint.defaultBlueprint)
-                    newRecipe.Rarity = "default";
-                else
-                {
-                    switch (blueprint.rarity)
-                    {
-                        case Rarity.None:
-                            newRecipe.Rarity = "default";
-                            break;
-                        case Rarity.Common:
-                            newRecipe.Rarity = "fragments";
-                            break;
-                        case Rarity.Uncommon:
-                            newRecipe.Rarity = "page";
-                            break;
-                        case Rarity.Rare:
-                            newRecipe.Rarity = "book";
-                            break;
-                        case Rarity.VeryRare:
-                            newRecipe.Rarity = "library";
-                            break;
-                    }
-                }
-
+                newRecipe.Level = blueprint.UnlockLevel;
+                newRecipe.Price = blueprint.UnlockPrice;
+                newRecipe.Parent = blueprint.targetItem.Parent?.shortname;
+                
                 foreach (ItemAmount ingredient in blueprint.ingredients)
                 {
                     newRecipe.Input.Add(new ExportRecipeItem
@@ -348,11 +339,11 @@ namespace Oxide.Plugins
                     Count = blueprint.amountToCreate,
                     ItemId = blueprint.targetItem.shortname
                 };
-
-                newRecipe.Researchable = blueprint.isResearchable;
-
+                
                 data.Recipes.Add(blueprint.targetItem.shortname, newRecipe);
             }
+            
+            Debug.Log("Blueprints parsed");
 
             var endTime = Time.realtimeSinceStartup;
             var totalTime = endTime - startTime;
@@ -662,11 +653,14 @@ namespace RustExportData
         [JsonProperty("ttc")]
         public int TTC;
 
-        [JsonProperty("rarity")]
-        public string Rarity;
+        [JsonProperty("level")]
+        public int Level;
 
-        [JsonProperty("researchable")]
-        public bool Researchable;
+        [JsonProperty("price")]
+        public int Price;
+
+        [JsonProperty("parent")]
+        public string Parent { get; set; }
     }
 
     internal class ExportRecipeItem
@@ -788,7 +782,7 @@ namespace RustExportData
 
     internal class MetaWearable : ItemMeta
     {
-        public ProtectionProperties[] Protections;
+        public ProtectionProperties Protections;
 
         public override string[] Descriptions
         {

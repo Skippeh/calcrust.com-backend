@@ -110,6 +110,9 @@ namespace WebAPI
                 recipe.Output = ParseRecipeItem(jRecipe.output, data.Items);
                 recipe.Input = ((JArray) jRecipe.input).Select(r => ParseRecipeItem(r, data.Items)).ToList();
 
+                if (jRecipe.parent != null)
+                    recipe.Parent = data.Items[(string) jRecipe.parent];
+
                 data.Recipes.Add(shortname, recipe);
             }
 

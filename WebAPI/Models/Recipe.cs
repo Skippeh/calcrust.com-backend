@@ -36,8 +36,11 @@ namespace WebAPI.Models
         public virtual Item Output { get; set; }
 
         public int TTC { get; set; }
-        public string Rarity { get; set; }
-        public bool Researchable { get; set; }
+        public int Level { get; set; }
+        public int Price { get; set; }
+
+        [JsonIgnore]
+        public Models.Item Parent { get; set; }
 
         public override string ToString()
         {

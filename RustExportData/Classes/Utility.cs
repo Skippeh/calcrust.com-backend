@@ -6,10 +6,10 @@ using Rust;
 
 namespace Oxide.Classes
 {
-    class Utility
+    static class Utility
     {
-        public const string API_URL = "https://api.calcrust.com/upload";
-        public const string UPLOAD_PASSWORD = "REPLACE_ME";
+        public const string API_URL = "http://localhost:7545/upload";
+        public const string UPLOAD_PASSWORD = "+,0|i#7\"v%`*b#gdOyYX";
 
         public static string DamageTypeToString(DamageType damageType)
         {
@@ -62,24 +62,21 @@ namespace Oxide.Classes
             throw new NotImplementedException();
         }
 
-        public static Dictionary<DamageType, float> MergeProtectionAmounts(ProtectionProperties[] protections)
+        public static Dictionary<DamageType, float> MergeProtectionAmounts(ProtectionProperties protection)
         {
             var protectionAmounts = new Dictionary<DamageType, float>();
 
-            foreach (var protection in protections)
+            for (int i = 0; i < protection.amounts.Length; ++i)
             {
-                for (int i = 0; i < protection.amounts.Length; ++i)
-                {
-                    var damageType = (DamageType)i;
+                var damageType = (DamageType) i;
 
-                    if (protection.amounts[i] <= 0)
-                        continue;
+                if (protection.amounts[i] <= 0)
+                    continue;
 
-                    if (protectionAmounts.ContainsKey(damageType))
-                        protectionAmounts[damageType] += protection.amounts[i];
-                    else
-                        protectionAmounts.Add(damageType, protection.amounts[i]);
-                }
+                if (protectionAmounts.ContainsKey(damageType))
+                    protectionAmounts[damageType] += protection.amounts[i];
+                else
+                    protectionAmounts.Add(damageType, protection.amounts[i]);
             }
 
             return protectionAmounts;
