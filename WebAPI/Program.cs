@@ -38,7 +38,7 @@ namespace WebAPI
                 {
                     Console.WriteLine("Press CTRL+Q to stop the server.");
                     ConsoleKeyInfo consoleKeyInfo;
-                    while ((consoleKeyInfo = Console.ReadKey(true)).Key != ConsoleKey.Q && consoleKeyInfo.Modifiers != ConsoleModifiers.Control)
+                    while ((consoleKeyInfo = Console.ReadKey(true)).Key != ConsoleKey.Q || consoleKeyInfo.Modifiers != ConsoleModifiers.Control)
                         continue;
                 }
 
