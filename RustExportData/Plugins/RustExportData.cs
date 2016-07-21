@@ -471,22 +471,20 @@ namespace Oxide.Plugins
 
         void OnEntityTakeDamage(BaseCombatEntity entity, HitInfo info)
         {
-            return;
-
-            if (entity.name.Contains("/animals/"))
-                return;
-            
-            var total = info.damageTypes.Total();
-
-            if (info.HitEntity != null)
-            {
-                var buildingBlock = info.HitEntity.GetComponent<global::BuildingBlock>();
-
-                if (buildingBlock != null)
-                {
-
-                }
-            }
+            //if (entity.name.Contains("/animals/"))
+            //    return;
+            //
+            //var total = info.damageTypes.Total();
+            //
+            //if (info.HitEntity != null)
+            //{
+            //    var buildingBlock = info.HitEntity.GetComponent<global::BuildingBlock>();
+            //
+            //    if (buildingBlock != null)
+            //    {
+            //
+            //    }
+            //}
         }
         
         void OnEntitySpawned(BaseNetworkable entity)
@@ -874,7 +872,6 @@ namespace RustExportData
                 var descs = new List<string>();
 
                 DamageTypeList damageTypes = null;
-                string projectileType = "explosion";
                 
                 if (TimedExplosive != null)
                 {
@@ -886,27 +883,6 @@ namespace RustExportData
                 }
                 else if (Projectile != null && ProjectileMod != null)
                 {
-                    switch (ProjectileMod.ammoType)
-                    {
-                        case AmmoTypes.BOW_ARROW:
-                            projectileType = "arrow";
-                            break;
-                        case AmmoTypes.HANDMADE_SHELL:
-                        case AmmoTypes.SHOTGUN_12GUAGE:
-                            projectileType = "shell";
-                            break;
-                        case AmmoTypes.PISTOL_9MM:
-                        case AmmoTypes.RIFLE_556MM:
-                            projectileType = "bullet";
-                            break;
-                        case AmmoTypes.ROCKET:
-                            projectileType = "rocket";
-                            break;
-                        default:
-                            throw new NotImplementedException();
-                            break;
-                    }
-
                     // Scale damage with projectile mod
                     var hitInfo = new HitInfo();
                     Projectile.CalculateDamage(hitInfo, Projectile.Modifier.Default, 1f, BaseProjectile.damageScale);
@@ -936,8 +912,8 @@ namespace RustExportData
                         var damageType = (DamageType) i;
                         var amount = damageTypes.types[i];
 
-                        if (amount > 0)
-                            ;//descs.Add("Inflicts " + Math.Round(amount) + " " + damageType.ToString().ToLower() + " base damage per " + projectileType);
+                        //if (amount > 0)
+                        //    descs.Add("Inflicts " + Math.Round(amount) + " " + damageType.ToString().ToLower() + " base damage per " + projectileType);
                     }
                 }
 
