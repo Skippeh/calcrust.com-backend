@@ -8,9 +8,6 @@ namespace Oxide.Classes
 {
     static class Utility
     {
-        public const string API_URL = "http://localhost:7545/upload";
-        public const string UPLOAD_PASSWORD = "+,0|i#7\"v%`*b#gdOyYX";
-
         public static string DamageTypeToString(DamageType damageType)
         {
             switch (damageType)

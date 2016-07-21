@@ -5,6 +5,7 @@ using RustExportData;
 using System.Linq;
 using System.Reflection;
 using Oxide.Classes;
+using Oxide.Core;
 using Oxide.Core.Libraries;
 using Oxide.Plugins;
 using Rust;
@@ -42,20 +43,26 @@ namespace Oxide.Plugins
         };
 
         private static readonly Dictionary<string, float> ovenTemperatures = new Dictionary<string, float>();
-
-
+        
         void OnServerInitialized()
         {
             TOD_Sky.Instance.Cycle.Hour = 12;
-            var data = ParseData();
             
-            LoadConfig();
-            Config.Clear();
-            Config["data_json"] = data;
-            SaveConfig();
-            Debug.Log("Exported items");
+            if (Config["UploadUrl"] == null)
+                Debug.LogError("[RustExportData] Config UploadUrl not defined.");
+
+            if (Config["UploadPassword"] == null)
+                Debug.LogError("[RustExportData] Config UploadPassword not defined.");
         }
 
+        protected override void LoadDefaultConfig()
+        {
+            Config.Clear();
+            Config["UploadPassword"] = "CHANGEME";
+            Config["UploadUrl"] = "https://CHANGEME/upload";
+            SaveConfig();
+        }
+        
         [ConsoleCommand("upload")]
         void ConsoleCmd_Upload(ConsoleSystem.Arg arg)
         {
@@ -64,10 +71,21 @@ namespace Oxide.Plugins
             
             string data = JsonConvert.SerializeObject(ParseData());
             data = Utility.EncodeDataUri(data);
-            webrequest.EnqueuePost(Utility.API_URL, "data=" + data, (statusCode, result) =>
+            webrequest.EnqueuePost((string) Config["UploadUrl"], "data=" + data, (statusCode, result) =>
             {
-                Debug.Log(new {statusCode, result});
-            }, this, new Dictionary<string, string> {{"pw", Utility.UPLOAD_PASSWORD}});
+                Debug.Log("Response: " + new {statusCode, result});
+            }, this, new Dictionary<string, string> {{"pw", (string) Config["UploadPassword"]}});
+        }
+
+        [ConsoleCommand("export")]
+        void ConsoleCmd_Export(ConsoleSystem.Arg arg)
+        {
+            if (arg.FromClient)
+                return;
+
+            var data = ParseData();
+            Interface.Oxide.DataFileSystem.WriteObject("RustExportData", data);
+            Debug.Log("Exported to [server_identity]/oxide/data/RustExportData.json.");
         }
 
         private RustData ParseData()

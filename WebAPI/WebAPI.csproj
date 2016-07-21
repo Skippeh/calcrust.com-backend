@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="ApiModule.cs" />
     <Compile Include="ApiResult.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="DataManager.cs" />
     <Compile Include="Models\Cookable.cs" />
     <Compile Include="Models\DamageInfo.cs" />

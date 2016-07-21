@@ -43,20 +43,27 @@ namespace WebAPI
 
         private static void OnChanged(object sender, FileSystemEventArgs e)
         {
-            var writeTime = File.GetLastWriteTime(filePath);
+            try
+            {
+                var writeTime = File.GetLastWriteTime(filePath);
 
-            if (writeTime - lastWriteTime <= new TimeSpan(0, 0, 0, 0, 50)) // Hack: avoid event being triggered twice caused by bug by checking if time since last save is > 50ms.
-                return;
-            
-            lastWriteTime = writeTime;
+                if (writeTime - lastWriteTime <= new TimeSpan(0, 0, 0, 0, 50)) // Hack: avoid event being triggered twice caused by bug by checking if time since last save is > 50ms.
+                    return;
 
-            Thread.Sleep(100); // File in use for some reason (by the watcher i assume).
+                lastWriteTime = writeTime;
 
-            Console.Write($"Reloading...");
-            Data?.Dispose();
-            Data = null;
-            LoadFile();
-            Console.WriteLine(" done.");
+                Thread.Sleep(100); // File in use for some reason (by the watcher i assume).
+
+                Console.Write($"Reloading...");
+                Data?.Dispose();
+                Data = null;
+                LoadFile();
+                Console.WriteLine(" done.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+            }
         }
 
         public static void Stop()

@@ -14,8 +14,6 @@ namespace WebAPI
 {
     public class ApiModule : NancyModule
     {
-        const string UPLOAD_PASSWORD = "+,0|i#7\"v%`*b#gdOyYX";
-
         private RustData data = DataManager.Data;
 
         private readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings
@@ -25,6 +23,8 @@ namespace WebAPI
 
         public ApiModule()
         {
+            Config.Load(); // Load config before every request.
+
             // Items
             Get["/items"] = WrapMethod(GetItems);
             Get["/items/{shortname}"] = WrapMethod(GetItem);
@@ -190,8 +190,8 @@ namespace WebAPI
                 return Error(HttpStatusCode.Forbidden);
 
             string password = Request.Headers["pw"].FirstOrDefault();
-
-            if (password != UPLOAD_PASSWORD)
+            
+            if (password != Config.UploadPassword)
             {
                 Console.WriteLine("Wrong auth password passed to /upload, ignoring request from " + Request.UserHostAddress + ".");
                 DataManager.IncrementTries(Request.UserHostAddress);
@@ -201,15 +201,12 @@ namespace WebAPI
 
                 return Error(HttpStatusCode.Unauthorized);
             }
-            else
-            {
-                DataManager.ResetTries(Request.UserHostAddress);
-            }
+
+            DataManager.ResetTries(Request.UserHostAddress);
 
             try
             {
                 string json = (string) Request.Form.data;
-                //DataManager.ChangeData(json);
                 DataManager.Save(json);
                 Console.WriteLine("Updated data from remote: " + Request.UserHostAddress + "!");
             }
