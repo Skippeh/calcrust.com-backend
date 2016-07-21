@@ -30,45 +30,27 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="Facepunch.Console">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.Console.dll</HintPath>
-    </Reference>
-    <Reference Include="Facepunch.Input">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.Input.dll</HintPath>
-    </Reference>
-    <Reference Include="Facepunch.Network">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.Network.dll</HintPath>
-    </Reference>
-    <Reference Include="Facepunch.System">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.System.dll</HintPath>
-    </Reference>
-    <Reference Include="Facepunch.UnityEngine">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.Console.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Oxide.Core">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Core.dll</HintPath>
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Core.dll</HintPath>
     </Reference>
     <Reference Include="Oxide.Ext.CSharp">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Ext.CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Oxide.Ext.MySql">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Ext.MySql.dll</HintPath>
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Ext.CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Oxide.Game.Rust">
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Game.Rust.dll</HintPath>
-    </Reference>
-    <Reference Include="Rust.Data, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Rust.Data.dll</HintPath>
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Game.Rust.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -80,7 +62,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

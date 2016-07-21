@@ -54,9 +54,11 @@ namespace Oxide.Classes
                     return "heat";
                 case DamageType.Thirst:
                     return "thirst";
+                case DamageType.Arrow:
+                    return "arrows";
             }
 
-            throw new NotImplementedException();
+            throw new NotImplementedException(damageType.ToString());
         }
 
         public static Dictionary<DamageType, float> MergeProtectionAmounts(ProtectionProperties protection)

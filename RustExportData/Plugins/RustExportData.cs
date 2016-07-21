@@ -488,12 +488,7 @@ namespace Oxide.Plugins
                 }
             }
         }
-
-        void OnWeaponFired(global::BaseProjectile projectile, BasePlayer player, ItemModProjectile mod, ProtoBuf.ProjectileShoot projectiles)
-        {
-            //Debug.Log(projectile.name);
-        }
-
+        
         void OnEntitySpawned(BaseNetworkable entity)
         {
             string entityString = entity.ToString();
@@ -914,9 +909,9 @@ namespace RustExportData
 
                     // Scale damage with projectile mod
                     var hitInfo = new HitInfo();
-                    Projectile.CalculateDamage(hitInfo, ProjectileMod, Projectile.fullDamageVelocity * BaseProjectile.projectileVelocityScale, BaseProjectile.damageScale);
+                    Projectile.CalculateDamage(hitInfo, Projectile.Modifier.Default, 1f, BaseProjectile.damageScale);
                     damageTypes = hitInfo.damageTypes;
-
+                    
                     try
                     {
                         //Debug.Log(Item.shortname + ": " + BaseProjectile.projectileVelocityScale + ", " + BaseProjectile.damageScale);
