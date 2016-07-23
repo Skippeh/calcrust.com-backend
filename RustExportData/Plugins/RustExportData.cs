@@ -6,8 +6,6 @@ using System.Linq;
 using System.Reflection;
 using Oxide.Classes;
 using Oxide.Core;
-using Oxide.Core.Libraries;
-using Oxide.Plugins;
 using Rust;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -38,8 +36,6 @@ namespace Oxide.Plugins
         {
             "ammo.rocket.smoke", // WIP Smoke Rocket
             "generator.wind.scrap", // Wind Turbine
-            //"salt.water", // Salt water
-            //"water", // Water
         };
 
         private static readonly Dictionary<string, float> ovenTemperatures = new Dictionary<string, float>();
