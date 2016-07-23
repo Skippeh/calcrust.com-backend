@@ -4,6 +4,8 @@
 
 ## Projects information
 
+All projects are developed using Visual Studio 2015.
+
 ### RustExportData
 
 This project exports item data etc from the game. It's an oxide plugin, so you'll need to install oxide on a rust server to export data.
@@ -18,7 +20,7 @@ There's 4 console commands available:
 
 The last two command values can also be found in the config file in server_identity/oxide/config/RustExportData.json (generated the first time the plugin initializes if they don't exist).
 
-If you don't know what server_identity means [Read this](http://rustdev.facepunchstudios.com/dedicated-server).
+If you don't know what server_identity means [read this](http://rustdev.facepunchstudios.com/dedicated-server).
 
 **It's not recommended to run this plugin on a real server since it spawns and destroys building blocks and performance isn't really prioritized at this point.**
 
