@@ -73,7 +73,7 @@ namespace Oxide.Plugins
             }, this, new Dictionary<string, string> {{"pw", (string) Config["UploadPassword"]}});
         }
 
-        [ConsoleCommand("export")]
+        [ConsoleCommand("calcrust.export")]
         void ConsoleCmd_Export(ConsoleSystem.Arg arg)
         {
             if (arg.FromClient)
@@ -82,6 +82,49 @@ namespace Oxide.Plugins
             var data = ParseData();
             Interface.Oxide.DataFileSystem.WriteObject("RustExportData", data);
             Debug.Log("Exported to [server_identity]/oxide/data/RustExportData.json.");
+        }
+
+        [ConsoleCommand("calcrust.uploadurl")]
+        void ConsoleCmd_UploadUrl(ConsoleSystem.Arg arg)
+        {
+            if (arg.FromClient)
+                return;
+
+            string url = arg.GetString(0, null);
+            if (url == null)
+            {
+                Debug.Log(Config["UploadUrl"]);
+            }
+            else
+            {
+                try
+                {
+                    var uri = new Uri(url);
+                    Debug.Log(uri);
+                    Config["UploadUrl"] = url;
+                }
+                catch (UriFormatException ex)
+                {
+                    Debug.Log("Invalid url.");
+                }
+            }
+        }
+
+        [ConsoleCommand("calcrust.uploadpass")]
+        void ConsoleCmd_UploadPassword(ConsoleSystem.Arg arg)
+        {
+            if (arg.FromClient)
+                return;
+
+            string password = arg.GetString(0, null);
+            if (password == null)
+            {
+                Debug.Log(Config["UploadPassword"]);
+            }
+            else
+            {
+                Config["UploadPassword"] = password;
+            }
         }
 
         private RustData ParseData()
@@ -93,32 +136,35 @@ namespace Oxide.Plugins
             {
                 // Get a list of all building blocks
                 List<BuildingBlock> buildingBlocks = new List<BuildingBlock>();
-
                 var prefabs = new List<string>();
+
+                string[] endsWithBlacklist =
+                {
+                    ".twig.prefab",
+                    ".wood.prefab",
+                    ".stone.prefab",
+                    ".metal.prefab",
+                    ".toptier.prefab",
+                    ".item.prefab",
+                    ".close-end.prefab",
+                    "open-end.prefab",
+                    "close-start.prefab",
+                    "open-start.prefab",
+                    "close-end.asset",
+                    "open-end.asset",
+                    "close-start.asset",
+                    "open-start.asset",
+                    "impact.prefab",
+                    "knock.prefab",
+                    "ladder_prop.prefab",
+                };
 
                 foreach (var str in GameManifest.Get().pooledStrings)
                 {
                     if (!str.str.StartsWith("assets/")) continue;
-                    //if (!str.str.StartsWith("assets/prefabs/building") &&
-                    //    !str.str.StartsWith("assets/prefabs/deployable/")) continue;
                     if (!str.str.StartsWith("assets/prefabs/building")) continue;
-                    if (str.str.EndsWith(".twig.prefab")) continue;
-                    if (str.str.EndsWith(".wood.prefab")) continue;
-                    if (str.str.EndsWith(".stone.prefab")) continue;
-                    if (str.str.EndsWith(".metal.prefab")) continue;
-                    if (str.str.EndsWith(".toptier.prefab")) continue;
-                    if (str.str.EndsWith(".item.prefab")) continue;
-                    if (str.str.EndsWith("close-end.prefab")) continue;
-                    if (str.str.EndsWith("open-end.prefab")) continue;
-                    if (str.str.EndsWith("close-start.prefab")) continue;
-                    if (str.str.EndsWith("open-start.prefab")) continue;
-                    if (str.str.EndsWith("close-end.asset")) continue;
-                    if (str.str.EndsWith("open-end.asset")) continue;
-                    if (str.str.EndsWith("close-start.asset")) continue;
-                    if (str.str.EndsWith("open-start.asset")) continue;
-                    if (str.str.EndsWith("impact.prefab")) continue;
-                    if (str.str.EndsWith("knock.prefab")) continue;
-                    if (str.str.EndsWith("ladder_prop.prefab")) continue;
+                    if (endsWithBlacklist.Any(prefab => str.str.EndsWith(prefab)))
+                        continue;
                     
                     prefabs.Add(str.str);
                 }
@@ -127,6 +173,12 @@ namespace Oxide.Plugins
                 
                 foreach (var prefab in prefabObjects)
                 {
+                    if (prefab == null)
+                    {
+                        Debug.LogError("Prefab null");
+                        continue;
+                    }
+
                     var buildingBlock = prefab.GetComponent<BuildingBlock>();
                     
                     if (buildingBlock != null)
