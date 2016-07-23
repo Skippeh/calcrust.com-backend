@@ -134,8 +134,6 @@ namespace Oxide.Plugins
 
             // Parse damage data
             {
-                // Get a list of all building blocks
-                List<BuildingBlock> buildingBlocks = new List<BuildingBlock>();
                 var prefabs = new List<string>();
 
                 string[] endsWithBlacklist =
