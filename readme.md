@@ -22,13 +22,13 @@ If you don't know what server_identity means [Read this](http://rustdev.facepunc
 
 **It's not recommended to run this plugin on a real server since it spawns and destroys building blocks and performance isn't really prioritized at this point.**
 
-###### WebApi
+### WebApi
 
 This project hosts a webserver on port 7545 which exposes various api functions. [They are defined here](https://github.com/Skippeh/calcrust.com-backend/blob/master/WebAPI/ApiModule.cs). The production branch is hosted here: https://api.calcrust.com.
 
 The port can't be changed without editing the source at the moment.
 
-###### ImageResizer
+### ImageResizer
 
 This project creates thumbnails of all the images in a specified directory and outputs them to a specified directory. It's used for making smaller icons for all items to reduce bandwidth usage when users are browsing all items/blueprints.
 
