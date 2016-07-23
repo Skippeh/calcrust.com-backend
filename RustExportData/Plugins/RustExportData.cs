@@ -59,7 +59,7 @@ namespace Oxide.Plugins
             SaveConfig();
         }
         
-        [ConsoleCommand("upload")]
+        [ConsoleCommand("calcrust.upload")]
         void ConsoleCmd_Upload(ConsoleSystem.Arg arg)
         {
             if (arg.FromClient)
