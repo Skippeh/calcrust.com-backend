@@ -585,7 +585,7 @@ namespace RustExportData
 
         public RustData()
         {
-            Meta = new Meta(DateTime.UtcNow);
+            Meta = new Meta(DateTime.UtcNow, Protocol.printable);
         }
     }
 
@@ -647,9 +647,13 @@ namespace RustExportData
         [JsonProperty("time")]
         public float Time;
 
-        public Meta(DateTime lastUpdate)
+        [JsonProperty("version")]
+        public string Version;
+
+        public Meta(DateTime lastUpdate, string version)
         {
             LastUpdate = lastUpdate;
+            Version = version;
         }
     }
 

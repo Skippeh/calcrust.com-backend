@@ -6,6 +6,7 @@ namespace WebAPI.Models
     {
         public DateTime LastUpdate;
         public float Time;
+        public string Version;
 
         public Meta(DateTime lastUpdate)
         {
