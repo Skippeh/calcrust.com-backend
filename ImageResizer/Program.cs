@@ -36,6 +36,12 @@ namespace ImageResizer
             {
                 width = int.Parse(args[1]);
                 height = int.Parse(args[2]);
+
+                if (width <= 0)
+                    Console.Error.WriteLine("Width <= 0");
+
+                if (height <= 0)
+                    Console.Error.WriteLine("Height <= 0");
             }
 
             if (args.Length <= 3)
@@ -75,7 +81,7 @@ namespace ImageResizer
                 {
                     using (var bitmap = new Bitmap(stream))
                     {
-                        using (var newBitmap = GetThumbnailImage(bitmap, new Size(60, 60)))
+                        using (var newBitmap = GetThumbnailImage(bitmap, new Size(width, height)))
                         {
                             var filename = Path.GetFileNameWithoutExtension(path) + "_small.png";
                             newBitmap.Save(Path.Combine(directory, filename), ImageFormat.Png);
