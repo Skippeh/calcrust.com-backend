@@ -935,7 +935,7 @@ namespace RustExportData
                 {
                     // Scale damage with projectile mod
                     var hitInfo = new HitInfo();
-                    Projectile.CalculateDamage(hitInfo, Projectile.Modifier.Default, 1f, BaseProjectile.damageScale);
+                    Projectile.CalculateDamage(hitInfo, Projectile.Modifier.Default, BaseProjectile.damageScale);
                     damageTypes = hitInfo.damageTypes;
                     
                     try
