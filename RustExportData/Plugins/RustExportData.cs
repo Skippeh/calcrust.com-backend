@@ -353,7 +353,7 @@ namespace Oxide.Plugins
 
                         if (explosive != null)
                         {
-                            newItem.Meta = new MetaWeaponDamage(item)
+                            newItem.Meta = new MetaWeapon(item)
                             {
                                 TimedExplosive = explosive
                             };
@@ -367,7 +367,7 @@ namespace Oxide.Plugins
                         var projectilePrefab = projectileMod.projectileObject.Get();
                         var projectile = projectilePrefab.GetComponent<Projectile>();
 
-                        newItem.Meta = new MetaWeaponDamage(item)
+                        newItem.Meta = new MetaWeapon(item)
                         {
                             ProjectileMod = projectileMod,
                             BaseProjectile = baseProjectile,
@@ -787,7 +787,7 @@ namespace RustExportData
         Wearable,
         Bed,
         Cookable,
-        WeaponDamage,
+        Weapon,
         Burnable
     }
 
@@ -887,11 +887,11 @@ namespace RustExportData
         [JsonProperty("slots")]
         public int Slots;
 
-        [JsonProperty("fuelType")]
-        private string strFuelType => FuelType?.shortname;
-
         [JsonProperty("allowByproductCreation")]
         public bool AllowByproductCreation { get; set; }
+
+        [JsonProperty("fuelType")]
+        private string strFuelType => FuelType?.shortname;
 
         public MetaOven(ItemDefinition itemDef) : base(itemDef, MetaType.Oven)
         {
@@ -964,7 +964,7 @@ namespace RustExportData
         }
     }
 
-    internal class MetaWeaponDamage : ItemMeta
+    internal class MetaWeapon : ItemMeta
     {
         public ItemModProjectile ProjectileMod;
         public global::BaseProjectile BaseProjectile;
@@ -1028,7 +1028,7 @@ namespace RustExportData
             }
         }
 
-        public MetaWeaponDamage(ItemDefinition itemDef) : base(itemDef, MetaType.WeaponDamage)
+        public MetaWeapon(ItemDefinition itemDef) : base(itemDef, MetaType.Weapon)
         {
         }
     }

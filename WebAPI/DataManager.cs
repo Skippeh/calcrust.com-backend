@@ -91,8 +91,9 @@ namespace WebAPI
         {
             var data = new RustData();
             JObject jData = JObject.Parse(contents);
+            var jItems = jData["items"];
 
-            data.Items = jData["items"].ToObject<Dictionary<string, Item>>();
+            data.Items = jItems.ToObject<Dictionary<string, Item>>();
 
             // Set shortname
             foreach (var keyval in data.Items)
@@ -133,6 +134,44 @@ namespace WebAPI
                 cookable.UsableOvens = ((JArray) jCookable.usableOvens).Select(jItem => data.Items[jItem["shortname"].Value<string>()]).ToList();
 
                 data.Cookables.Add(shortname, cookable);
+            }
+
+            // Parse item meta data
+            foreach (Item item in data.Items.Values)
+            {
+                if (item.Meta == null)
+                    continue;
+
+                JObject jMeta = (JObject) jItems[item.Shortname]["meta"];
+
+                switch (item.Meta.Type)
+                {
+                    case MetaType.Oven:
+                    {
+                        item.Meta = new Models.MetaModels.Oven(item.Meta.Descriptions)
+                        {
+                            AllowByproductCreation = jMeta["allowByproductCreation"].Value<bool>(),
+                            Slots = jMeta["slots"].Value<int>(),
+                            FuelType = jMeta["fuelType"].Type != JTokenType.Null ? data.Items[jMeta["fuelType"].Value<string>()] : null
+                        };
+                        break;
+                    }
+                    case MetaType.Burnable:
+                    {
+                        item.Meta = new Models.MetaModels.Burnable(item.Meta.Descriptions)
+                        {
+                            ByproductAmount = jMeta["byproductAmount"].Value<int>(),
+                            ByproductChance = jMeta["byproductChance"].Value<float>(),
+                            ByproductItem = jMeta["byproductItem"].Type != JTokenType.Null ? data.Items[jMeta["byproductItem"].Value<string>()] : null,
+                            FuelAmount = jMeta["fuelAmount"].Value<float>()
+                        };
+                        break;
+                    }
+                    default:
+                    {
+                        continue;
+                    }
+                }
             }
             
             return data;

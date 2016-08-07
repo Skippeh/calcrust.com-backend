@@ -70,21 +70,26 @@
     <Compile Include="ApiResult.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DataManager.cs" />
+    <Compile Include="Models\Burnable.cs" />
     <Compile Include="Models\Cookable.cs" />
     <Compile Include="Models\DamageInfo.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\ItemMeta.cs" />
     <Compile Include="Models\Meta.cs" />
+    <Compile Include="Models\MetaModels\Burnable.cs" />
+    <Compile Include="Models\MetaModels\Oven.cs" />
     <Compile Include="Models\Recipe.cs" />
     <Compile Include="Models\RustData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TimeWarning.cs" />
+    <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
