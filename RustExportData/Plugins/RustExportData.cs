@@ -309,8 +309,7 @@ namespace Oxide.Plugins
                             Oven = oven,
                             FuelType = oven.fuelType,
                             Slots = oven.inventorySlots,
-                            AllowByproductCreation = oven.allowByproductCreation,
-                            Temperature = GetProperty<float>(oven, "cookingTemperature")
+                            AllowByproductCreation = oven.allowByproductCreation
                         };
                     }
                     else if (bed != null)
@@ -337,9 +336,7 @@ namespace Oxide.Plugins
                 {
                     newItem.Meta = new MetaCookable(item)
                     {
-                        Cookable = cookable,
-                        MinTemp = cookable.lowTemp,
-                        MaxTemp = cookable.highTemp
+                        Cookable = cookable
                     };
                 }
                 else if (entity != null)
@@ -892,9 +889,6 @@ namespace RustExportData
 
         [JsonProperty("allowByproductCreation")]
         public bool AllowByproductCreation { get; set; }
-        
-        [JsonProperty("temperature")]
-        public float Temperature { get; set; }
 
         [JsonProperty("fuelType")]
         private string strFuelType => FuelType?.shortname;
@@ -952,12 +946,6 @@ namespace RustExportData
     internal class MetaCookable : ItemMeta
     {
         public ItemModCookable Cookable;
-
-        [JsonProperty("minTemp")]
-        public int MinTemp;
-        
-        [JsonProperty("maxTemp")]
-        public int MaxTemp;
 
         public override string[] Descriptions
         {
