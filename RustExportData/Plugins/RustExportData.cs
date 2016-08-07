@@ -286,6 +286,7 @@ namespace Oxide.Plugins
                 var wearable = item.GetComponent<ItemModWearable>();
                 var cookable = item.GetComponent<ItemModCookable>();
                 var entity = item.GetComponent<ItemModEntity>();
+                var burnable = item.GetComponent<ItemModBurnable>();
 
                 if (consumable != null)
                 {
@@ -371,6 +372,16 @@ namespace Oxide.Plugins
                         };
                     }
                 }
+                else if (burnable != null)
+                {
+                    newItem.Meta = new MetaBurnable(item)
+                    {
+                        ByproductItem = burnable.byproductItem,
+                        ByproductAmount = burnable.byproductAmount,
+                        ByproductChance = burnable.byproductChance,
+                        FuelAmount = burnable.fuelAmount
+                    };
+                }
 
                 data.Items.Add(item.shortname, newItem);
             }
@@ -418,95 +429,109 @@ namespace Oxide.Plugins
 
         private Dictionary<string, DamageInfo> GetDamageInfos(GameObject prefab)
         {
-            var instance = GameObject.Instantiate(prefab);
+            var instance = (GameObject)GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
             var baseEntity = instance.GetComponent<BaseEntity>();
             baseEntity.Spawn();
 
             var result = new Dictionary<string, DamageInfo>();
 
-            foreach (var item in ItemManager.itemList)
+            try
             {
-                if (excludeList.Contains(item.shortname))
-                    continue;
-
-                var projectileMod = item.GetComponent<ItemModProjectile>();
-                var entityMod = item.GetComponent<ItemModEntity>();
-                List<DamageTypeEntry> damageTypes = null;
-                Projectile projectile = null;
-
-                if (projectileMod != null)
+                foreach (var item in ItemManager.itemList)
                 {
-                    var projectileObject = projectileMod.projectileObject.Get();
-
-                    if (projectileObject == null)
+                    if (excludeList.Contains(item.shortname))
                         continue;
 
-                    var explosive = projectileObject.GetComponent<TimedExplosive>();
-                    projectile = projectileObject.GetComponent<Projectile>();
-                    
-                    if (explosive != null)
-                    {
-                        damageTypes = new List<DamageTypeEntry>(explosive.damageTypes);
-                    }
-                    else if (projectile != null && (item.category == ItemCategory.Weapon || item.category == ItemCategory.Tool))
-                    {
-                        //damageTypes = projectile.damageTypes;
-                    }
-                }
-                else if (entityMod != null)
-                {
-                    var entityPrefab = entityMod.entityPrefab.Get();
-                    var attackEntity = entityPrefab.GetComponent<AttackEntity>();
-                    var thrownWeapon = attackEntity as ThrownWeapon;
+                    var projectileMod = item.GetComponent<ItemModProjectile>();
+                    var entityMod = item.GetComponent<ItemModEntity>();
+                    List<DamageTypeEntry> damageTypes = null;
+                    Projectile projectile = null;
 
-                    if (thrownWeapon != null)
+                    if (projectileMod != null)
                     {
-                        var toThrow = thrownWeapon.prefabToThrow.Get();
-                        var timedExplosive = toThrow.GetComponent<TimedExplosive>();
+                        var projectileObject = projectileMod.projectileObject.Get();
 
-                        if (timedExplosive != null)
+                        if (projectileObject == null)
+                            continue;
+
+                        var explosive = projectileObject.GetComponent<TimedExplosive>();
+                        projectile = projectileObject.GetComponent<Projectile>();
+
+                        if (explosive != null)
                         {
-                            damageTypes = new List<DamageTypeEntry>(timedExplosive.damageTypes);
+                            damageTypes = new List<DamageTypeEntry>(explosive.damageTypes);
+                        }
+                        else if (projectile != null && (item.category == ItemCategory.Weapon || item.category == ItemCategory.Tool))
+                        {
+                            //damageTypes = projectile.damageTypes;
+                        }
+                    }
+                    else if (entityMod != null)
+                    {
+                        var entityPrefab = entityMod.entityPrefab.Get();
+                        var attackEntity = entityPrefab.GetComponent<AttackEntity>();
+                        var thrownWeapon = attackEntity as ThrownWeapon;
+
+                        if (thrownWeapon != null)
+                        {
+                            var toThrow = thrownWeapon.prefabToThrow.Get();
+                            var timedExplosive = toThrow.GetComponent<TimedExplosive>();
+
+                            if (timedExplosive != null)
+                            {
+                                damageTypes = new List<DamageTypeEntry>(timedExplosive.damageTypes);
+                            }
+                        }
+                    }
+
+                    if (damageTypes == null)
+                        continue;
+
+                    DamageInfo damageInfo = new DamageInfo();
+                    result.Add(item.shortname, damageInfo);
+
+                    if (baseEntity is BuildingBlock)
+                    {
+                        var buildingBlock = (BuildingBlock) baseEntity;
+
+                        foreach (BuildingGrade.Enum grade in Enum.GetValues(typeof (BuildingGrade.Enum)))
+                        {
+                            if (grade == BuildingGrade.Enum.None || grade == BuildingGrade.Enum.Count)
+                                continue;
+
+                            buildingBlock.SetGrade(grade);
+                            buildingBlock.SetHealthToMax();
+
+                            var strongHitInfo = new HitInfo();
+                            strongHitInfo.damageTypes.Add(damageTypes);
+                            buildingBlock.ScaleDamage(strongHitInfo);
+
+                            float totalDamage = strongHitInfo.damageTypes.Total();
+                            float hits = totalDamage > 0 ? (buildingBlock.MaxHealth() / totalDamage) : -1;
+                            //Debug.Log(item.displayName.english + ": " + totalDamage + "(" + grade + " " + prefab.name + ", " + Math.Ceiling(hits) + " hits)");
+
+                            damageInfo.Damages.Add(prefab.name + ":" + grade.ToCamelCaseString(), new DamageInfo.WeaponInfo
+                            {
+                                DPS = totalDamage,
+                                TotalHits = hits
+                            });
                         }
                     }
                 }
-
-                if (damageTypes == null)
-                    continue;
-                
-                DamageInfo damageInfo = new DamageInfo();
-                result.Add(item.shortname, damageInfo);
-
-                if (baseEntity is BuildingBlock)
+            }
+            finally
+            {
+                if (!baseEntity.isDestroyed)
                 {
-                    var buildingBlock = (BuildingBlock) baseEntity;
-
-                    foreach (BuildingGrade.Enum grade in Enum.GetValues(typeof (BuildingGrade.Enum)))
+                    if (baseEntity is BuildingBlock)
                     {
-                        if (grade == BuildingGrade.Enum.None || grade == BuildingGrade.Enum.Count)
-                            continue;
-
-                        buildingBlock.SetGrade(grade);
-                        buildingBlock.SetHealthToMax();
-
-                        var strongHitInfo = new HitInfo();
-                        strongHitInfo.damageTypes.Add(damageTypes);
-                        buildingBlock.ScaleDamage(strongHitInfo);
-                        
-                        float totalDamage = strongHitInfo.damageTypes.Total();
-                        float hits = totalDamage > 0 ? (buildingBlock.MaxHealth() / totalDamage) : -1;
-                        //Debug.Log(item.displayName.english + ": " + totalDamage + "(" + grade + " " + prefab.name + ", " + Math.Ceiling(hits) + " hits)");
-
-                        damageInfo.Damages.Add(prefab.name + ":" + grade.ToCamelCaseString(), new DamageInfo.WeaponInfo
-                        {
-                            DPS = totalDamage,
-                            TotalHits = hits
-                        });
+                        ((BuildingBlock)baseEntity).DestroyShared();
                     }
+
+                    baseEntity.Kill();
                 }
             }
 
-            baseEntity.Kill();
             return result;
         }
 
@@ -751,20 +776,38 @@ namespace RustExportData
         public ItemMeta Meta { get; set; }
     }
 
+    internal enum MetaType
+    {
+        None,
+        Consumable,
+        Oven,
+        Wearable,
+        Bed,
+        Cookable,
+        WeaponDamage,
+        Burnable
+    }
+
     [JsonObject(MemberSerialization.OptIn)]
     internal abstract class ItemMeta
     {
         [JsonProperty("descriptions")]
         public abstract string[] Descriptions { get; }
-
+        
         public ItemDefinition Item { get; private set; }
 
-        protected ItemMeta(ItemDefinition itemDef)
+        public MetaType Type { get; private set; }
+
+        [JsonProperty("type")]
+        private string strType => Type.ToCamelCaseString();
+
+        protected ItemMeta(ItemDefinition itemDef, MetaType type)
         {
             if (itemDef == null)
                 throw new ArgumentNullException(nameof(itemDef));
 
             Item = itemDef;
+            Type = type;
         }
     }
 
@@ -810,7 +853,7 @@ namespace RustExportData
             }
         }
 
-        public MetaConsumable(ItemDefinition itemDef) : base(itemDef)
+        public MetaConsumable(ItemDefinition itemDef) : base(itemDef, MetaType.Consumable)
         {
         }
     }
@@ -836,7 +879,7 @@ namespace RustExportData
             }
         }
 
-        public MetaOven(ItemDefinition itemDef) : base(itemDef)
+        public MetaOven(ItemDefinition itemDef) : base(itemDef, MetaType.Oven)
         {
         }
     }
@@ -860,7 +903,7 @@ namespace RustExportData
             }
         }
 
-        public MetaWearable(ItemDefinition itemDef) : base(itemDef)
+        public MetaWearable(ItemDefinition itemDef) : base(itemDef, MetaType.Wearable)
         {
         }
     }
@@ -881,7 +924,7 @@ namespace RustExportData
             }
         }
 
-        public MetaBed(ItemDefinition itemDef) : base(itemDef)
+        public MetaBed(ItemDefinition itemDef) : base(itemDef, MetaType.Bed)
         {
         }
     }
@@ -902,7 +945,7 @@ namespace RustExportData
             }
         }
 
-        public MetaCookable(ItemDefinition itemDef) : base(itemDef)
+        public MetaCookable(ItemDefinition itemDef) : base(itemDef, MetaType.Cookable)
         {
         }
     }
@@ -971,8 +1014,31 @@ namespace RustExportData
             }
         }
 
-        public MetaWeaponDamage(ItemDefinition itemDef) : base(itemDef)
+        public MetaWeaponDamage(ItemDefinition itemDef) : base(itemDef, MetaType.WeaponDamage)
         {
         }
+    }
+
+    internal class MetaBurnable : ItemMeta
+    {
+        [JsonProperty("fuelAmount")]
+        public float FuelAmount;
+
+        [JsonProperty("byproductAmount")]
+        public int ByproductAmount;
+
+        [JsonProperty("byproductChance")]
+        public float ByproductChance;
+
+        public ItemDefinition ByproductItem;
+
+        [JsonProperty("byproductItem")]
+        private string strByproductItem => ByproductItem?.shortname;
+
+        public MetaBurnable(ItemDefinition itemDef) : base(itemDef, MetaType.Burnable)
+        {
+        }
+
+        public override string[] Descriptions => new string[0];
     }
 }
