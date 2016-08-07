@@ -306,7 +306,10 @@ namespace Oxide.Plugins
                     {
                         newItem.Meta = new MetaOven(item)
                         {
-                            Oven = oven
+                            Oven = oven,
+                            FuelType = oven.fuelType,
+                            Slots = oven.inventorySlots,
+                            AllowByproductCreation = oven.allowByproductCreation
                         };
                     }
                     else if (bed != null)
@@ -878,6 +881,17 @@ namespace RustExportData
                 return descs.ToArray();
             }
         }
+
+        public ItemDefinition FuelType;
+
+        [JsonProperty("slots")]
+        public int Slots;
+
+        [JsonProperty("fuelType")]
+        private string strFuelType => FuelType?.shortname;
+
+        [JsonProperty("allowByproductCreation")]
+        public bool AllowByproductCreation { get; set; }
 
         public MetaOven(ItemDefinition itemDef) : base(itemDef, MetaType.Oven)
         {
