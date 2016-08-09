@@ -131,7 +131,11 @@ namespace WebAPI
                 var cookable = keyval.Value.ToObject<Cookable>();
 
                 cookable.Output = ParseRecipeItem(jCookable.output, data.Items);
-                cookable.UsableOvens = ((JArray) jCookable.usableOvens).Select(jItem => data.Items[jItem["shortname"].Value<string>()]).ToList();
+                cookable.UsableOvens = ((JArray) jCookable.usableOvens).Select(jItem => new Cookable.Oven
+                {
+                    Item = data.Items[jItem["shortname"].Value<string>()],
+                    FuelConsumed = jItem["fuelConsumed"].Value<float>()
+                }).ToList();
 
                 data.Cookables.Add(shortname, cookable);
             }

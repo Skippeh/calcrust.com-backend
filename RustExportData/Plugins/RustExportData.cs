@@ -381,7 +381,7 @@ namespace Oxide.Plugins
                     {
                         ByproductItem = burnable.byproductItem,
                         ByproductAmount = burnable.byproductAmount,
-                        ByproductChance = burnable.byproductChance,
+                        ByproductChance = (float)(1d - burnable.byproductChance),
                         FuelAmount = burnable.fuelAmount
                     };
                 }

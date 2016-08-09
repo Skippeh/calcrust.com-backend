@@ -372,7 +372,11 @@ namespace WebAPI
             
             return new
             {
-                ovenList = detailed ? (object)cookable.UsableOvens : cookable.UsableOvens.Select(item => item.Shortname),
+                ovenList = detailed ? (object)cookable.UsableOvens : cookable.UsableOvens.Select(item => new
+                {
+                    fuelConsumed = item.FuelConsumed,
+                    item = item.Item.Shortname
+                }),
                 cookable.TTC,
                 output = new
                 {
