@@ -290,13 +290,14 @@ namespace Oxide.Plugins
 
                 if (consumable != null)
                 {
-                    newItem.Meta = new MetaConsumable(item)
+                    newItem.Meta.Add(MetaType.Consumable.ToCamelCaseString(), new MetaConsumable(item)
                     {
                         Effects = consumable.effects,
                         ItemsGivenOnConsume = consume?.product
-                    };
+                    });
                 }
-                else if (deployable != null)
+
+                if (deployable != null)
                 {
                     var deployPrefab = deployable.entityPrefab.Get();
                     var oven = deployPrefab.GetComponent<BaseOven>();
@@ -304,42 +305,46 @@ namespace Oxide.Plugins
 
                     if (oven != null)
                     {
-                        newItem.Meta = new MetaOven(item)
+                        newItem.Meta.Add(MetaType.Oven.ToCamelCaseString(), new MetaOven(item)
                         {
                             Oven = oven,
                             FuelType = oven.fuelType,
                             Slots = oven.inventorySlots,
                             AllowByproductCreation = oven.allowByproductCreation
-                        };
+                        });
                     }
-                    else if (bed != null)
+
+                    if (bed != null)
                     {
-                        newItem.Meta = new MetaBed(item)
+                        newItem.Meta.Add(MetaType.Bed.ToCamelCaseString(), new MetaBed(item)
                         {
                             Bed = bed
-                        };
+                        });
                     }
                 }
-                else if (wearable != null)
+
+                if (wearable != null)
                 {
                     if (wearable.HasProtections())
                     {
                         var protections = wearable.protectionProperties;
 
-                        newItem.Meta = new MetaWearable(item)
+                        newItem.Meta.Add(MetaType.Wearable.ToCamelCaseString(), new MetaWearable(item)
                         {
                             Protections = protections
-                        };
+                        });
                     }
                 }
-                else if (cookable != null)
+
+                if (cookable != null)
                 {
-                    newItem.Meta = new MetaCookable(item)
+                    newItem.Meta.Add(MetaType.Cookable.ToCamelCaseString(), new MetaCookable(item)
                     {
                         Cookable = cookable
-                    };
+                    });
                 }
-                else if (entity != null)
+
+                if (entity != null)
                 {
                     var prefab = entity.entityPrefab.Get();
 
@@ -353,10 +358,10 @@ namespace Oxide.Plugins
 
                         if (explosive != null)
                         {
-                            newItem.Meta = new MetaWeapon(item)
+                            newItem.Meta.Add(MetaType.Weapon.ToCamelCaseString(), new MetaWeapon(item)
                             {
                                 TimedExplosive = explosive
-                            };
+                            });
                         }
                     }
                     else if (baseProjectile != null)
@@ -367,23 +372,24 @@ namespace Oxide.Plugins
                         var projectilePrefab = projectileMod.projectileObject.Get();
                         var projectile = projectilePrefab.GetComponent<Projectile>();
 
-                        newItem.Meta = new MetaWeapon(item)
+                        newItem.Meta.Add(MetaType.Weapon.ToCamelCaseString(), new MetaWeapon(item)
                         {
                             ProjectileMod = projectileMod,
                             BaseProjectile = baseProjectile,
                             Projectile = projectile
-                        };
+                        });
                     }
                 }
-                else if (burnable != null)
+
+                if (burnable != null)
                 {
-                    newItem.Meta = new MetaBurnable(item)
+                    newItem.Meta.Add(MetaType.Burnable.ToCamelCaseString(), new MetaBurnable(item)
                     {
                         ByproductItem = burnable.byproductItem,
                         ByproductAmount = burnable.byproductAmount,
-                        ByproductChance = (float)(1d - burnable.byproductChance),
+                        ByproductChance = (float) (1d - burnable.byproductChance),
                         FuelAmount = burnable.fuelAmount
-                    };
+                    });
                 }
 
                 data.Items.Add(item.shortname, newItem);
@@ -422,6 +428,12 @@ namespace Oxide.Plugins
             }
             
             Debug.Log("Blueprints parsed");
+
+            // Add all meta descriptions to item descriptions.
+            foreach (var item in data.Items.Values)
+            {
+                item.Descriptions.AddRange(item.Meta.Values.SelectMany(meta => meta.Descriptions));
+            }
 
             var endTime = Time.realtimeSinceStartup;
             var totalTime = endTime - startTime;
@@ -775,8 +787,14 @@ namespace RustExportData
         [JsonProperty("category")]
         public string Category;
 
+        [JsonProperty("numMeta")]
+        public int NumMeta => Meta.Count;
+
         [JsonProperty("meta")]
-        public ItemMeta Meta { get; set; }
+        public Dictionary<string, ItemMeta> Meta { get; set; } = new Dictionary<string, ItemMeta>();
+
+        [JsonProperty("descriptions")]
+        public List<string> Descriptions { get; set; } = new List<string>();
     }
 
     internal enum MetaType
@@ -794,7 +812,7 @@ namespace RustExportData
     [JsonObject(MemberSerialization.OptIn)]
     internal abstract class ItemMeta
     {
-        [JsonProperty("descriptions")]
+        [JsonIgnore]
         public abstract string[] Descriptions { get; }
         
         public ItemDefinition Item { get; private set; }
@@ -819,6 +837,7 @@ namespace RustExportData
         public ItemAmountRandom[] ItemsGivenOnConsume;
         public List<ItemModConsumable.ConsumableEffect> Effects;
 
+        [JsonIgnore]
         public override string[] Descriptions
         {
             get
