@@ -12,6 +12,8 @@ namespace WebAPI.Models.MetaModels
         public int Slots { get; set; }
         public bool AllowByproductCreation { get; set; }
 
+        public float Temperature { get; set; }
+
         [JsonProperty("fuelType")]
         private string strFuelType => FuelType?.Shortname;
 

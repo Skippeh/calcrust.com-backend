@@ -310,7 +310,8 @@ namespace Oxide.Plugins
                             Oven = oven,
                             FuelType = oven.fuelType,
                             Slots = oven.inventorySlots,
-                            AllowByproductCreation = oven.allowByproductCreation
+                            AllowByproductCreation = oven.allowByproductCreation,
+                            Temperature = GetProperty<float>(oven, "cookingTemperature")
                         });
                     }
 
@@ -908,6 +909,9 @@ namespace RustExportData
 
         [JsonProperty("allowByproductCreation")]
         public bool AllowByproductCreation { get; set; }
+
+        [JsonProperty("temperature")]
+        public float Temperature { get; set; }
 
         [JsonProperty("fuelType")]
         private string strFuelType => FuelType?.shortname;

@@ -158,7 +158,8 @@ namespace WebAPI
                             {
                                 AllowByproductCreation = jMeta["allowByproductCreation"].Value<bool>(),
                                 Slots = jMeta["slots"].Value<int>(),
-                                FuelType = jMeta["fuelType"].Type != JTokenType.Null ? data.Items[jMeta["fuelType"].Value<string>()] : null
+                                FuelType = jMeta["fuelType"].Type != JTokenType.Null ? data.Items[jMeta["fuelType"].Value<string>()] : null,
+                                Temperature = jMeta["temperature"].Value<float>()
                             });
                             break;
                         }
