@@ -18,18 +18,11 @@ namespace WebAPI.Models
 
     public class ItemMeta
     {
-        public ItemMeta(MetaType type, IEnumerable<string> descriptions = null)
+        public ItemMeta(MetaType type)
         {
             Type = type;
-
-            if (descriptions != null)
-            {
-                Descriptions = descriptions.ToList();
-            }
         }
-
-        public List<string> Descriptions { get; set; } = new List<string>();
-
+        
         [JsonIgnore]
         public MetaType Type { get; set; }
 

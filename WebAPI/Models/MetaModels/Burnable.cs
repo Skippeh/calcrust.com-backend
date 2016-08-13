@@ -16,9 +16,8 @@ namespace WebAPI.Models.MetaModels
         [JsonProperty("byproductItem")]
         private string strByproductItem => ByproductItem?.Shortname;
 
-        public Burnable(IEnumerable<string> descriptions) : base(MetaType.Burnable)
+        public Burnable() : base(MetaType.Burnable)
         {
-            Descriptions = descriptions.ToList();
         }
     }
 }

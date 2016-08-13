@@ -143,37 +143,41 @@ namespace WebAPI
             // Parse item meta data
             foreach (Item item in data.Items.Values)
             {
-                if (item.Meta == null)
-                    continue;
+                item.Meta = new Dictionary<MetaType, ItemMeta>();
+                JObject jMetas = (JObject) jItems[item.Shortname]["meta"];
 
-                JObject jMeta = (JObject) jItems[item.Shortname]["meta"];
-
-                switch (item.Meta.Type)
+                foreach (JProperty jMetaProperty in jMetas.Values<JProperty>())
                 {
-                    case MetaType.Oven:
+                    var jMeta = (JObject) jMetaProperty.Value;
+                    MetaType metaType = jMeta["type"].ToObject<MetaType>();
+                    switch (metaType)
                     {
-                        item.Meta = new Models.MetaModels.Oven(item.Meta.Descriptions)
+                        case MetaType.Oven:
                         {
-                            AllowByproductCreation = jMeta["allowByproductCreation"].Value<bool>(),
-                            Slots = jMeta["slots"].Value<int>(),
-                            FuelType = jMeta["fuelType"].Type != JTokenType.Null ? data.Items[jMeta["fuelType"].Value<string>()] : null
-                        };
-                        break;
-                    }
-                    case MetaType.Burnable:
-                    {
-                        item.Meta = new Models.MetaModels.Burnable(item.Meta.Descriptions)
+                            item.Meta.Add(MetaType.Oven, new Models.MetaModels.Oven()
+                            {
+                                AllowByproductCreation = jMeta["allowByproductCreation"].Value<bool>(),
+                                Slots = jMeta["slots"].Value<int>(),
+                                FuelType = jMeta["fuelType"].Type != JTokenType.Null ? data.Items[jMeta["fuelType"].Value<string>()] : null
+                            });
+                            break;
+                        }
+                        case MetaType.Burnable:
                         {
-                            ByproductAmount = jMeta["byproductAmount"].Value<int>(),
-                            ByproductChance = jMeta["byproductChance"].Value<float>(),
-                            ByproductItem = jMeta["byproductItem"].Type != JTokenType.Null ? data.Items[jMeta["byproductItem"].Value<string>()] : null,
-                            FuelAmount = jMeta["fuelAmount"].Value<float>()
-                        };
-                        break;
-                    }
-                    default:
-                    {
-                        continue;
+                            item.Meta.Add(MetaType.Burnable, new Models.MetaModels.Burnable()
+                            {
+                                ByproductAmount = jMeta["byproductAmount"].Value<int>(),
+                                ByproductChance = jMeta["byproductChance"].Value<float>(),
+                                ByproductItem = jMeta["byproductItem"].Type != JTokenType.Null ? data.Items[jMeta["byproductItem"].Value<string>()] : null,
+                                FuelAmount = jMeta["fuelAmount"].Value<float>()
+                            });
+                            break;
+                        }
+                        default:
+                        {
+                            item.Meta.Add(metaType, new ItemMeta(metaType));
+                            continue;
+                        }
                     }
                 }
             }

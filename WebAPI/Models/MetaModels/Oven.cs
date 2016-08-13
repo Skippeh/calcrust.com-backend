@@ -15,9 +15,8 @@ namespace WebAPI.Models.MetaModels
         [JsonProperty("fuelType")]
         private string strFuelType => FuelType?.Shortname;
 
-        public Oven(IEnumerable<string> descriptions) : base(MetaType.Oven)
+        public Oven() : base(MetaType.Oven)
         {
-            Descriptions = descriptions.ToList();
         }
     }
 }
