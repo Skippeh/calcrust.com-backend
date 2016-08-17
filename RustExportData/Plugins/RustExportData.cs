@@ -916,6 +916,16 @@ namespace RustExportData
 
                 descs.Add("Can be used for " + Oven.temperature.ToString().ToLower());
 
+                if (Oven.fuelType != null)
+                {
+                    float seconds = 0;
+                    float fuelAmount = Oven.fuelType.GetComponent<ItemModBurnable>().fuelAmount;
+                    float temperature = Oxide.Plugins.RustExportData.GetProperty<float, BaseOven>(Oven, "cookingTemperature");
+                    seconds = 1f / ((temperature / 200f) / fuelAmount);
+                    
+                    descs.Add("Uses 1 " + Oven.fuelType.displayName.english + " every " + seconds + " second" + (seconds != 1d ? "s" : "") + ".");
+                }
+
                 return descs.ToArray();
             }
         }
