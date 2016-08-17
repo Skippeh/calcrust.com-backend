@@ -216,7 +216,7 @@ namespace Oxide.Plugins
 
                     if (oven != null)
                     {
-                        ovenTemperatures.Add(item.shortname, GetProperty<float>(oven, "cookingTemperature"));
+                        ovenTemperatures.Add(item.shortname, GetProperty<float, BaseOven>(oven, "cookingTemperature"));
                         //Debug.Log(item.shortname + ": " + oven.temperature + " - " + ovenTemperatures[item.shortname]);
                     }
                 }
@@ -311,7 +311,7 @@ namespace Oxide.Plugins
                             FuelType = oven.fuelType,
                             Slots = oven.inventorySlots,
                             AllowByproductCreation = oven.allowByproductCreation,
-                            Temperature = GetProperty<float>(oven, "cookingTemperature")
+                            Temperature = GetProperty<float, BaseOven>(oven, "cookingTemperature")
                         });
                     }
 
@@ -619,12 +619,21 @@ namespace Oxide.Plugins
             Debug.Log(String.Join("\n", damages.Select(d => d.Key.ToString() + ": " + d.Value).ToArray()));
         }
 
-        private T GetField<T>(object obj, string memberName)
+        public static T GetField<T, TClassType>(object obj, string memberName)
         {
             if (obj == null)
                 return default(T);
 
+            var targetType = typeof(TClassType);
             var type = obj.GetType();
+
+            while (type != targetType)
+            {
+                if (!type.IsSubclassOf(targetType) || type.BaseType == null)
+                    throw new ArgumentException(obj.GetType().FullName + " does not equal or inherit type " + targetType.FullName + ".");
+
+                type = type.BaseType;
+            }
 
             var fieldInfo = type.GetField(memberName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
@@ -633,20 +642,29 @@ namespace Oxide.Plugins
 
             return (T) fieldInfo.GetValue(obj);
         }
-        
-        private T GetProperty<T>(object obj, string propertyName)
+
+        public static T GetProperty<T, TClassType>(object obj, string propertyName)
         {
             if (obj == null)
-                return default(T);
+                throw new ArgumentNullException(nameof(obj));
 
+            var targetType = typeof (TClassType);
             var type = obj.GetType();
+            
+            while (type != targetType)
+            {
+                if (!type.IsSubclassOf(targetType) || type.BaseType == null)
+                    throw new ArgumentException(obj.GetType().FullName + " does not equal or inherit type " + targetType.FullName + ".");
 
-            var propInfo = type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                type = type.BaseType;
+            }
+
+            var propInfo = type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
 
             if (propInfo == null)
-                return default(T);
+                throw new NullReferenceException("No property found with name " + propertyName + " in type " + type.FullName + ".");
 
-            return (T) propInfo.GetValue(obj, new object[0]);
+            return (T)propInfo.GetValue(obj, new object[0]);
         }
     }
 }
