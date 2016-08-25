@@ -539,9 +539,9 @@ namespace Oxide.Plugins
             {
                 if (!baseEntity.isDestroyed)
                 {
-                    if (baseEntity is BuildingBlock)
+                    if (baseEntity is BaseCombatEntity)
                     {
-                        ((BuildingBlock)baseEntity).DestroyShared();
+                        ((BaseCombatEntity)baseEntity).DestroyShared();
                     }
 
                     baseEntity.Kill();
