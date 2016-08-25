@@ -167,7 +167,27 @@ namespace Oxide.Plugins
                     prefabs.Add(str.str);
                 }
                 
-                var prefabObjects = prefabs.Select(name => GameManager.server.FindPrefab(name)).ToList();
+                List<GameObject> prefabObjects = prefabs.Select(name => GameManager.server.FindPrefab(name)).ToList();
+                Dictionary<GameObject, ItemDefinition> itemDefinitions = new Dictionary<GameObject, ItemDefinition>();
+
+                // Add deployables to prefabObjects
+                foreach (var item in ItemManager.itemList)
+                {
+                    if (excludeList.Contains(item.shortname))
+                        continue;
+
+                    if (item.GetComponent<ItemModDeployable>() != null)
+                    {
+                        var gameObject = item.GetComponent<ItemModDeployable>().entityPrefab.Get();
+                        var combatEntity = gameObject.GetComponent<BaseCombatEntity>();
+
+                        if (combatEntity == null)
+                            continue;
+
+                        prefabObjects.Add(gameObject);
+                        itemDefinitions.Add(gameObject, item);
+                    }
+                }
                 
                 foreach (var prefab in prefabObjects)
                 {
@@ -176,12 +196,12 @@ namespace Oxide.Plugins
                         Debug.LogError("Prefab null");
                         continue;
                     }
-
-                    var buildingBlock = prefab.GetComponent<BuildingBlock>();
                     
-                    if (buildingBlock != null)
+                    var baseCombatEntity = prefab.GetComponent<BaseCombatEntity>();
+
+                    if (baseCombatEntity != null)
                     {
-                        Dictionary<string, DamageInfo> damageInfos = GetDamageInfos(prefab);
+                        Dictionary<string, DamageInfo> damageInfos = GetDamageInfos(prefab, itemDefinitions.ContainsKey(prefab) ? itemDefinitions[prefab].shortname : null);
 
                         foreach (var keyval in damageInfos)
                         {
@@ -443,8 +463,11 @@ namespace Oxide.Plugins
             return data;
         }
 
-        private Dictionary<string, DamageInfo> GetDamageInfos(GameObject prefab)
+        private Dictionary<string, DamageInfo> GetDamageInfos(GameObject prefab, string itemName)
         {
+            if (itemName == null)
+                itemName = prefab.name;
+
             var instance = (GameObject)GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
             var baseEntity = instance.GetComponent<BaseEntity>();
             baseEntity.Spawn();
@@ -526,12 +549,29 @@ namespace Oxide.Plugins
                             float hits = totalDamage > 0 ? (buildingBlock.MaxHealth() / totalDamage) : -1;
                             //Debug.Log(item.displayName.english + ": " + totalDamage + "(" + grade + " " + prefab.name + ", " + Math.Ceiling(hits) + " hits)");
 
-                            damageInfo.Damages.Add(prefab.name + ":" + grade.ToCamelCaseString(), new DamageInfo.WeaponInfo
+                            damageInfo.Damages.Add(itemName + ":" + grade.ToCamelCaseString(), new DamageInfo.WeaponInfo
                             {
                                 DPS = totalDamage,
                                 TotalHits = hits
                             });
                         }
+                    }
+                    else if (baseEntity is BaseCombatEntity)
+                    {
+                        var combatEntity = (BaseCombatEntity) baseEntity;
+
+                        var strongHitInfo = new HitInfo();
+                        strongHitInfo.damageTypes.Add(damageTypes);
+                        combatEntity.ScaleDamage(strongHitInfo);
+
+                        float totalDamage = strongHitInfo.damageTypes.Total();
+                        float hits = totalDamage > 0 ? (combatEntity.MaxHealth() / totalDamage) : -1;
+
+                        damageInfo.Damages.Add(itemName, new DamageInfo.WeaponInfo
+                        {
+                            DPS = totalDamage,
+                            TotalHits = hits
+                        });
                     }
                 }
             }
@@ -737,7 +777,9 @@ namespace RustExportData
             foreach (var keyval in value.Damages)
             {
                 if (Damages.ContainsKey(keyval.Key))
-                    throw new NotImplementedException();
+                {
+                    continue;
+                }
 
                 Damages.Add(keyval.Key, keyval.Value);
             }
