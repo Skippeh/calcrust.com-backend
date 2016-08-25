@@ -30,6 +30,14 @@ namespace Oxide.Plugins
 
             string layerName = LayerMask.LayerToName(lookObject.layer);
             player.ChatMessage("[" + lookObject.tag + "] " + layerName + ": " + lookObject.name + " (" + String.Join(", ", (lookObject.transform.GetComponents<Component>().Select(comp => comp.GetType().Name)).ToArray()) + ")");
+
+            if (lookObject.transform.parent != null)
+            {
+                player.ChatMessage("Parent:");
+                var parent = lookObject.transform.parent.gameObject;
+                string parentLayerName = LayerMask.LayerToName(parent.layer);
+                player.ChatMessage("[" + parent.tag + "] " + layerName + ": " + parent.name + " (" + String.Join(", ", (parent.transform.GetComponents<Component>().Select(comp => comp.GetType().Name)).ToArray()) + ")");
+            }
         }
 
         private static readonly string[] excludeList =
