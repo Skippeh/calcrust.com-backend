@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Security.Policy;
 using System.Text;
 using Nancy;
+using Nancy.Extensions;
 using Nancy.Routing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -56,6 +57,7 @@ namespace WebAPI
             // Damage info
             Get["/damages"] = WrapMethod((dynamic _) => GetDamageInfos(false));
             Get["/damages/detailed"] = WrapMethod((dynamic _) => GetDamageInfos(true));
+            Get["/damages/items"] = WrapMethod((dynamic _) => GetDamageableItems());
             Get["/damages/{shortname}"] = WrapMethod((dynamic _) => GetDamageInfo(_.shortname));
 
             // Search all
@@ -151,6 +153,36 @@ namespace WebAPI
 
                 return shortname;
             }).ToList());
+        }
+
+        private ApiResponse GetDamageableItems()
+        {
+            List<string> allItemNames = data.DamageInfo.Values.First().Damages.Keys.ToList();
+
+            // Only include the building block types and not all of its material upgrades.
+            allItemNames = allItemNames.DistinctBy(name =>
+            {
+                if (name.Contains(':'))
+                {
+                    name = name.Substring(0, name.LastIndexOf(':'));
+                }
+
+                return name;
+            }).ToList();
+
+            List<DamageableItem> allItems = allItemNames.Select(name =>
+            {
+                var item = new DamageableItem();
+                item.IsBuildingBlock = name.Contains(':');
+
+                item.Name = item.IsBuildingBlock
+                            ? name.Substring(0, name.LastIndexOf(':'))
+                            : name;
+
+                return item;
+            }).ToList();
+
+            return new ApiResponse(allItems);
         }
 
         private ApiResponse GetCookables(bool detailed)
