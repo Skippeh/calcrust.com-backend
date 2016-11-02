@@ -190,15 +190,7 @@ namespace WebAPI
         {
             string lowerName = shortname.ToLower();
 
-            bool exists = data.DamageInfo.Values.First().Damages.Keys.Any(name =>
-            {
-                if (name.Contains(':'))
-                {
-                    return lowerName == name.Substring(0, name.LastIndexOf(':')).ToLower();
-                }
-
-                return lowerName == name.ToLower();
-            });
+            bool exists = data.DamageInfo.Values.First().Damages.Keys.Any(name => lowerName == name.ToLower());
 
             if (!exists)
             {
@@ -207,15 +199,7 @@ namespace WebAPI
 
             Dictionary<string, DamageInfo.WeaponInfo> result = data.DamageInfo.ToDictionary(kv => kv.Key, kv =>
             {
-                return kv.Value.Damages.First(kv2 =>
-                {
-                    if (kv2.Key.Contains(':'))
-                    {
-                        return kv2.Key.Substring(0, kv2.Key.LastIndexOf(':')).ToLower() == lowerName;
-                    }
-
-                    return kv2.Key.ToLower() == lowerName;
-                }).Value;
+                return kv.Value.Damages.First(kv2 => kv2.Key.ToLower() == lowerName).Value;
             });
 
             return new ApiResponse(result);
