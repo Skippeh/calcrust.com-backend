@@ -58,7 +58,8 @@ namespace WebAPI
             Get["/damages"] = WrapMethod((dynamic _) => GetDamageInfos(false));
             Get["/damages/detailed"] = WrapMethod((dynamic _) => GetDamageInfos(true));
             Get["/damages/items"] = WrapMethod((dynamic _) => GetDamageableItems());
-            Get["/damages/items/{shortname}"] = WrapMethod((dynamic _) => GetDamageableItemInfo(_.shortname));
+            Get["/damages/items/{shortname}"] = WrapMethod((dynamic _) => GetDamageableItemInfo(_.shortname, false));
+            Get["/damages/items/{shortname}/detailed"] = WrapMethod((dynamic _) => GetDamageableItemInfo(_.shortname, true));
             Get["/damages/{shortname}"] = WrapMethod((dynamic _) => GetDamageInfo(_.shortname));
 
             // Search all
@@ -195,7 +196,7 @@ namespace WebAPI
             return new ApiResponse(allItems);
         }
 
-        private ApiResponse GetDamageableItemInfo(string shortname)
+        private ApiResponse GetDamageableItemInfo(string shortname, bool detailed)
         {
             string lowerName = shortname.ToLower();
 
@@ -228,7 +229,7 @@ namespace WebAPI
                 name = displayName,
                 data = result.Select(kv => new
                 {
-                    item = kv.Key,
+                    item = detailed ? data.Items[kv.Key] : (object)kv.Key,
                     dps = result[kv.Key].DPS,
                     totalHits = result[kv.Key].TotalHits
                 })
