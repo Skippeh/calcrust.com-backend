@@ -211,7 +211,23 @@ namespace WebAPI
                 return kv.Value.Damages.First(kv2 => kv2.Key.ToLower() == lowerName).Value;
             });
 
-            return new ApiResponse(result);
+            string displayName = shortname;
+
+            if (data.Items.ContainsKey(shortname))
+            {
+                displayName = data.Items[shortname].Name;
+            }
+            else
+            {
+                // Todo: return building block name.
+                displayName = displayName.Substring(0, displayName.LastIndexOf(':'));
+            }
+
+            return new ApiResponse(new
+            {
+                name = displayName,
+                data = result
+            });
         }
 
         private ApiResponse GetCookables(bool detailed)
