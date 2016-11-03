@@ -52,6 +52,9 @@
     <Reference Include="Oxide.Game.Rust">
       <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Game.Rust.dll</HintPath>
     </Reference>
+    <Reference Include="Rust.Global">
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Rust.Global.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
