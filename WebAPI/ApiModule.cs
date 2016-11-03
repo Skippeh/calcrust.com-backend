@@ -176,7 +176,7 @@ namespace WebAPI
                 var item = new DamageableItem();
                 item.IsBuildingBlock = name.Contains(':');
 
-                item.ShortName = item.IsBuildingBlock
+                item.Id = item.IsBuildingBlock
                             ? name.Substring(0, name.LastIndexOf(':'))
                             : name;
 

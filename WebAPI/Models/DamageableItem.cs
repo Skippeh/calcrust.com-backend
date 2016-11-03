@@ -3,6 +3,6 @@
     public class DamageableItem
     {
         public bool IsBuildingBlock;
-        public string ShortName;
+        public string Id;
     }
 }
