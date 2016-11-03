@@ -180,6 +180,15 @@ namespace WebAPI
                             ? name.Substring(0, name.LastIndexOf(':'))
                             : name;
 
+                if (!item.IsBuildingBlock)
+                {
+                    item.Name = data.Items[item.Id].Name;
+                }
+                else
+                {
+                    item.Name = item.Id;
+                }
+
                 return item;
             }).ToList();
 
