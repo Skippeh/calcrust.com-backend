@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using Layer = Rust.Layer;
+﻿using Rust;
+using UnityEngine;
 
 namespace Oxide.Classes
 {
