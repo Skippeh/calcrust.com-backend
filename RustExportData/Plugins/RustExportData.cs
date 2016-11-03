@@ -434,8 +434,6 @@ namespace Oxide.Plugins
                 var newRecipe = new ExportRecipe();
 
                 newRecipe.TTC = (int) blueprint.time;
-                newRecipe.Level = blueprint.UnlockLevel;
-                newRecipe.Price = blueprint.UnlockPrice;
                 newRecipe.Parent = blueprint.targetItem.Parent?.shortname;
                 
                 foreach (ItemAmount ingredient in blueprint.ingredients)
