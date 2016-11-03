@@ -226,7 +226,12 @@ namespace WebAPI
             return new ApiResponse(new
             {
                 name = displayName,
-                data = result
+                data = result.Select(kv => new
+                {
+                    item = kv.Key,
+                    dps = result[kv.Key].DPS,
+                    totalHits = result[kv.Key].TotalHits
+                })
             });
         }
 
