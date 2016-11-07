@@ -200,6 +200,9 @@ namespace Oxide.Plugins
                         if (combatEntity == null)
                             continue;
 
+                        if (destroyablePrefabObjects.Contains(gameObject))
+                            continue;
+
                         destroyablePrefabObjects.Add(gameObject);
                         destroyableItemDefinitions.Add(gameObject, item);
                     }
@@ -222,7 +225,10 @@ namespace Oxide.Plugins
 
                     if (baseCombatEntity != null)
                     {
+                        string objectName = destroyableItemDefinitions.ContainsKey(prefab) ? destroyableItemDefinitions[prefab].shortname : prefab.name;
                         var damageInfo = GetDamageInfo(baseCombatEntity);
+
+                        data.DamageInfo.Add(objectName, damageInfo);
                     }
                 }
                 
@@ -498,26 +504,56 @@ namespace Oxide.Plugins
             return data;
         }
 
-        private Dictionary<string, Destructible> GetDamageInfo(BaseCombatEntity entity)
+        private Destructible GetDamageInfo(BaseCombatEntity entity)
         {
-            string objectName = destroyableItemDefinitions.ContainsKey(entity.gameObject) ? destroyableItemDefinitions[entity.gameObject].shortname : entity.name;
-
             var instance = (GameObject) GameObject.Instantiate(entity.gameObject);
-            var baseEntity = instance.GetComponent<BaseEntity>();
-            baseEntity.Spawn();
+            var baseCombatEntity = instance.GetComponent<BaseCombatEntity>();
+            baseCombatEntity.Spawn();
 
-            var result = new Dictionary<string, Destructible>();
+            Destructible result;
 
             try
             {
+                if (baseCombatEntity is BuildingBlock)
+                {
+                    result = new BuildingBlockDestructible();
+                }
+                else // BaseCombatEntity
+                {
+                    result = new DeployableDestructible();
 
+                    foreach (ItemDefinition item in ItemManager.itemList)
+                    {
+                        if (excludeList.Contains(item.shortname))
+                            continue;
+
+                        var entityMod = item.GetComponent<ItemModEntity>();
+
+                        if (entityMod != null)
+                        {
+                            var entityPrefab = entityMod.entityPrefab.Get();
+                            var thrownWeapon = entityPrefab.GetComponent<ThrownWeapon>();
+
+                            if (thrownWeapon != null)
+                            {
+                                var toThrow = thrownWeapon.prefabToThrow.Get();
+                                var explosive = toThrow.GetComponent<TimedExplosive>();
+
+                                if (explosive != null)
+                                {
+
+                                }
+                            }
+                        }
+                    }
+                }
             }
             finally
             {
-                if (!baseEntity.isDestroyed)
+                if (!baseCombatEntity.isDestroyed)
                 {
-                    (baseEntity as BaseCombatEntity)?.DestroyShared();
-                    baseEntity.Kill();
+                    baseCombatEntity.DestroyShared();
+                    baseCombatEntity.Kill();
                 }
             }
 
