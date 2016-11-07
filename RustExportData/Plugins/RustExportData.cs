@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Newtonsoft.Json;
 using RustExportData;
 using System.Linq;
@@ -8,6 +9,7 @@ using Oxide.Classes;
 using Oxide.Core;
 using Rust;
 using UnityEngine;
+using Component = UnityEngine.Component;
 using Debug = UnityEngine.Debug;
 using Time = UnityEngine.Time;
 using Utility = Oxide.Classes.Utility;
@@ -491,6 +493,7 @@ namespace Oxide.Plugins
                     var entityMod = item.GetComponent<ItemModEntity>();
                     List<DamageTypeEntry> damageTypes = null;
                     Projectile projectile = null;
+                    float damageScale = 1f;
 
                     if (projectileMod != null)
                     {
@@ -506,9 +509,9 @@ namespace Oxide.Plugins
                         {
                             damageTypes = new List<DamageTypeEntry>(explosive.damageTypes);
                         }
-                        else if (projectile != null && (item.category == ItemCategory.Weapon || item.category == ItemCategory.Tool))
+                        else if (projectile != null && (/*item.category == ItemCategory.Ammunition ||*/ item.category == ItemCategory.Tool))
                         {
-                            //damageTypes = projectile.damageTypes;
+                            damageTypes = projectile.damageTypes;
                         }
                     }
                     else if (entityMod != null)
@@ -538,6 +541,7 @@ namespace Oxide.Plugins
                     if (baseEntity is BuildingBlock)
                     {
                         var buildingBlock = (BuildingBlock) baseEntity;
+                        var weaponInfos = new DamageInfo.BuildingBlockInfo();
 
                         foreach (BuildingGrade.Enum grade in Enum.GetValues(typeof (BuildingGrade.Enum)))
                         {
@@ -549,18 +553,46 @@ namespace Oxide.Plugins
 
                             var strongHitInfo = new HitInfo();
                             strongHitInfo.damageTypes.Add(damageTypes);
+                            strongHitInfo.damageTypes.ScaleAll(damageScale);
                             buildingBlock.ScaleDamage(strongHitInfo);
+                            DirectionProperties[] propDirections = GetField<DirectionProperties[], BaseCombatEntity>(buildingBlock, "propDirection");
 
-                            float totalDamage = strongHitInfo.damageTypes.Total();
-                            float hits = totalDamage > 0 ? (buildingBlock.MaxHealth() / totalDamage) : -1;
-                            //Debug.Log(item.displayName.english + ": " + totalDamage + "(" + grade + " " + prefab.name + ", " + Math.Ceiling(hits) + " hits)");
-
-                            damageInfo.Damages.Add(itemName + ":" + grade.ToCamelCaseString(), new DamageInfo.WeaponInfo
+                            foreach (var propDirection in propDirections)
                             {
-                                DPS = totalDamage,
-                                TotalHits = hits
+                                propDirection.extraProtection.Scale(strongHitInfo.damageTypes);
+                            }
+
+                            var weakHitInfo = new HitInfo();
+                            weakHitInfo.damageTypes.Add(damageTypes);
+                            weakHitInfo.damageTypes.ScaleAll(damageScale);
+                            buildingBlock.ScaleDamage(weakHitInfo);
+
+                            float totalStrongDamage = strongHitInfo.damageTypes.Total();
+                            float strongHits = totalStrongDamage > 0 ? (buildingBlock.MaxHealth() / totalStrongDamage) : -1;
+
+                            float totalWeakDamage = weakHitInfo.damageTypes.Total();
+                            float weakHits = totalWeakDamage > 0 ? (buildingBlock.MaxHealth() / totalWeakDamage) : -1;
+
+                            var attackInfo = new DamageInfo.SingleWeaponContainer();
+                            attackInfo.Values.Add(grade.ToCamelCaseString(), new DamageInfo.SingleWeaponContainer
+                            {
+                                
+                            });
+
+                            weaponInfos.StrongValues.Add(grade.ToCamelCaseString(), new DamageInfo.AttackInfo
+                            {
+                                DPS = totalStrongDamage,
+                                TotalHits = strongHits
+                            });
+
+                            weaponInfos.WeakValues.Add(grade.ToCamelCaseString(), new DamageInfo.AttackInfo
+                            {
+                                DPS = totalWeakDamage,
+                                TotalHits = weakHits
                             });
                         }
+
+                        damageInfo.Damages.Add(itemName, weaponInfos);
                     }
                     else if (baseEntity is BaseCombatEntity)
                     {
@@ -573,11 +605,18 @@ namespace Oxide.Plugins
                         float totalDamage = strongHitInfo.damageTypes.Total();
                         float hits = totalDamage > 0 ? (combatEntity.MaxHealth() / totalDamage) : -1;
 
-                        damageInfo.Damages.Add(itemName, new DamageInfo.WeaponInfo
+                        var weaponInfos = new DamageInfo.ItemInfo(false);
+
+                        weaponInfos.StrongValues.Add("default", new DamageInfo.AttackInfo
                         {
                             DPS = totalDamage,
                             TotalHits = hits
                         });
+
+                        // Deployables don't have a strong/weak sides.
+                        weaponInfos.WeakValues = new Dictionary<string, DamageInfo.AttackInfo>(weaponInfos.StrongValues);
+
+                        damageInfo.Damages.Add(itemName, weaponInfos);
                     }
                 }
             }
@@ -766,7 +805,7 @@ namespace RustExportData
 
     internal class DamageInfo
     {
-        public class WeaponInfo
+        public abstract class AttackInfo
         {
             [JsonProperty("dps")]
             public float DPS;
@@ -775,8 +814,78 @@ namespace RustExportData
             public float TotalHits;
         }
 
+        public abstract class ItemInfo
+        {
+            public enum ItemType
+            {
+                BuildingBlock,
+                Deployable,
+            }
+
+            [JsonIgnore]
+            public ItemType Type { get; private set; }
+
+            [JsonProperty]
+            private string type => Type.ToCamelCaseString();
+
+            protected ItemInfo(ItemType type)
+            {
+                Type = type;
+            }
+        }
+
+        public abstract class WeaponContainer
+        {
+            public enum ContainerType
+            {
+                Single,
+                Multi
+            }
+
+            public ContainerType Type { get; private set; }
+
+            protected WeaponContainer(ContainerType type)
+            {
+                Type = type;
+            }
+        }
+
+        public sealed class SingleWeaponContainer : WeaponContainer
+        {
+            [JsonProperty("values")]
+            public AttackInfo Values;
+
+            public SingleWeaponContainer() : base(ContainerType.Single) { }
+        }
+
+        public sealed class MultiWeaponContainer : WeaponContainer
+        {
+            public Dictionary<string, AttackInfo> Values = new Dictionary<string, AttackInfo>();
+
+            public MultiWeaponContainer() : base(ContainerType.Multi) { }
+        }
+
+        public sealed class BuildingBlockInfo : ItemInfo
+        {
+            [JsonProperty("weakValues")]
+            public WeaponContainer WeakValues;
+
+            [JsonProperty("strongValues")]
+            public WeaponContainer StrongValues;
+
+            public BuildingBlockInfo() : base(ItemType.BuildingBlock) { }
+        }
+
+        public sealed class DeployableInfo : ItemInfo
+        {
+            [JsonProperty("values")]
+            public WeaponContainer Values;
+
+            public DeployableInfo() : base(ItemType.Deployable) { }
+        }
+
         [JsonProperty("damages")]
-        public Dictionary<string, WeaponInfo> Damages = new Dictionary<string, WeaponInfo>();
+        public Dictionary<string, ItemInfo> Damages = new Dictionary<string, ItemInfo>();
 
         public void MergeWith(DamageInfo value)
         {
