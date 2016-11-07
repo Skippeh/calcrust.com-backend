@@ -226,7 +226,7 @@ namespace Oxide.Plugins
                     if (baseCombatEntity != null)
                     {
                         string objectName = destroyableItemDefinitions.ContainsKey(prefab) ? destroyableItemDefinitions[prefab].shortname : prefab.name;
-                        var damageInfo = GetDamageInfo(baseCombatEntity);
+                        Destructible damageInfo = GetDamageInfo(baseCombatEntity);
 
                         data.DamageInfo.Add(objectName, damageInfo);
                     }
@@ -476,7 +476,7 @@ namespace Oxide.Plugins
 
         private Destructible GetDamageInfo(BaseCombatEntity entity)
         {
-            var instance = (GameObject) GameObject.Instantiate(entity.gameObject);
+            var instance = GameObject.Instantiate(entity.gameObject);
             var baseCombatEntity = instance.GetComponent<BaseCombatEntity>();
             baseCombatEntity.Spawn();
 
