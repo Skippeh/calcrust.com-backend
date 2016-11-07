@@ -199,6 +199,12 @@ namespace WebAPI
         private ApiResponse GetDamageableItemInfo(string shortname, bool detailed)
         {
             string lowerName = shortname.ToLower();
+            string buildingGrade = (string) Request.Query["grade"];
+
+            if (buildingGrade != null)
+            {
+                lowerName += ":" + buildingGrade.ToLower();
+            }
 
             bool exists = data.DamageInfo.Values.First().Damages.Keys.Any(name => lowerName == name.ToLower());
 
