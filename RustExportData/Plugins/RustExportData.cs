@@ -49,6 +49,9 @@ namespace Oxide.Plugins
         };
 
         private static readonly Dictionary<string, float> ovenTemperatures = new Dictionary<string, float>();
+
+        private List<GameObject> destroyablePrefabObjects;
+        private Dictionary<GameObject, ItemDefinition> destroyableItemDefinitions;
         
         void OnServerInitialized()
         {
@@ -177,8 +180,8 @@ namespace Oxide.Plugins
                     prefabs.Add(str.str);
                 }
                 
-                List<GameObject> prefabObjects = prefabs.Select(name => GameManager.server.FindPrefab(name)).ToList();
-                Dictionary<GameObject, ItemDefinition> itemDefinitions = new Dictionary<GameObject, ItemDefinition>();
+                destroyablePrefabObjects = prefabs.Select(name => GameManager.server.FindPrefab(name)).ToList();
+                destroyableItemDefinitions = new Dictionary<GameObject, ItemDefinition>();
 
                 // Add deployables to prefabObjects
                 foreach (var item in ItemManager.itemList)
@@ -194,12 +197,28 @@ namespace Oxide.Plugins
                         if (combatEntity == null)
                             continue;
 
-                        prefabObjects.Add(gameObject);
-                        itemDefinitions.Add(gameObject, item);
+                        destroyablePrefabObjects.Add(gameObject);
+                        destroyableItemDefinitions.Add(gameObject, item);
+                    }
+                }
+
+                foreach (var prefab in destroyablePrefabObjects)
+                {
+                    if (prefab == null)
+                    {
+                        Debug.LogError("Prefab null");
+                        continue;
+                    }
+
+                    var baseCombatEntity = prefab.GetComponent<BaseCombatEntity>();
+
+                    if (baseCombatEntity != null)
+                    {
+                        var damageInfo = GetDamageInfo(baseCombatEntity);
                     }
                 }
                 
-                foreach (var prefab in prefabObjects)
+                /*foreach (var prefab in prefabObjects)
                 {
                     if (prefab == null)
                     {
@@ -227,7 +246,7 @@ namespace Oxide.Plugins
                             //Debug.Log(keyval.Key + ": [" + String.Join(", ", keyval.Value.Damages.Select(kv => kv.Key + "=" + Math.Ceiling(kv.Value.TotalHits)).ToArray()) + "]");
                         }
                     }
-                }
+                }*/
             }
 
             Debug.Log("Damage data parsed");
@@ -471,7 +490,33 @@ namespace Oxide.Plugins
             return data;
         }
 
-        private Dictionary<string, DamageInfo> GetDamageInfos(GameObject prefab, string itemName)
+        private Dictionary<string, ExportDestructable> GetDamageInfo(BaseCombatEntity entity)
+        {
+            string objectName = destroyableItemDefinitions.ContainsKey(entity.gameObject) ? destroyableItemDefinitions[entity.gameObject].shortname : entity.name;
+
+            var instance = (GameObject) GameObject.Instantiate(entity.gameObject);
+            var baseEntity = instance.GetComponent<BaseEntity>();
+            baseEntity.Spawn();
+
+            var result = new Dictionary<string, ExportDestructable>();
+
+            try
+            {
+
+            }
+            finally
+            {
+                if (!baseEntity.isDestroyed)
+                {
+                    (baseEntity as BaseCombatEntity)?.DestroyShared();
+                    baseEntity.Kill();
+                }
+            }
+
+            return result;
+        }
+
+        /*private Dictionary<string, DamageInfo> GetDamageInfos(GameObject prefab, string itemName)
         {
             if (itemName == null)
                 itemName = prefab.name;
@@ -509,7 +554,7 @@ namespace Oxide.Plugins
                         {
                             damageTypes = new List<DamageTypeEntry>(explosive.damageTypes);
                         }
-                        else if (projectile != null && (/*item.category == ItemCategory.Ammunition ||*/ item.category == ItemCategory.Tool))
+                        else if (projectile != null && (/*item.category == ItemCategory.Ammunition ||*//* item.category == ItemCategory.Tool))
                         {
                             damageTypes = projectile.damageTypes;
                         }
@@ -634,7 +679,7 @@ namespace Oxide.Plugins
             }
 
             return result;
-        }
+        }*/
 
         void OnPlayerAttack(BasePlayer attacker, HitInfo info)
         {
@@ -765,7 +810,7 @@ namespace RustExportData
         public Dictionary<string, ExportRecipe> Recipes = new Dictionary<string, ExportRecipe>();
         
         [JsonProperty("damageInfo")]
-        public Dictionary<string, DamageInfo> DamageInfo = new Dictionary<string, DamageInfo>();
+        public Dictionary<string, ExportDestructable> DamageInfo = new Dictionary<string, ExportDestructable>();
 
         [JsonProperty("cookables")]
         public Dictionary<string, ExportCookable> CookableInfo = new Dictionary<string, ExportCookable>();
@@ -801,104 +846,6 @@ namespace RustExportData
 
         [JsonProperty("output")]
         public ExportRecipeItem Output;
-    }
-
-    internal class DamageInfo
-    {
-        public abstract class AttackInfo
-        {
-            [JsonProperty("dps")]
-            public float DPS;
-
-            [JsonProperty("totalHits")]
-            public float TotalHits;
-        }
-
-        public abstract class ItemInfo
-        {
-            public enum ItemType
-            {
-                BuildingBlock,
-                Deployable,
-            }
-
-            [JsonIgnore]
-            public ItemType Type { get; private set; }
-
-            [JsonProperty]
-            private string type => Type.ToCamelCaseString();
-
-            protected ItemInfo(ItemType type)
-            {
-                Type = type;
-            }
-        }
-
-        public abstract class WeaponContainer
-        {
-            public enum ContainerType
-            {
-                Single,
-                Multi
-            }
-
-            public ContainerType Type { get; private set; }
-
-            protected WeaponContainer(ContainerType type)
-            {
-                Type = type;
-            }
-        }
-
-        public sealed class SingleWeaponContainer : WeaponContainer
-        {
-            [JsonProperty("values")]
-            public AttackInfo Values;
-
-            public SingleWeaponContainer() : base(ContainerType.Single) { }
-        }
-
-        public sealed class MultiWeaponContainer : WeaponContainer
-        {
-            public Dictionary<string, AttackInfo> Values = new Dictionary<string, AttackInfo>();
-
-            public MultiWeaponContainer() : base(ContainerType.Multi) { }
-        }
-
-        public sealed class BuildingBlockInfo : ItemInfo
-        {
-            [JsonProperty("weakValues")]
-            public WeaponContainer WeakValues;
-
-            [JsonProperty("strongValues")]
-            public WeaponContainer StrongValues;
-
-            public BuildingBlockInfo() : base(ItemType.BuildingBlock) { }
-        }
-
-        public sealed class DeployableInfo : ItemInfo
-        {
-            [JsonProperty("values")]
-            public WeaponContainer Values;
-
-            public DeployableInfo() : base(ItemType.Deployable) { }
-        }
-
-        [JsonProperty("damages")]
-        public Dictionary<string, ItemInfo> Damages = new Dictionary<string, ItemInfo>();
-
-        public void MergeWith(DamageInfo value)
-        {
-            foreach (var keyval in value.Damages)
-            {
-                if (Damages.ContainsKey(keyval.Key))
-                {
-                    continue;
-                }
-
-                Damages.Add(keyval.Key, keyval.Value);
-            }
-        }
     }
 
     internal class Meta
