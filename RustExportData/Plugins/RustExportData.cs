@@ -6,6 +6,7 @@ using RustExportData;
 using System.Linq;
 using System.Reflection;
 using Oxide.Classes;
+using Oxide.Classes.Destructible;
 using Oxide.Core;
 using Rust;
 using UnityEngine;
@@ -52,6 +53,7 @@ namespace Oxide.Plugins
 
         private List<GameObject> destroyablePrefabObjects;
         private Dictionary<GameObject, ItemDefinition> destroyableItemDefinitions;
+        private List<ItemDefinition> ammoDefinitions; 
         
         void OnServerInitialized()
         {
@@ -182,8 +184,9 @@ namespace Oxide.Plugins
                 
                 destroyablePrefabObjects = prefabs.Select(name => GameManager.server.FindPrefab(name)).ToList();
                 destroyableItemDefinitions = new Dictionary<GameObject, ItemDefinition>();
+                ammoDefinitions = new List<ItemDefinition>();
 
-                // Add deployables to prefabObjects
+                // Add deployables to prefabObjects and ammo to ammoDefinitions.
                 foreach (var item in ItemManager.itemList)
                 {
                     if (excludeList.Contains(item.shortname))
@@ -199,6 +202,11 @@ namespace Oxide.Plugins
 
                         destroyablePrefabObjects.Add(gameObject);
                         destroyableItemDefinitions.Add(gameObject, item);
+                    }
+
+                    if (item.category == ItemCategory.Ammunition)
+                    {
+                        ammoDefinitions.Add(item);
                     }
                 }
 
@@ -490,7 +498,7 @@ namespace Oxide.Plugins
             return data;
         }
 
-        private Dictionary<string, ExportDestructable> GetDamageInfo(BaseCombatEntity entity)
+        private Dictionary<string, Destructible> GetDamageInfo(BaseCombatEntity entity)
         {
             string objectName = destroyableItemDefinitions.ContainsKey(entity.gameObject) ? destroyableItemDefinitions[entity.gameObject].shortname : entity.name;
 
@@ -498,7 +506,7 @@ namespace Oxide.Plugins
             var baseEntity = instance.GetComponent<BaseEntity>();
             baseEntity.Spawn();
 
-            var result = new Dictionary<string, ExportDestructable>();
+            var result = new Dictionary<string, Destructible>();
 
             try
             {
@@ -810,7 +818,7 @@ namespace RustExportData
         public Dictionary<string, ExportRecipe> Recipes = new Dictionary<string, ExportRecipe>();
         
         [JsonProperty("damageInfo")]
-        public Dictionary<string, ExportDestructable> DamageInfo = new Dictionary<string, ExportDestructable>();
+        public Dictionary<string, Destructible> DamageInfo = new Dictionary<string, Destructible>();
 
         [JsonProperty("cookables")]
         public Dictionary<string, ExportCookable> CookableInfo = new Dictionary<string, ExportCookable>();
