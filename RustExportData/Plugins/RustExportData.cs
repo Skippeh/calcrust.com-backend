@@ -231,36 +231,6 @@ namespace Oxide.Plugins
                         data.DamageInfo.Add(objectName, damageInfo);
                     }
                 }
-                
-                /*foreach (var prefab in prefabObjects)
-                {
-                    if (prefab == null)
-                    {
-                        Debug.LogError("Prefab null");
-                        continue;
-                    }
-                    
-                    var baseCombatEntity = prefab.GetComponent<BaseCombatEntity>();
-
-                    if (baseCombatEntity != null)
-                    {
-                        Dictionary<string, DamageInfo> damageInfos = GetDamageInfos(prefab, itemDefinitions.ContainsKey(prefab) ? itemDefinitions[prefab].shortname : null);
-
-                        foreach (var keyval in damageInfos)
-                        {
-                            if (data.DamageInfo.ContainsKey(keyval.Key))
-                            {
-                                data.DamageInfo[keyval.Key].MergeWith(keyval.Value);
-                            }
-                            else
-                            {
-                                data.DamageInfo.Add(keyval.Key, keyval.Value);
-                            }
-
-                            //Debug.Log(keyval.Key + ": [" + String.Join(", ", keyval.Value.Damages.Select(kv => kv.Key + "=" + Math.Ceiling(kv.Value.TotalHits)).ToArray()) + "]");
-                        }
-                    }
-                }*/
             }
 
             Debug.Log("Damage data parsed");
