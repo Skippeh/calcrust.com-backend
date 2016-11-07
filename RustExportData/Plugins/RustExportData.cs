@@ -484,6 +484,38 @@ namespace Oxide.Plugins
 
             try
             {
+                var attackEntities = new List<BaseEntity>();
+
+                foreach (ItemDefinition item in ItemManager.itemList)
+                {
+                    if (excludeList.Contains(item.shortname))
+                        continue;
+
+                    var entityMod = item.GetComponent<ItemModEntity>();
+
+                    if (entityMod != null)
+                    {
+                        var entityPrefab = entityMod.entityPrefab.Get();
+                        var thrownWeapon = entityPrefab.GetComponent<ThrownWeapon>();
+                        var attackEntity = entityPrefab.GetComponent<AttackEntity>();
+
+                        if (thrownWeapon != null)
+                        {
+                            var toThrow = thrownWeapon.prefabToThrow.Get();
+                            var explosive = toThrow.GetComponent<TimedExplosive>();
+
+                            if (explosive != null)
+                            {
+                                attackEntities.Add(explosive);
+                            }
+                        }
+                        else if (attackEntity != null)
+                        {
+                            attackEntities.Add(attackEntity);
+                        }
+                    }
+                }
+
                 if (baseCombatEntity is BuildingBlock)
                 {
                     result = new BuildingBlockDestructible();
@@ -491,31 +523,6 @@ namespace Oxide.Plugins
                 else // BaseCombatEntity
                 {
                     result = new DeployableDestructible();
-
-                    foreach (ItemDefinition item in ItemManager.itemList)
-                    {
-                        if (excludeList.Contains(item.shortname))
-                            continue;
-
-                        var entityMod = item.GetComponent<ItemModEntity>();
-
-                        if (entityMod != null)
-                        {
-                            var entityPrefab = entityMod.entityPrefab.Get();
-                            var thrownWeapon = entityPrefab.GetComponent<ThrownWeapon>();
-
-                            if (thrownWeapon != null)
-                            {
-                                var toThrow = thrownWeapon.prefabToThrow.Get();
-                                var explosive = toThrow.GetComponent<TimedExplosive>();
-
-                                if (explosive != null)
-                                {
-
-                                }
-                            }
-                        }
-                    }
                 }
             }
             finally
