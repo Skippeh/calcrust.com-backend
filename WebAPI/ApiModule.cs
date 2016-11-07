@@ -213,11 +213,6 @@ namespace WebAPI
                 return Error(HttpStatusCode.NotFound, "Could not find the item/building block with the name '" + shortname + "'.");
             }
 
-            Dictionary<string, DamageInfo.WeaponInfo> result = data.DamageInfo.ToDictionary(kv => kv.Key, kv =>
-            {
-                return kv.Value.Damages.First(kv2 => kv2.Key.ToLower() == lowerName).Value;
-            });
-
             string displayName = shortname;
 
             if (data.Items.ContainsKey(shortname))
@@ -227,8 +222,12 @@ namespace WebAPI
             else
             {
                 // Todo: return building block name.
-                displayName = displayName.Substring(0, displayName.LastIndexOf(':'));
             }
+            
+            Dictionary<string, DamageInfo.WeaponInfo> result = data.DamageInfo.ToDictionary(kv => kv.Key, kv =>
+            {
+                return kv.Value.Damages.First(kv2 => kv2.Key.ToLower() == lowerName).Value;
+            });
 
             return new ApiResponse(new
             {
