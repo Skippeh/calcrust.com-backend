@@ -4,7 +4,10 @@ namespace Oxide.Classes.Destructible
 {
     public struct HitValues
     {
-        [JsonProperty("dps")] public float DPS;
-        [JsonProperty("totalHits")] public float TotalHits;
+        [JsonProperty("strongDps")] public float StrongDPS;
+        [JsonProperty("totalStrongHits")] public float TotalStrongHits;
+
+        [JsonProperty("weakDps")] public float WeakDPS;
+        [JsonProperty("totalWeakHits")] public float TotalWeakHits;
     }
 }
