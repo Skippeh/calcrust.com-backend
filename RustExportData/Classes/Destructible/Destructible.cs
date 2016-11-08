@@ -31,7 +31,7 @@ namespace Oxide.Classes.Destructible
     public sealed class BuildingBlockDestructible : Destructible
     {
         [JsonProperty("grades")]
-        public Dictionary<BuildingGrade.Enum, Dictionary<string, AttackInfo>> Grades = new Dictionary<BuildingGrade.Enum, Dictionary<string, AttackInfo>>();
+        public Dictionary<string, Dictionary<string, AttackInfo>> Grades = new Dictionary<string, Dictionary<string, AttackInfo>>();
 
         public BuildingBlockDestructible() : base(DestructibleType.BuildingBlock) { }
     }
