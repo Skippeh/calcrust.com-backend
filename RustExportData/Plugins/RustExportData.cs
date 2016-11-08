@@ -192,6 +192,11 @@ namespace Oxide.Plugins
                     if (excludeList.Contains(item.shortname))
                         continue;
 
+                    if (item.GetComponent<ItemModProjectile>() != null)
+                    {
+                        ammoDefinitions.Add(item);
+                    }
+
                     if (item.GetComponent<ItemModDeployable>() != null)
                     {
                         var gameObject = item.GetComponent<ItemModDeployable>().entityPrefab.Get();
@@ -205,11 +210,6 @@ namespace Oxide.Plugins
 
                         destroyablePrefabObjects.Add(gameObject);
                         destroyableItemDefinitions.Add(gameObject, item);
-                    }
-
-                    if (item.category == ItemCategory.Ammunition)
-                    {
-                        ammoDefinitions.Add(item);
                     }
                 }
 
@@ -484,7 +484,7 @@ namespace Oxide.Plugins
 
             try
             {
-                var attackEntities = new List<BaseEntity>();
+                var attackEntities = new Dictionary<ItemDefinition, BaseEntity>();
 
                 foreach (ItemDefinition item in ItemManager.itemList)
                 {
@@ -499,6 +499,9 @@ namespace Oxide.Plugins
                         var thrownWeapon = entityPrefab.GetComponent<ThrownWeapon>();
                         var attackEntity = entityPrefab.GetComponent<AttackEntity>();
 
+                        if (!(attackEntity is BaseProjectile) && !(attackEntity is BaseMelee))
+                            continue;
+
                         if (thrownWeapon != null)
                         {
                             var toThrow = thrownWeapon.prefabToThrow.Get();
@@ -506,23 +509,82 @@ namespace Oxide.Plugins
 
                             if (explosive != null)
                             {
-                                attackEntities.Add(explosive);
+                                attackEntities.Add(item, explosive);
                             }
                         }
                         else if (attackEntity != null)
                         {
-                            attackEntities.Add(attackEntity);
+                            attackEntities.Add(item, attackEntity);
                         }
                     }
                 }
 
                 if (baseCombatEntity is BuildingBlock)
                 {
-                    result = new BuildingBlockDestructible();
+                    var destructible = (BuildingBlockDestructible) (result = new BuildingBlockDestructible());
+                    var buildingBlock = (BuildingBlock) baseCombatEntity;
+
+                    foreach (BuildingGrade.Enum grade in Enum.GetValues(typeof (BuildingGrade.Enum)))
+                    {
+                        if (grade == BuildingGrade.Enum.None || grade == BuildingGrade.Enum.Count)
+                            continue;
+
+                        var attackInfos = new Dictionary<string, AttackInfo>();
+
+                        foreach (var keyval in attackEntities)
+                        {
+                            ItemDefinition item = keyval.Key;
+                            BaseEntity attackEntity = keyval.Value;
+                            AttackInfo attackInfo = null;
+                            buildingBlock.SetGrade(grade);
+                            buildingBlock.SetHealthToMax();
+
+                            if (attackEntity is AttackEntity)
+                            {
+                                if (attackEntity is BaseMelee)
+                                {
+                                    attackInfo = new MeleeAttackInfo();
+                                }
+                                else if (attackEntity is BaseProjectile)
+                                {
+                                    var weaponInfo = (WeaponAttackInfo) (attackInfo = new WeaponAttackInfo());
+                                    AmmoTypes ammoFlags = ((BaseProjectile) attackEntity).primaryMagazine.definition.ammoTypes;
+                                    ItemDefinition[] ammoTypes = GetAmmoDefinitions(ammoFlags);
+
+                                    foreach (var ammoType in ammoTypes)
+                                    {
+                                        weaponInfo.Ammunitions.Add(ammoType.shortname, new HitValues
+                                        {
+
+                                        });
+                                    }
+                                }
+                            }
+                            else if (attackEntity is TimedExplosive)
+                            {
+                                attackInfo = new ExplosiveAttackInfo();
+                            }
+
+                            if (attackInfo == null)
+                            {
+                                Debug.LogError("Unexpected item: " + item.name);
+                                continue;
+                            }
+
+                            attackInfos.Add(item.shortname, attackInfo);
+                        }
+
+                        destructible.Grades.Add(grade, attackInfos);
+                    }
                 }
                 else // BaseCombatEntity
                 {
-                    result = new DeployableDestructible();
+                    var destructible = (DeployableDestructible) (result = new DeployableDestructible());
+
+                    // It's probably possible to use the same code for calculating BaseCombatEntity and separate BuildingGrades.
+                    // Use method normally with BaseCombatEntity.
+                    //
+                    // Apply new BuildingGrades and reset hp etc for each grade and use method on each grade and add to result grades.
                 }
             }
             finally
@@ -535,6 +597,23 @@ namespace Oxide.Plugins
             }
 
             return result;
+        }
+
+        private ItemDefinition[] GetAmmoDefinitions(AmmoTypes ammoTypes)
+        {
+            List<ItemDefinition> result = new List<ItemDefinition>();
+
+            foreach (var ammoDefinition in ammoDefinitions)
+            {
+                var projectile = ammoDefinition.GetComponent<ItemModProjectile>();
+
+                if ((projectile.ammoType & ammoTypes) > 0)
+                {
+                    result.Add(ammoDefinition);
+                }
+            }
+
+            return result.ToArray();
         }
 
         /*private Dictionary<string, DamageInfo> GetDamageInfos(GameObject prefab, string itemName)
