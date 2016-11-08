@@ -492,29 +492,31 @@ namespace Oxide.Plugins
                         continue;
 
                     var entityMod = item.GetComponent<ItemModEntity>();
-
+                    
                     if (entityMod != null)
                     {
                         var entityPrefab = entityMod.entityPrefab.Get();
                         var thrownWeapon = entityPrefab.GetComponent<ThrownWeapon>();
                         var attackEntity = entityPrefab.GetComponent<AttackEntity>();
-
-                        if (!(attackEntity is BaseProjectile) && !(attackEntity is BaseMelee))
-                            continue;
-
+                        
                         if (thrownWeapon != null)
                         {
                             var toThrow = thrownWeapon.prefabToThrow.Get();
                             var explosive = toThrow.GetComponent<TimedExplosive>();
-
+                            
                             if (explosive != null)
                             {
                                 attackEntities.Add(item, explosive);
                             }
+                            else
+                            {
+                                Debug.LogError("Unhandled prefabToThrow: " + toThrow.name);
+                            }
                         }
                         else if (attackEntity != null)
                         {
-                            attackEntities.Add(item, attackEntity);
+                            if (attackEntity is BaseMelee || attackEntity is BaseProjectile)
+                                attackEntities.Add(item, attackEntity);
                         }
                     }
                 }
@@ -529,59 +531,17 @@ namespace Oxide.Plugins
                         if (grade == BuildingGrade.Enum.None || grade == BuildingGrade.Enum.Count)
                             continue;
 
-                        var attackInfos = new Dictionary<string, AttackInfo>();
+                        buildingBlock.SetGrade(grade);
+                        buildingBlock.SetHealthToMax();
 
-                        foreach (var keyval in attackEntities)
-                        {
-                            ItemDefinition item = keyval.Key;
-                            BaseEntity attackEntity = keyval.Value;
-                            AttackInfo attackInfo = null;
-                            buildingBlock.SetGrade(grade);
-                            buildingBlock.SetHealthToMax();
-
-                            if (attackEntity is AttackEntity)
-                            {
-                                if (attackEntity is BaseMelee)
-                                {
-                                    attackInfo = new MeleeAttackInfo();
-                                }
-                                else if (attackEntity is BaseProjectile)
-                                {
-                                    var weaponInfo = (WeaponAttackInfo) (attackInfo = new WeaponAttackInfo());
-                                    AmmoTypes ammoFlags = ((BaseProjectile) attackEntity).primaryMagazine.definition.ammoTypes;
-                                    ItemDefinition[] ammoTypes = GetAmmoDefinitions(ammoFlags);
-
-                                    foreach (var ammoType in ammoTypes)
-                                    {
-                                        weaponInfo.Ammunitions.Add(ammoType.shortname, GetHitValues(buildingBlock, ((BaseProjectile)attackEntity).damageScale, ammoType.GetComponent<ItemModProjectile>(), null));
-                                    }
-                                }
-                            }
-                            else if (attackEntity is TimedExplosive)
-                            {
-                                attackInfo = new ExplosiveAttackInfo();
-                            }
-
-                            if (attackInfo == null)
-                            {
-                                Debug.LogError("Unexpected item: " + item.name);
-                                continue;
-                            }
-
-                            attackInfos.Add(item.shortname, attackInfo);
-                        }
-
+                        var attackInfos = GetDamagesForCombatEntity(buildingBlock, attackEntities);
                         destructible.Grades.Add(grade.ToCamelCaseString(), attackInfos);
                     }
                 }
                 else // BaseCombatEntity
                 {
                     var destructible = (DeployableDestructible) (result = new DeployableDestructible());
-
-                    // It's probably possible to use the same code for calculating BaseCombatEntity and separate BuildingGrades.
-                    // Use method normally with BaseCombatEntity.
-                    //
-                    // Apply new BuildingGrades and reset hp etc for each grade and use method on each grade and add to result grades.
+                    destructible.Values = GetDamagesForCombatEntity(baseCombatEntity, attackEntities);
                 }
             }
             finally
@@ -596,8 +556,54 @@ namespace Oxide.Plugins
             return result;
         }
 
-        /// <summary>NOTE: Either modProjectile OR explosive should be assigned, not both!</summary>
-        private HitValues GetHitValues(BaseCombatEntity entity, float damageScale, ItemModProjectile modProjectile, TimedExplosive explosive)
+        private Dictionary<string, AttackInfo> GetDamagesForCombatEntity(BaseCombatEntity baseCombatEntity, Dictionary<ItemDefinition, BaseEntity> attackEntities)
+        {
+            var attackInfos = new Dictionary<string, AttackInfo>();
+
+            foreach (var keyval in attackEntities)
+            {
+                ItemDefinition item = keyval.Key;
+                BaseEntity attackEntity = keyval.Value;
+                AttackInfo attackInfo = null;
+
+                if (attackEntity is AttackEntity)
+                {
+                    if (attackEntity is BaseMelee)
+                    {
+                        var meleeInfo = (MeleeAttackInfo) (attackInfo = new MeleeAttackInfo());
+                        meleeInfo.Values = GetHitValues(baseCombatEntity, 1, null, null, (BaseMelee) attackEntity);
+                    }
+                    else if (attackEntity is BaseProjectile)
+                    {
+                        var weaponInfo = (WeaponAttackInfo) (attackInfo = new WeaponAttackInfo());
+                        AmmoTypes ammoFlags = ((BaseProjectile) attackEntity).primaryMagazine.definition.ammoTypes;
+                        ItemDefinition[] ammoTypes = GetAmmoDefinitions(ammoFlags);
+
+                        foreach (var ammoType in ammoTypes)
+                        {
+                            weaponInfo.Ammunitions.Add(ammoType.shortname, GetHitValues(baseCombatEntity, ((BaseProjectile) attackEntity).damageScale, ammoType.GetComponent<ItemModProjectile>(), null, null));
+                        }
+                    }
+                }
+                else if (attackEntity is TimedExplosive)
+                {
+                    var explosiveInfo = (ExplosiveAttackInfo) (attackInfo = new ExplosiveAttackInfo());
+                    explosiveInfo.Values = GetHitValues(baseCombatEntity, 1, null, (TimedExplosive) attackEntity, null);
+                }
+
+                if (attackInfo == null)
+                {
+                    Debug.LogError("Unexpected item: " + item.name);
+                    continue;
+                }
+
+                attackInfos.Add(item.shortname, attackInfo);
+            }
+            return attackInfos;
+        }
+
+        /// <summary>NOTE: Only one of modProjectile, explosive, and baseMelee should be assigned!</summary>
+        private HitValues GetHitValues(BaseCombatEntity entity, float damageScale, ItemModProjectile modProjectile, TimedExplosive explosive, BaseMelee baseMelee)
         {
             var hitValues = new HitValues();
             var propDirections = GetField<DirectionProperties[], BaseCombatEntity>(entity, "propDirection");
@@ -614,9 +620,17 @@ namespace Oxide.Plugins
                 else
                     damageTypes = rocket.damageTypes;
             }
-            else
+            else if (explosive != null)
             {
                 damageTypes = explosive.damageTypes;
+            }
+            else if (baseMelee != null)
+            {
+                damageTypes = baseMelee.damageTypes;
+            }
+            else
+            {
+                throw new NotImplementedException();
             }
             
             var weakHit = new HitInfo();
@@ -636,8 +650,8 @@ namespace Oxide.Plugins
 
             hitValues.WeakDPS = weakHit.damageTypes.Total();
             hitValues.StrongDPS = strongHit.damageTypes.Total();
-            hitValues.TotalWeakHits = entity.health / hitValues.WeakDPS;
-            hitValues.TotalStrongHits = entity.health / hitValues.StrongDPS;
+            hitValues.TotalWeakHits = hitValues.WeakDPS > 0 ? entity.health / hitValues.WeakDPS : -1;
+            hitValues.TotalStrongHits = hitValues.StrongDPS > 0 ? entity.health / hitValues.StrongDPS : -1;
 
             return hitValues;
         }
