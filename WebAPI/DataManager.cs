@@ -104,10 +104,10 @@ namespace WebAPI
             data.Meta = jData["meta"].ToObject<Meta>();
             data.Recipes = new Dictionary<string, Recipe>();
             data.Cookables = new Dictionary<string, Cookable>();
-            data.DamageInfo = jData["damageInfo"].ToObject<Dictionary<string, DamageInfo>>();
 
             var jRecipes = jData["recipes"].Value<JObject>();
             var jCookables = jData["cookables"].Value<JObject>();
+            var jDestructibles = jData["damageInfo"].Value<JObject>();
 
             foreach (var keyval in jRecipes)
             {
@@ -138,6 +138,14 @@ namespace WebAPI
                 }).ToList();
 
                 data.Cookables.Add(shortname, cookable);
+            }
+
+            foreach (var keyval in jDestructibles)
+            {
+                dynamic jDestructible = keyval.Value;
+                string shortname = keyval.Key;
+
+
             }
 
             // Parse item meta data

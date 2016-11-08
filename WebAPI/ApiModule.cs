@@ -128,7 +128,8 @@ namespace WebAPI
 
         private ApiResponse GetDamageInfo(string shortnames)
         {
-            Dictionary<string, DamageInfo> result = new Dictionary<string, DamageInfo>();
+            return Error(HttpStatusCode.NotImplemented);
+            /*Dictionary<string, DamageInfo> result = new Dictionary<string, DamageInfo>();
             string[] splitShortnames = shortnames.ToLower().Split('&');
 
             foreach (string shortname in splitShortnames)
@@ -143,7 +144,7 @@ namespace WebAPI
                 }
             }
 
-            return new ApiResponse(result);
+            return new ApiResponse(result);*/
         }
 
         private ApiResponse GetDamageInfos(bool detailed)
@@ -159,7 +160,8 @@ namespace WebAPI
 
         private ApiResponse GetDamageableItems()
         {
-            List<string> allItemNames = data.DamageInfo.Values.First().Damages.Keys.ToList();
+            return Error(HttpStatusCode.NotImplemented);
+            /*List<string> allItemNames = data.DamageInfo.Values.First().Damages.Keys.ToList();
 
             // Only include the building block types and not all of its material upgrades.
             allItemNames = allItemNames.DistinctBy(name =>
@@ -193,12 +195,13 @@ namespace WebAPI
                 return item;
             }).ToList();
 
-            return new ApiResponse(allItems);
+            return new ApiResponse(allItems);*/
         }
 
         private ApiResponse GetDamageableItemInfo(string shortname, bool detailed)
         {
-            string lowerName = shortname.ToLower();
+            return Error(HttpStatusCode.NotImplemented);
+            /*string lowerName = shortname.ToLower();
             string buildingGrade = (string) Request.Query["grade"];
 
             if (buildingGrade != null)
@@ -238,7 +241,7 @@ namespace WebAPI
                     dps = result[kv.Key].DPS,
                     totalHits = result[kv.Key].TotalHits
                 })
-            });
+            });*/
         }
 
         private ApiResponse GetCookables(bool detailed)

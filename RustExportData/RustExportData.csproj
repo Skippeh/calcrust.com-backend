@@ -69,11 +69,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\Destructible\HitValues.cs" />
-    <Compile Include="Classes\Destructible\AttackInfo.cs" />
+    <Compile Include="Classes\Destructibles\HitValues.cs" />
+    <Compile Include="Classes\Destructibles\AttackInfo.cs" />
     <Compile Include="Classes\Utility.cs" />
     <Compile Include="Classes\PhysicsUtility.cs" />
-    <Compile Include="Classes\Destructible\Destructible.cs" />
+    <Compile Include="Classes\Destructibles\Destructible.cs" />
     <Compile Include="Plugins\RustExportData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

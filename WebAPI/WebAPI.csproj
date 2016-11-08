@@ -72,8 +72,9 @@
     <Compile Include="DataManager.cs" />
     <Compile Include="Models\Burnable.cs" />
     <Compile Include="Models\Cookable.cs" />
-    <Compile Include="Models\DamageableItem.cs" />
-    <Compile Include="Models\DamageInfo.cs" />
+    <Compile Include="Models\Destructibles\AttackInfo.cs" />
+    <Compile Include="Models\Destructibles\Destructible.cs" />
+    <Compile Include="Models\Destructibles\HitValues.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\ItemMeta.cs" />
     <Compile Include="Models\Meta.cs" />
