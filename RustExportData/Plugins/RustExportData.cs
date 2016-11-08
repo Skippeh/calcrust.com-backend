@@ -6,7 +6,7 @@ using RustExportData;
 using System.Linq;
 using System.Reflection;
 using Oxide.Classes;
-using Oxide.Classes.Destructible;
+using Oxide.Classes.Destructibles;
 using Oxide.Core;
 using Rust;
 using UnityEngine;

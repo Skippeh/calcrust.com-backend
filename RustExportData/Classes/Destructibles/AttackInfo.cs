@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Oxide.Classes.Destructible
+namespace Oxide.Classes.Destructibles
 {
     public abstract class AttackInfo
     {

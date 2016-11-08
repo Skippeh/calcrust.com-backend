@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Oxide.Classes.Destructible
+namespace Oxide.Classes.Destructibles
 {
     public struct HitValues
     {
