@@ -553,10 +553,7 @@ namespace Oxide.Plugins
 
                                     foreach (var ammoType in ammoTypes)
                                     {
-                                        weaponInfo.Ammunitions.Add(ammoType.shortname, new HitValues
-                                        {
-
-                                        });
+                                        weaponInfo.Ammunitions.Add(ammoType.shortname, GetHitValues(buildingBlock, ((BaseProjectile)attackEntity).damageScale, ammoType.GetComponent<ItemModProjectile>(), null));
                                     }
                                 }
                             }
@@ -574,7 +571,7 @@ namespace Oxide.Plugins
                             attackInfos.Add(item.shortname, attackInfo);
                         }
 
-                        destructible.Grades.Add(grade, attackInfos);
+                        destructible.Grades.Add(grade.ToCamelCaseString(), attackInfos);
                     }
                 }
                 else // BaseCombatEntity
@@ -597,6 +594,52 @@ namespace Oxide.Plugins
             }
 
             return result;
+        }
+
+        /// <summary>NOTE: Either modProjectile OR explosive should be assigned, not both!</summary>
+        private HitValues GetHitValues(BaseCombatEntity entity, float damageScale, ItemModProjectile modProjectile, TimedExplosive explosive)
+        {
+            var hitValues = new HitValues();
+            var propDirections = GetField<DirectionProperties[], BaseCombatEntity>(entity, "propDirection");
+            List<DamageTypeEntry> damageTypes;
+
+            if (modProjectile != null)
+            {
+                GameObject projectileObject = modProjectile.projectileObject.Get();
+                Projectile projectile  = projectileObject.GetComponent<Projectile>();
+                TimedExplosive rocket = projectileObject.GetComponent<TimedExplosive>();
+                
+                if (projectile != null)
+                    damageTypes = projectile.damageTypes;
+                else
+                    damageTypes = rocket.damageTypes;
+            }
+            else
+            {
+                damageTypes = explosive.damageTypes;
+            }
+            
+            var weakHit = new HitInfo();
+            weakHit.damageTypes.Add(damageTypes);
+            weakHit.damageTypes.ScaleAll(damageScale);
+            entity.ScaleDamage(weakHit);
+
+            var strongHit = new HitInfo();
+            strongHit.damageTypes.Add(damageTypes);
+            strongHit.damageTypes.ScaleAll(damageScale);
+            entity.ScaleDamage(strongHit);
+
+            foreach (var propDirection in propDirections)
+            {
+                propDirection.extraProtection.Scale(strongHit.damageTypes);
+            }
+
+            hitValues.WeakDPS = weakHit.damageTypes.Total();
+            hitValues.StrongDPS = strongHit.damageTypes.Total();
+            hitValues.TotalWeakHits = entity.health / hitValues.WeakDPS;
+            hitValues.TotalStrongHits = entity.health / hitValues.StrongDPS;
+
+            return hitValues;
         }
 
         private ItemDefinition[] GetAmmoDefinitions(AmmoTypes ammoTypes)
