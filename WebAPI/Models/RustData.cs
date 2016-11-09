@@ -20,5 +20,29 @@ namespace WebAPI.Models
         {
             Disposed = true;
         }
+
+        public string GetBuildingBlockName(string prefabName)
+        {
+            switch (prefabName)
+            {
+                case "block.stair.lshape": return "U Shaped Stairs";
+                case "block.stair.ushape": return "L Shaped Stairs";
+                case "floor": return "Floor";
+                case "floor.frame": return "Floor Frame";
+                case "floor.triangle": return "Floor Triangle";
+                case "foundation": return "Foundation";
+                case "foundation.steps": return "Foundation Steps";
+                case "foundation.triangle": return "Foundation Triangle";
+                case "pillar": return "Pillar";
+                case "roof": return "Roof";
+                case "wall": return "Wall";
+                case "wall.doorway": return "Doorway";
+                case "wall.frame": return "Wall Frame";
+                case "wall.low": return "Low Wall";
+                case "wall.window": return "Window";
+            }
+
+            return prefabName;
+        }
     }
 }

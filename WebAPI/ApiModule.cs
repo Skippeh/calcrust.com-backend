@@ -285,7 +285,8 @@ namespace WebAPI
             return new ApiResponse(data.DamageInfo.Select(keyval => new
             {
                 id = keyval.Key,
-                type = keyval.Value.Type.ToCamelCaseString()
+                type = keyval.Value.Type.ToCamelCaseString(),
+                name = keyval.Value.Type == Destructible.DestructibleType.Deployable ? data.Items[keyval.Key].Name : data.GetBuildingBlockName(keyval.Key)
             }));
         }
 
@@ -297,6 +298,7 @@ namespace WebAPI
             }
 
             Destructible destructible = data.DamageInfo[shortname];
+            object resultValues = null;
 
             if (destructible is BuildingBlockDestructible)
             {
@@ -319,7 +321,7 @@ namespace WebAPI
                     values.Add(grade, buildingBlockDestructible.Grades[grade]);
                 }
 
-                return new ApiResponse(values);
+                resultValues = values;
             }
             else if (destructible is DeployableDestructible)
             {
@@ -328,10 +330,14 @@ namespace WebAPI
                     return Error(HttpStatusCode.BadRequest, "Destructible was found but type if deployable and building grade(s) were specified.");
                 }
 
-                return new ApiResponse(((DeployableDestructible) destructible).Values);
+                resultValues = ((DeployableDestructible) destructible).Values;
             }
 
-            throw new NotImplementedException();
+            return new ApiResponse(new
+            {
+                name = destructible.Type == Destructible.DestructibleType.Deployable ? data.Items[shortname].Name : data.GetBuildingBlockName(shortname),
+                values = resultValues
+            });
         }
 
         private ApiResponse SearchItems(dynamic parameters)
