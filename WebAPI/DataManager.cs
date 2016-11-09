@@ -228,9 +228,9 @@ namespace WebAPI
             return data;
         }
 
-        private static Dictionary<Item, AttackInfo> ParseAttackInfos(JObject jAttackInfos, Dictionary<string, Item> items)
+        private static DestructibleValues ParseAttackInfos(JObject jAttackInfos, Dictionary<string, Item> items)
         {
-            var attackInfos = new Dictionary<Item, AttackInfo>();
+            var attackInfos = new DestructibleValues();
 
             foreach (var keyval in jAttackInfos)
             {
