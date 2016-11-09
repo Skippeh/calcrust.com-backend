@@ -22,14 +22,14 @@ namespace WebAPI.Models.Destructibles
 
     public sealed class DeployableDestructible : Destructible
     {
-        public Dictionary<Item, AttackInfo> Values = new Dictionary<Item, AttackInfo>();
+        public Dictionary<Item, AttackInfo> Values;
 
         public DeployableDestructible() : base(DestructibleType.Deployable) { }
     }
 
     public sealed class BuildingBlockDestructible : Destructible
     {
-        public Dictionary<string, Dictionary<string, AttackInfo>> Grades = new Dictionary<string, Dictionary<string, AttackInfo>>();
+        public Dictionary<string, Dictionary<Item, AttackInfo>> Grades = new Dictionary<string, Dictionary<Item, AttackInfo>>();
 
         public BuildingBlockDestructible() : base(DestructibleType.BuildingBlock) { }
     }

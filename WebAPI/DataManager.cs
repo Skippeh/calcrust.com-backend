@@ -6,6 +6,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WebAPI.Models;
+using WebAPI.Models.Destructibles;
 
 namespace WebAPI
 {
@@ -104,6 +105,7 @@ namespace WebAPI
             data.Meta = jData["meta"].ToObject<Meta>();
             data.Recipes = new Dictionary<string, Recipe>();
             data.Cookables = new Dictionary<string, Cookable>();
+            data.DamageInfo = new Dictionary<string, Destructible>();
 
             var jRecipes = jData["recipes"].Value<JObject>();
             var jCookables = jData["cookables"].Value<JObject>();
@@ -139,13 +141,45 @@ namespace WebAPI
 
                 data.Cookables.Add(shortname, cookable);
             }
-
+            
             foreach (var keyval in jDestructibles)
             {
-                dynamic jDestructible = keyval.Value;
+                JObject jDestructible = keyval.Value.Value<JObject>();
                 string shortname = keyval.Key;
+                string buildingType = jDestructible["type"].Value<string>();
+                Destructible destructible;
 
+                switch (buildingType)
+                {
+                    case "buildingBlock":
+                    {
+                        var buildingDestructible = (BuildingBlockDestructible) (destructible = new BuildingBlockDestructible());
 
+                        foreach (var gradeKeyval in jDestructible["grades"].Value<JObject>())
+                        {
+                            string grade = gradeKeyval.Key;
+                            JObject jAttackInfos = gradeKeyval.Value.Value<JObject>();
+                            var attackInfos = ParseAttackInfos(jAttackInfos);
+
+                            buildingDestructible.Grades.Add(grade, attackInfos);
+                        }
+
+                        break;
+                    }
+                    case "deployable":
+                    {
+                        destructible = new DeployableDestructible();
+                        ((DeployableDestructible) destructible).Values = ParseAttackInfos(jDestructible["values"].Value<JObject>());
+                        break;
+                    }
+                    default:
+                    {
+                        Console.Error.WriteLine("Unhandled building type: " + buildingType);
+                        continue;
+                    }
+                }
+
+                data.DamageInfo.Add(shortname, destructible);
             }
 
             // Parse item meta data
@@ -192,6 +226,11 @@ namespace WebAPI
             }
             
             return data;
+        }
+
+        private static Dictionary<Item, AttackInfo> ParseAttackInfos(JObject jObject)
+        {
+            return null;
         }
 
         private static Recipe.Item ParseRecipeItem(JToken jItem, Dictionary<string, Item> items)
