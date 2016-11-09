@@ -336,6 +336,7 @@ namespace WebAPI
             return new ApiResponse(new
             {
                 name = destructible.Type == Destructible.DestructibleType.Deployable ? data.Items[shortname].Name : data.GetBuildingBlockName(shortname),
+                type = destructible.Type.ToCamelCaseString(),
                 values = resultValues
             });
         }
