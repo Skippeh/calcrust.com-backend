@@ -55,12 +55,7 @@ namespace WebAPI
             Get["/cookables/search/{term}/detailed"] = WrapMethod((dynamic _) => SearchCookables(_.term, true));
 
             // Damage info
-            Get["/damages"] = WrapMethod((dynamic _) => GetDamageInfos(false));
-            Get["/damages/detailed"] = WrapMethod((dynamic _) => GetDamageInfos(true));
-            Get["/damages/items"] = WrapMethod((dynamic _) => GetDamageableItems());
-            Get["/damages/items/{shortname}"] = WrapMethod((dynamic _) => GetDamageableItemInfo(_.shortname, false));
-            Get["/damages/items/{shortname}/detailed"] = WrapMethod((dynamic _) => GetDamageableItemInfo(_.shortname, true));
-            Get["/damages/{shortname}"] = WrapMethod((dynamic _) => GetDamageInfo(_.shortname));
+
 
             // Search all
             Get["/search/{term}"] = WrapMethod((dynamic _) => SearchAll(_.term, false));
@@ -124,124 +119,6 @@ namespace WebAPI
                 recipes,
                 cookables
             });
-        }
-
-        private ApiResponse GetDamageInfo(string shortnames)
-        {
-            return Error(HttpStatusCode.NotImplemented);
-            /*Dictionary<string, DamageInfo> result = new Dictionary<string, DamageInfo>();
-            string[] splitShortnames = shortnames.ToLower().Split('&');
-
-            foreach (string shortname in splitShortnames)
-            {
-                if (data.DamageInfo.ContainsKey(shortname))
-                {
-                    result.Add(shortname, data.DamageInfo[shortname]);
-                }
-                else
-                {
-                    return Error(HttpStatusCode.NotFound, "Could not find an item with the shortname: '" + shortname + "'.");
-                }
-            }
-
-            return new ApiResponse(result);*/
-        }
-
-        private ApiResponse GetDamageInfos(bool detailed)
-        {
-            return new ApiResponse(data.DamageInfo.Keys.Select(shortname =>
-            {
-                if (detailed)
-                    return (object) data.Items[shortname];
-
-                return shortname;
-            }).ToList());
-        }
-
-        private ApiResponse GetDamageableItems()
-        {
-            return Error(HttpStatusCode.NotImplemented);
-            /*List<string> allItemNames = data.DamageInfo.Values.First().Damages.Keys.ToList();
-
-            // Only include the building block types and not all of its material upgrades.
-            allItemNames = allItemNames.DistinctBy(name =>
-            {
-                if (name.Contains(':'))
-                {
-                    name = name.Substring(0, name.LastIndexOf(':'));
-                }
-
-                return name;
-            }).ToList();
-
-            List<DamageableItem> allItems = allItemNames.Select(name =>
-            {
-                var item = new DamageableItem();
-                item.IsBuildingBlock = name.Contains(':');
-
-                item.Id = item.IsBuildingBlock
-                            ? name.Substring(0, name.LastIndexOf(':'))
-                            : name;
-
-                if (!item.IsBuildingBlock)
-                {
-                    item.Name = data.Items[item.Id].Name;
-                }
-                else
-                {
-                    item.Name = item.Id;
-                }
-
-                return item;
-            }).ToList();
-
-            return new ApiResponse(allItems);*/
-        }
-
-        private ApiResponse GetDamageableItemInfo(string shortname, bool detailed)
-        {
-            return Error(HttpStatusCode.NotImplemented);
-            /*string lowerName = shortname.ToLower();
-            string buildingGrade = (string) Request.Query["grade"];
-
-            if (buildingGrade != null)
-            {
-                lowerName += ":" + buildingGrade.ToLower();
-            }
-
-            bool exists = data.DamageInfo.Values.First().Damages.Keys.Any(name => lowerName == name.ToLower());
-
-            if (!exists)
-            {
-                return Error(HttpStatusCode.NotFound, "Could not find the item/building block with the name '" + shortname + "'.");
-            }
-
-            string displayName = shortname;
-
-            if (data.Items.ContainsKey(shortname))
-            {
-                displayName = data.Items[shortname].Name;
-            }
-            else
-            {
-                // Todo: return building block name.
-            }
-            
-            Dictionary<string, DamageInfo.WeaponInfo> result = data.DamageInfo.ToDictionary(kv => kv.Key, kv =>
-            {
-                return kv.Value.Damages.First(kv2 => kv2.Key.ToLower() == lowerName).Value;
-            });
-
-            return new ApiResponse(new
-            {
-                name = displayName,
-                data = result.Select(kv => new
-                {
-                    item = detailed ? data.Items[kv.Key] : (object)kv.Key,
-                    dps = result[kv.Key].DPS,
-                    totalHits = result[kv.Key].TotalHits
-                })
-            });*/
         }
 
         private ApiResponse GetCookables(bool detailed)
