@@ -506,6 +506,10 @@ namespace Oxide.Plugins
                             
                             if (explosive != null)
                             {
+                                // Don't include harmless items
+                                if (explosive.damageTypes.Sum(t => t.amount) <= 0)
+                                    continue;
+
                                 attackEntities.Add(item, explosive);
                             }
                             else
@@ -515,6 +519,10 @@ namespace Oxide.Plugins
                         }
                         else if (attackEntity != null)
                         {
+                            // Don't include harmless items
+                            if (attackEntity is Hammer || attackEntity is BaseMelee && ((BaseMelee) attackEntity).TotalDamage() <= 0)
+                                continue;
+                            
                             if (attackEntity is BaseMelee || attackEntity is BaseProjectile)
                                 attackEntities.Add(item, attackEntity);
                         }
