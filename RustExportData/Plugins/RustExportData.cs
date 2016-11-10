@@ -163,6 +163,7 @@ namespace Oxide.Plugins
                     "impact.prefab",
                     "knock.prefab",
                     "ladder_prop.prefab",
+                    "-deploy.asset"
                 };
 
                 foreach (var str in GameManifest.Get().pooledStrings)
