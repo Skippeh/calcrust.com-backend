@@ -644,11 +644,23 @@ namespace Oxide.Plugins
             var weakHit = new HitInfo();
             weakHit.damageTypes.Add(damageTypes);
             weakHit.damageTypes.ScaleAll(damageScale);
+
+            if (modProjectile != null)
+            {
+                weakHit.damageTypes.ScaleAll(modProjectile.numProjectiles);
+            }
+
             entity.ScaleDamage(weakHit);
 
             var strongHit = new HitInfo();
             strongHit.damageTypes.Add(damageTypes);
             strongHit.damageTypes.ScaleAll(damageScale);
+
+            if (modProjectile != null)
+            {
+                strongHit.damageTypes.ScaleAll(modProjectile.numProjectiles);
+            }
+
             entity.ScaleDamage(strongHit);
 
             foreach (var propDirection in propDirections)
