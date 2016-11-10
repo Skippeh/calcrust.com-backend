@@ -25,8 +25,8 @@ namespace WebAPI.Models
         {
             switch (prefabName)
             {
-                case "block.stair.lshape": return "U Shaped Stairs";
-                case "block.stair.ushape": return "L Shaped Stairs";
+                case "block.stair.lshape": return "L Shaped Stairs";
+                case "block.stair.ushape": return "U Shaped Stairs";
                 case "floor": return "Floor";
                 case "floor.frame": return "Floor Frame";
                 case "floor.triangle": return "Floor Triangle";
