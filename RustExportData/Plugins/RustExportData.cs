@@ -627,9 +627,6 @@ namespace Oxide.Plugins
                     damageTypes = projectile.damageTypes;
                 else
                     damageTypes = rocket.damageTypes;
-
-                foreach (var damageType in damageTypes)
-                    damageType.amount *= modProjectile.numProjectiles;
             }
             else if (explosive != null)
             {
