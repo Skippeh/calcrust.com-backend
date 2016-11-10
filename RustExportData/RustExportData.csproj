@@ -46,8 +46,8 @@
     <Reference Include="Oxide.Core">
       <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Oxide.Ext.CSharp">
-      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Ext.CSharp.dll</HintPath>
+    <Reference Include="Oxide.Core.CSharp">
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Core.CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Oxide.Game.Rust">
       <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Oxide.Game.Rust.dll</HintPath>
