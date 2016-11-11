@@ -385,6 +385,7 @@ namespace Oxide.Plugins
 
                     var thrownWeapon = prefab.GetComponent<ThrownWeapon>();
                     var baseProjectile = prefab.GetComponent<global::BaseProjectile>();
+                    var meleeWeapon = prefab.GetComponent<BaseMelee>();
                     
                     if (thrownWeapon != null)
                     {
@@ -412,6 +413,13 @@ namespace Oxide.Plugins
                             ProjectileMod = projectileMod,
                             BaseProjectile = baseProjectile,
                             Projectile = projectile
+                        });
+                    }
+                    else if (meleeWeapon != null)
+                    {
+                        newItem.Meta.Add(MetaType.Weapon.ToCamelCaseString(), new MetaWeapon(item)
+                        {
+                            Melee = meleeWeapon
                         });
                     }
                 }
@@ -948,7 +956,6 @@ namespace RustExportData
     [JsonObject(MemberSerialization.OptIn)]
     internal abstract class ItemMeta
     {
-        [JsonIgnore]
         public abstract string[] Descriptions { get; }
         
         public ItemDefinition Item { get; private set; }
@@ -1139,57 +1146,32 @@ namespace RustExportData
         public Projectile Projectile;
         
         public TimedExplosive TimedExplosive;
+        public BaseMelee Melee;
+
+        [JsonProperty("fireDelay")]
+        private float fireDelay => Melee?.repeatDelay
+                                 ?? BaseProjectile?.ScaleRepeatDelay(BaseProjectile.repeatDelay)
+                                 ?? 0;
+
+        [JsonProperty("reloadTime")]
+        private float? reloadTime => BaseProjectile?.reloadTime ?? 0;
+
+        [JsonProperty("magazineSize")]
+        private int magazineSize => BaseProjectile?.primaryMagazine.definition.builtInSize ?? 0;
 
         public override string[] Descriptions
         {
             get
             {
                 var descs = new List<string>();
-
-                DamageTypeList damageTypes = null;
                 
-                if (TimedExplosive != null)
+                if (Projectile != null && ProjectileMod != null)
                 {
-                    var hitInfo = new HitInfo();
-                    hitInfo.damageTypes = new DamageTypeList();
-
-                    TimedExplosive.damageTypes.ForEach(t => hitInfo.damageTypes.Add(t.type, t.amount));
-                    damageTypes = hitInfo.damageTypes;
-                }
-                else if (Projectile != null && ProjectileMod != null)
-                {
-                    // Scale damage with projectile mod
-                    var hitInfo = new HitInfo();
-                    Projectile.CalculateDamage(hitInfo, Projectile.Modifier.Default, BaseProjectile.damageScale);
-                    damageTypes = hitInfo.damageTypes;
-                    
-                    try
-                    {
-                        //Debug.Log(Item.shortname + ": " + BaseProjectile.projectileVelocityScale + ", " + BaseProjectile.damageScale);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.Log(ex);
-                        throw ex;
-                    }
-
                     if (ProjectileMod.numProjectiles > 1)
                         descs.Add("Fires " + ProjectileMod.numProjectiles + " projectiles per shot");
 
                     if (Projectile.breakProbability > 0)
                         descs.Add(Math.Round(Projectile.breakProbability * 100f) + "% to break ammo on impact");
-                }
-
-                if (damageTypes != null)
-                {
-                    for (int i = 0; i < damageTypes.types.Length; i++)
-                    {
-                        var damageType = (DamageType) i;
-                        var amount = damageTypes.types[i];
-
-                        //if (amount > 0)
-                        //    descs.Add("Inflicts " + Math.Round(amount) + " " + damageType.ToString().ToLower() + " base damage per " + projectileType);
-                    }
                 }
 
                 return descs.ToArray();

@@ -216,6 +216,16 @@ namespace WebAPI
                             });
                             break;
                         }
+                        case MetaType.Weapon:
+                        {
+                            item.Meta.Add(MetaType.Weapon, new Models.MetaModels.Weapon()
+                            {
+                                FireDelay = jMeta["fireDelay"].Value<float>(),
+                                ReloadTime = jMeta["reloadTime"].Value<float>(),
+                                MagazineSize = jMeta["magazineSize"].Value<int>()
+                            });
+                            break;
+                        }
                         default:
                         {
                             item.Meta.Add(metaType, new ItemMeta(metaType));
