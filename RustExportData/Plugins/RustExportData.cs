@@ -713,8 +713,8 @@ namespace Oxide.Plugins
             }
             else if (explosive != null)
             {
-                hitValues.TotalStrongItems = hitValues.TotalStrongHits;
-                hitValues.TotalWeakItems = hitValues.TotalWeakHits;
+                hitValues.TotalStrongItems = Mathf.Ceil(hitValues.TotalStrongHits);
+                hitValues.TotalWeakItems = Mathf.Ceil(hitValues.TotalWeakHits);
             }
             else if (modProjectile != null)
             {
