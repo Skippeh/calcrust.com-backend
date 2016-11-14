@@ -588,7 +588,7 @@ namespace Oxide.Plugins
                     if (attackEntity is BaseMelee)
                     {
                         var meleeInfo = (MeleeAttackInfo) (attackInfo = new MeleeAttackInfo());
-                        meleeInfo.Values = GetHitValues(baseCombatEntity, 1, null, null, (BaseMelee) attackEntity);
+                        meleeInfo.Values = GetHitValues(baseCombatEntity, 1, item, null, null, (BaseMelee) attackEntity);
                     }
                     else if (attackEntity is BaseProjectile)
                     {
@@ -598,14 +598,14 @@ namespace Oxide.Plugins
 
                         foreach (var ammoType in ammoTypes)
                         {
-                            weaponInfo.Ammunitions.Add(ammoType.shortname, GetHitValues(baseCombatEntity, ((BaseProjectile) attackEntity).damageScale, ammoType.GetComponent<ItemModProjectile>(), null, null));
+                            weaponInfo.Ammunitions.Add(ammoType.shortname, GetHitValues(baseCombatEntity, ((BaseProjectile) attackEntity).damageScale, item, ammoType.GetComponent<ItemModProjectile>(), null, null));
                         }
                     }
                 }
                 else if (attackEntity is TimedExplosive)
                 {
                     var explosiveInfo = (ExplosiveAttackInfo) (attackInfo = new ExplosiveAttackInfo());
-                    explosiveInfo.Values = GetHitValues(baseCombatEntity, 1, null, (TimedExplosive) attackEntity, null);
+                    explosiveInfo.Values = GetHitValues(baseCombatEntity, 1, item, null, (TimedExplosive) attackEntity, null);
                 }
 
                 if (attackInfo == null)
@@ -620,7 +620,7 @@ namespace Oxide.Plugins
         }
 
         /// <summary>NOTE: Only one of modProjectile, explosive, and baseMelee should be assigned!</summary>
-        private HitValues GetHitValues(BaseCombatEntity entity, float damageScale, ItemModProjectile modProjectile, TimedExplosive explosive, BaseMelee baseMelee)
+        private HitValues GetHitValues(BaseCombatEntity entity, float damageScale, ItemDefinition itemDefinition, ItemModProjectile modProjectile, TimedExplosive explosive, BaseMelee baseMelee)
         {
             var hitValues = new HitValues();
             var propDirections = GetField<DirectionProperties[], BaseCombatEntity>(entity, "propDirection");
@@ -631,9 +631,16 @@ namespace Oxide.Plugins
                 GameObject projectileObject = modProjectile.projectileObject.Get();
                 Projectile projectile  = projectileObject.GetComponent<Projectile>();
                 TimedExplosive rocket = projectileObject.GetComponent<TimedExplosive>();
-                
+
                 if (projectile != null)
+                {
                     damageTypes = projectile.damageTypes;
+
+                    if (projectile.conditionLoss > 0)
+                    {
+                        Debug.Log(projectile.conditionLoss);
+                    }
+                }
                 else
                     damageTypes = rocket.damageTypes;
             }
@@ -682,6 +689,57 @@ namespace Oxide.Plugins
             hitValues.TotalWeakHits = hitValues.WeakDPS > 0 ? entity.health / hitValues.WeakDPS : -1;
             hitValues.TotalStrongHits = hitValues.StrongDPS > 0 ? entity.health / hitValues.StrongDPS : -1;
 
+            float maxCondition = itemDefinition.condition.max;
+
+            // Calculate condition loss
+            if (baseMelee != null)
+            {
+                float conditionLoss = baseMelee.GetConditionLoss();
+                float num = 0;
+
+                foreach (var damageType in baseMelee.damageTypes)
+                {
+                    num += Mathf.Clamp(damageType.amount - strongHit.damageTypes.Get(damageType.type), 0, damageType.amount);
+                }
+                
+                conditionLoss = conditionLoss + num * 0.2f;
+
+                float hitsFromOne = maxCondition / conditionLoss;
+                float numStrongItems = hitValues.TotalStrongHits / hitsFromOne;
+                float numWeakItems = hitValues.TotalWeakHits / hitsFromOne;
+
+                hitValues.TotalStrongItems = hitValues.TotalStrongHits >= 0 ? numStrongItems : -1;
+                hitValues.TotalWeakItems = hitValues.TotalWeakHits >= 0 ? numWeakItems : -1;
+            }
+            else if (explosive != null)
+            {
+                hitValues.TotalStrongItems = hitValues.TotalStrongHits;
+                hitValues.TotalWeakItems = hitValues.TotalWeakHits;
+            }
+            else if (modProjectile != null)
+            {
+                var projectileObject = modProjectile.projectileObject.Get();
+                var projectile = projectileObject.GetComponent<Projectile>();
+                float conditionLoss;
+
+                if (projectile != null)
+                {
+                    // Source: BaseProjectile.UpdateItemCondition
+                    conditionLoss = 0.5f * 0.3333333f; // As accurate as it gets. The actual code uses Random.Range(0, 3) == 0 to apply 0.5f condition loss.
+                }
+                else // Explosives/Rockets/etc, shot from weapon
+                {
+                    conditionLoss = 4.5f; // The actual code applies Random.Range(4f, 5f) condition loss.
+                }
+
+                float hitsFromOne = maxCondition / conditionLoss;
+                float numStrongItems = hitValues.TotalStrongHits / hitsFromOne;
+                float numWeakItems = hitValues.TotalWeakHits / hitsFromOne;
+
+                hitValues.TotalStrongItems = hitValues.TotalStrongHits >= 0 ? numStrongItems : -1;
+                hitValues.TotalWeakItems = hitValues.TotalWeakHits >= 0 ? numWeakItems : -1;
+            }
+            
             return hitValues;
         }
 

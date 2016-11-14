@@ -300,7 +300,9 @@ namespace WebAPI
                 WeakDPS = jHitValues["weakDps"].Value<float>(),
                 StrongDPS = jHitValues["strongDps"].Value<float>(),
                 TotalWeakHits = jHitValues["totalWeakHits"].Value<float>(),
-                TotalStrongHits = jHitValues["totalStrongHits"].Value<float>()
+                TotalStrongHits = jHitValues["totalStrongHits"].Value<float>(),
+                TotalStrongItems = jHitValues["totalStrongItems"].Value<float>(),
+                TotalWeakItems = jHitValues["totalWeakItems"].Value<float>()
             };
         }
 
