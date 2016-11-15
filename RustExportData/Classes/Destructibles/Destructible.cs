@@ -14,6 +14,9 @@ namespace Oxide.Classes.Destructibles
         [JsonIgnore]   public DestructibleType Type { get; private set; }
         [JsonProperty] private string type => Type.ToCamelCaseString();
 
+        [JsonProperty("hasProtection")]
+        public bool HasProtection;
+
         protected Destructible(DestructibleType type)
         {
             Type = type;

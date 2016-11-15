@@ -148,7 +148,7 @@ namespace WebAPI
                 string shortname = keyval.Key;
                 string buildingType = jDestructible["type"].Value<string>();
                 Destructible destructible;
-
+                
                 switch (buildingType)
                 {
                     case "buildingBlock":
@@ -178,6 +178,8 @@ namespace WebAPI
                         continue;
                     }
                 }
+
+                destructible.HasProtection = jDestructible["hasProtection"].Value<bool>();
 
                 data.DamageInfo.Add(shortname, destructible);
             }

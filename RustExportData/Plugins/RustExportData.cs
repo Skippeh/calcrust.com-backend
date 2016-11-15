@@ -570,6 +570,8 @@ namespace Oxide.Plugins
                 }
             }
 
+            result.HasProtection = GetField<DirectionProperties[], BaseCombatEntity>(baseCombatEntity, "propDirection").Any(protection => protection.bounds.size != Vector3.zero);
+
             return result;
         }
 

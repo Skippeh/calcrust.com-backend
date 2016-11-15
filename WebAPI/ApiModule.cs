@@ -286,6 +286,7 @@ namespace WebAPI
             {
                 id = keyval.Key,
                 type = keyval.Value.Type.ToCamelCaseString(),
+                keyval.Value.HasProtection,
                 name = keyval.Value.Type == Destructible.DestructibleType.Deployable ? data.Items[keyval.Key].Name : data.GetBuildingBlockName(keyval.Key)
             }));
         }
@@ -337,6 +338,7 @@ namespace WebAPI
             {
                 name = destructible.Type == Destructible.DestructibleType.Deployable ? data.Items[shortname].Name : data.GetBuildingBlockName(shortname),
                 type = destructible.Type.ToCamelCaseString(),
+                destructible.HasProtection,
                 values = resultValues
             });
         }
