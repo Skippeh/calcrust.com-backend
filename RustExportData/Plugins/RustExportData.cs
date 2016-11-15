@@ -679,9 +679,20 @@ namespace Oxide.Plugins
 
             entity.ScaleDamage(strongHit);
 
+            if (propDirections.Length > 1)
+            {
+                Debug.LogWarning(entity.name + ": propDirections.Length > 1, invalid strong hit scaling! " + propDirections.Length);
+            }
+            
             foreach (var propDirection in propDirections)
             {
                 propDirection.extraProtection.Scale(strongHit.damageTypes);
+
+                if (propDirection.bounds.size == Vector3.zero)
+                {
+                    // No weak spots, scale weak hit with protection.
+                    propDirection.extraProtection.Scale(weakHit.damageTypes);
+                }
             }
 
             hitValues.WeakDPS = weakHit.damageTypes.Total();
