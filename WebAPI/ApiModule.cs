@@ -5,10 +5,12 @@ using System.Reflection;
 using System.Security.Policy;
 using System.Text;
 using Nancy;
+using Nancy.Extensions;
 using Nancy.Routing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using WebAPI.Models;
+using WebAPI.Models.Destructibles;
 
 namespace WebAPI
 {
@@ -54,9 +56,8 @@ namespace WebAPI
             Get["/cookables/search/{term}/detailed"] = WrapMethod((dynamic _) => SearchCookables(_.term, true));
 
             // Damage info
-            Get["/damages"] = WrapMethod((dynamic _) => GetDamageInfos(false));
-            Get["/damages/detailed"] = WrapMethod((dynamic _) => GetDamageInfos(true));
-            Get["/damages/{shortname}"] = WrapMethod((dynamic _) => GetDamageInfo(_.shortname));
+            Get["/destructibles"] = WrapMethod(_ => GetDestructibles());
+            Get["/destructibles/{shortname}/{grades?}"] = WrapMethod((dynamic _) => GetDestructible(_.shortname, _.grades != null ? ((string) _.grades).Split('&') : null));
 
             // Search all
             Get["/search/{term}"] = WrapMethod((dynamic _) => SearchAll(_.term, false));
@@ -120,37 +121,6 @@ namespace WebAPI
                 recipes,
                 cookables
             });
-        }
-
-        private ApiResponse GetDamageInfo(string shortnames)
-        {
-            Dictionary<string, DamageInfo> result = new Dictionary<string, DamageInfo>();
-            string[] splitShortnames = shortnames.ToLower().Split('&');
-
-            foreach (string shortname in splitShortnames)
-            {
-                if (data.DamageInfo.ContainsKey(shortname))
-                {
-                    result.Add(shortname, data.DamageInfo[shortname]);
-                }
-                else
-                {
-                    return Error(HttpStatusCode.NotFound, "Could not find an item with the shortname: '" + shortname + "'.");
-                }
-            }
-
-            return new ApiResponse(result);
-        }
-
-        private ApiResponse GetDamageInfos(bool detailed)
-        {
-            return new ApiResponse(data.DamageInfo.Keys.Select(shortname =>
-            {
-                if (detailed)
-                    return (object) data.Items[shortname];
-
-                return shortname;
-            }).ToList());
         }
 
         private ApiResponse GetCookables(bool detailed)
@@ -308,6 +278,70 @@ namespace WebAPI
                 var item = keyval.Value;
                 return item;
             }));
+        }
+
+        private ApiResponse GetDestructibles()
+        {
+            return new ApiResponse(data.DamageInfo.Select(keyval => new
+            {
+                id = keyval.Key,
+                type = keyval.Value.Type.ToCamelCaseString(),
+                keyval.Value.HasProtection,
+                name = keyval.Value.Type == Destructible.DestructibleType.Deployable ? data.Items[keyval.Key].Name : data.GetBuildingBlockName(keyval.Key)
+            }));
+        }
+
+        private ApiResponse GetDestructible(string shortname, string[] grades)
+        {
+            if (!data.DamageInfo.ContainsKey(shortname))
+            {
+                return Error(HttpStatusCode.NotFound, "No destructible found with this shortname.");
+            }
+
+            Destructible destructible = data.DamageInfo[shortname];
+            object resultValues = null;
+
+            if (destructible is BuildingBlockDestructible)
+            {
+                Dictionary<string, DestructibleValues> values = new Dictionary<string, DestructibleValues>();
+
+                if (grades == null || grades.Length <= 0)
+                {
+                    return Error(HttpStatusCode.BadRequest, "Destructible was found but atleast one building grade is required.");
+                }
+
+                var buildingBlockDestructible = ((BuildingBlockDestructible)destructible);
+
+                foreach (string grade in grades.Distinct())
+                {
+                    if (!buildingBlockDestructible.Grades.ContainsKey(grade))
+                    {
+                        return Error(HttpStatusCode.NotFound, "Destructible was found but the specified building grade '" + grade + "'was not.");
+                    }
+
+                    values.Add(grade, buildingBlockDestructible.Grades[grade]);
+                }
+
+                resultValues = values;
+            }
+            else if (destructible is DeployableDestructible)
+            {
+                if (grades != null && grades.Length > 0)
+                {
+                    return Error(HttpStatusCode.BadRequest, "Destructible was found but type if deployable and building grade(s) were specified.");
+                }
+
+                resultValues = ((DeployableDestructible) destructible).Values;
+            }
+
+            return new ApiResponse(new
+            {
+                id = shortname,
+                name = destructible.Type == Destructible.DestructibleType.Deployable ? data.Items[shortname].Name : data.GetBuildingBlockName(shortname),
+                type = destructible.Type.ToCamelCaseString(),
+                destructible.HasProtection,
+                values = resultValues
+            });
         }
 
         private ApiResponse SearchItems(dynamic parameters)

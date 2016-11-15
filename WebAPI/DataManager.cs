@@ -6,6 +6,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WebAPI.Models;
+using WebAPI.Models.Destructibles;
 
 namespace WebAPI
 {
@@ -104,10 +105,11 @@ namespace WebAPI
             data.Meta = jData["meta"].ToObject<Meta>();
             data.Recipes = new Dictionary<string, Recipe>();
             data.Cookables = new Dictionary<string, Cookable>();
-            data.DamageInfo = jData["damageInfo"].ToObject<Dictionary<string, DamageInfo>>();
+            data.DamageInfo = new Dictionary<string, Destructible>();
 
             var jRecipes = jData["recipes"].Value<JObject>();
             var jCookables = jData["cookables"].Value<JObject>();
+            var jDestructibles = jData["damageInfo"].Value<JObject>();
 
             foreach (var keyval in jRecipes)
             {
@@ -138,6 +140,48 @@ namespace WebAPI
                 }).ToList();
 
                 data.Cookables.Add(shortname, cookable);
+            }
+            
+            foreach (var keyval in jDestructibles)
+            {
+                JObject jDestructible = keyval.Value.Value<JObject>();
+                string shortname = keyval.Key;
+                string buildingType = jDestructible["type"].Value<string>();
+                Destructible destructible;
+                
+                switch (buildingType)
+                {
+                    case "buildingBlock":
+                    {
+                        var buildingDestructible = (BuildingBlockDestructible) (destructible = new BuildingBlockDestructible());
+
+                        foreach (var gradeKeyval in jDestructible["grades"].Value<JObject>())
+                        {
+                            string grade = gradeKeyval.Key;
+                            JObject jAttackInfos = gradeKeyval.Value.Value<JObject>();
+                            var attackInfos = ParseAttackInfos(jAttackInfos, data.Items);
+
+                            buildingDestructible.Grades.Add(grade, attackInfos);
+                        }
+
+                        break;
+                    }
+                    case "deployable":
+                    {
+                        destructible = new DeployableDestructible();
+                        ((DeployableDestructible) destructible).Values = ParseAttackInfos(jDestructible["values"].Value<JObject>(), data.Items);
+                        break;
+                    }
+                    default:
+                    {
+                        Console.Error.WriteLine("Unhandled building type: " + buildingType);
+                        continue;
+                    }
+                }
+
+                destructible.HasProtection = jDestructible["hasProtection"].Value<bool>();
+
+                data.DamageInfo.Add(shortname, destructible);
             }
 
             // Parse item meta data
@@ -174,6 +218,16 @@ namespace WebAPI
                             });
                             break;
                         }
+                        case MetaType.Weapon:
+                        {
+                            item.Meta.Add(MetaType.Weapon, new Models.MetaModels.Weapon()
+                            {
+                                FireDelay = jMeta["fireDelay"].Value<float>(),
+                                ReloadTime = jMeta["reloadTime"].Value<float>(),
+                                MagazineSize = jMeta["magazineSize"].Value<int>()
+                            });
+                            break;
+                        }
                         default:
                         {
                             item.Meta.Add(metaType, new ItemMeta(metaType));
@@ -184,6 +238,74 @@ namespace WebAPI
             }
             
             return data;
+        }
+
+        private static DestructibleValues ParseAttackInfos(JObject jAttackInfos, Dictionary<string, Item> items)
+        {
+            var attackInfos = new DestructibleValues();
+
+            foreach (var keyval in jAttackInfos)
+            {
+                Item item = items[keyval.Key];
+                JObject jAttackInfo = keyval.Value.Value<JObject>();
+                string attackInfoType = jAttackInfo["type"].Value<string>();
+                AttackInfo attackInfo;
+
+                switch (attackInfoType)
+                {
+                    case "weapon":
+                    {
+                        WeaponAttackInfo weaponAttackInfo = (WeaponAttackInfo) (attackInfo = new WeaponAttackInfo());
+                        var jAmmunitions = jAttackInfo["ammunitions"].Value<JObject>();
+
+                        foreach (var jAmmunitionKeyval in jAmmunitions)
+                        {
+                            Item ammunitionItem = items[jAmmunitionKeyval.Key];
+                            HitValues hitValues = ParseHitValues(jAmmunitionKeyval.Value.Value<JObject>());
+
+                            weaponAttackInfo.Ammunitions.Add(ammunitionItem, hitValues);
+                        }
+                        
+                        break;
+                    }
+                    case "melee":
+                    case "explosive":
+                    {
+                        SingleAttackInfo singleAttackInfo;
+
+                        if (attackInfoType == "melee")
+                            singleAttackInfo = (SingleAttackInfo) (attackInfo = new MeleeAttackInfo());
+                        else
+                            singleAttackInfo = (SingleAttackInfo) (attackInfo = new ExplosiveAttackInfo());
+
+                        singleAttackInfo.Values = ParseHitValues(jAttackInfo["values"].Value<JObject>());
+
+                        break;
+                    }
+                    default:
+                    {
+                        Console.Error.WriteLine("Unhandled AttackInfo: " + attackInfoType);
+                        continue;
+                    }
+                }
+
+                attackInfos.Add(item, attackInfo);
+            }
+
+            return attackInfos;
+        }
+
+        private static HitValues ParseHitValues(JObject jHitValues)
+        {
+            return new HitValues
+            {
+                WeakDPS = jHitValues["weakDps"].Value<float>(),
+                StrongDPS = jHitValues["strongDps"].Value<float>(),
+                TotalWeakHits = jHitValues["totalWeakHits"].Value<float>(),
+                TotalStrongHits = jHitValues["totalStrongHits"].Value<float>(),
+                TotalStrongItems = jHitValues["totalStrongItems"].Value<float>(),
+                TotalWeakItems = jHitValues["totalWeakItems"].Value<float>()
+            };
         }
 
         private static Recipe.Item ParseRecipeItem(JToken jItem, Dictionary<string, Item> items)

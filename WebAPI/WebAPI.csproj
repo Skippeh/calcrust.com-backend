@@ -72,12 +72,15 @@
     <Compile Include="DataManager.cs" />
     <Compile Include="Models\Burnable.cs" />
     <Compile Include="Models\Cookable.cs" />
-    <Compile Include="Models\DamageInfo.cs" />
+    <Compile Include="Models\Destructibles\AttackInfo.cs" />
+    <Compile Include="Models\Destructibles\Destructible.cs" />
+    <Compile Include="Models\Destructibles\HitValues.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\ItemMeta.cs" />
     <Compile Include="Models\Meta.cs" />
     <Compile Include="Models\MetaModels\Burnable.cs" />
     <Compile Include="Models\MetaModels\Oven.cs" />
+    <Compile Include="Models\MetaModels\Weapon.cs" />
     <Compile Include="Models\Recipe.cs" />
     <Compile Include="Models\RustData.cs" />
     <Compile Include="Program.cs" />

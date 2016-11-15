@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Newtonsoft.Json;
 using RustExportData;
 using System.Linq;
 using System.Reflection;
 using Oxide.Classes;
+using Oxide.Classes.Destructibles;
 using Oxide.Core;
 using Rust;
 using UnityEngine;
+using Component = UnityEngine.Component;
 using Debug = UnityEngine.Debug;
 using Time = UnityEngine.Time;
 using Utility = Oxide.Classes.Utility;
@@ -47,6 +50,10 @@ namespace Oxide.Plugins
         };
 
         private static readonly Dictionary<string, float> ovenTemperatures = new Dictionary<string, float>();
+
+        private List<GameObject> destroyablePrefabObjects;
+        private Dictionary<GameObject, ItemDefinition> destroyableItemDefinitions;
+        private List<ItemDefinition> ammoDefinitions; 
         
         void OnServerInitialized()
         {
@@ -176,14 +183,20 @@ namespace Oxide.Plugins
                     prefabs.Add(str.str);
                 }
                 
-                List<GameObject> prefabObjects = prefabs.Select(name => GameManager.server.FindPrefab(name)).ToList();
-                Dictionary<GameObject, ItemDefinition> itemDefinitions = new Dictionary<GameObject, ItemDefinition>();
+                destroyablePrefabObjects = prefabs.Select(name => GameManager.server.FindPrefab(name)).ToList();
+                destroyableItemDefinitions = new Dictionary<GameObject, ItemDefinition>();
+                ammoDefinitions = new List<ItemDefinition>();
 
-                // Add deployables to prefabObjects
+                // Add deployables to prefabObjects and ammo to ammoDefinitions.
                 foreach (var item in ItemManager.itemList)
                 {
                     if (excludeList.Contains(item.shortname))
                         continue;
+
+                    if (item.GetComponent<ItemModProjectile>() != null)
+                    {
+                        ammoDefinitions.Add(item);
+                    }
 
                     if (item.GetComponent<ItemModDeployable>() != null)
                     {
@@ -193,38 +206,30 @@ namespace Oxide.Plugins
                         if (combatEntity == null)
                             continue;
 
-                        prefabObjects.Add(gameObject);
-                        itemDefinitions.Add(gameObject, item);
+                        if (destroyablePrefabObjects.Contains(gameObject))
+                            continue;
+
+                        destroyablePrefabObjects.Add(gameObject);
+                        destroyableItemDefinitions.Add(gameObject, item);
                     }
                 }
-                
-                foreach (var prefab in prefabObjects)
+
+                foreach (var prefab in destroyablePrefabObjects)
                 {
                     if (prefab == null)
                     {
                         Debug.LogError("Prefab null");
                         continue;
                     }
-                    
+
                     var baseCombatEntity = prefab.GetComponent<BaseCombatEntity>();
 
                     if (baseCombatEntity != null)
                     {
-                        Dictionary<string, DamageInfo> damageInfos = GetDamageInfos(prefab, itemDefinitions.ContainsKey(prefab) ? itemDefinitions[prefab].shortname : null);
+                        string objectName = destroyableItemDefinitions.ContainsKey(prefab) ? destroyableItemDefinitions[prefab].shortname : prefab.name;
+                        Destructible damageInfo = GetDamageInfo(baseCombatEntity);
 
-                        foreach (var keyval in damageInfos)
-                        {
-                            if (data.DamageInfo.ContainsKey(keyval.Key))
-                            {
-                                data.DamageInfo[keyval.Key].MergeWith(keyval.Value);
-                            }
-                            else
-                            {
-                                data.DamageInfo.Add(keyval.Key, keyval.Value);
-                            }
-
-                            //Debug.Log(keyval.Key + ": [" + String.Join(", ", keyval.Value.Damages.Select(kv => kv.Key + "=" + Math.Ceiling(kv.Value.TotalHits)).ToArray()) + "]");
-                        }
+                        data.DamageInfo.Add(objectName, damageInfo);
                     }
                 }
             }
@@ -380,6 +385,7 @@ namespace Oxide.Plugins
 
                     var thrownWeapon = prefab.GetComponent<ThrownWeapon>();
                     var baseProjectile = prefab.GetComponent<global::BaseProjectile>();
+                    var meleeWeapon = prefab.GetComponent<BaseMelee>();
                     
                     if (thrownWeapon != null)
                     {
@@ -407,6 +413,13 @@ namespace Oxide.Plugins
                             ProjectileMod = projectileMod,
                             BaseProjectile = baseProjectile,
                             Projectile = projectile
+                        });
+                    }
+                    else if (meleeWeapon != null)
+                    {
+                        newItem.Meta.Add(MetaType.Weapon.ToCamelCaseString(), new MetaWeapon(item)
+                        {
+                            Melee = meleeWeapon
                         });
                     }
                 }
@@ -470,132 +483,294 @@ namespace Oxide.Plugins
             return data;
         }
 
-        private Dictionary<string, DamageInfo> GetDamageInfos(GameObject prefab, string itemName)
+        private Destructible GetDamageInfo(BaseCombatEntity entity)
         {
-            if (itemName == null)
-                itemName = prefab.name;
+            var instance = GameObject.Instantiate(entity.gameObject);
+            var baseCombatEntity = instance.GetComponent<BaseCombatEntity>();
+            baseCombatEntity.Spawn();
 
-            var instance = (GameObject)GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
-            var baseEntity = instance.GetComponent<BaseEntity>();
-            baseEntity.Spawn();
-
-            var result = new Dictionary<string, DamageInfo>();
+            Destructible result;
 
             try
             {
-                foreach (var item in ItemManager.itemList)
+                var attackEntities = new Dictionary<ItemDefinition, BaseEntity>();
+
+                foreach (ItemDefinition item in ItemManager.itemList)
                 {
                     if (excludeList.Contains(item.shortname))
                         continue;
 
-                    var projectileMod = item.GetComponent<ItemModProjectile>();
                     var entityMod = item.GetComponent<ItemModEntity>();
-                    List<DamageTypeEntry> damageTypes = null;
-                    Projectile projectile = null;
-
-                    if (projectileMod != null)
-                    {
-                        var projectileObject = projectileMod.projectileObject.Get();
-
-                        if (projectileObject == null)
-                            continue;
-
-                        var explosive = projectileObject.GetComponent<TimedExplosive>();
-                        projectile = projectileObject.GetComponent<Projectile>();
-
-                        if (explosive != null)
-                        {
-                            damageTypes = new List<DamageTypeEntry>(explosive.damageTypes);
-                        }
-                        else if (projectile != null && (item.category == ItemCategory.Weapon || item.category == ItemCategory.Tool))
-                        {
-                            //damageTypes = projectile.damageTypes;
-                        }
-                    }
-                    else if (entityMod != null)
+                    
+                    if (entityMod != null)
                     {
                         var entityPrefab = entityMod.entityPrefab.Get();
+                        var thrownWeapon = entityPrefab.GetComponent<ThrownWeapon>();
                         var attackEntity = entityPrefab.GetComponent<AttackEntity>();
-                        var thrownWeapon = attackEntity as ThrownWeapon;
-
+                        
                         if (thrownWeapon != null)
                         {
                             var toThrow = thrownWeapon.prefabToThrow.Get();
-                            var timedExplosive = toThrow.GetComponent<TimedExplosive>();
-
-                            if (timedExplosive != null)
+                            var explosive = toThrow.GetComponent<TimedExplosive>();
+                            
+                            if (explosive != null)
                             {
-                                damageTypes = new List<DamageTypeEntry>(timedExplosive.damageTypes);
+                                // Don't include harmless items
+                                if (explosive.damageTypes.Sum(t => t.amount) <= 0)
+                                    continue;
+
+                                attackEntities.Add(item, explosive);
+                            }
+                            else
+                            {
+                                Debug.LogError("Unhandled prefabToThrow: " + toThrow.name);
                             }
                         }
-                    }
-
-                    if (damageTypes == null)
-                        continue;
-
-                    DamageInfo damageInfo = new DamageInfo();
-                    result.Add(item.shortname, damageInfo);
-
-                    if (baseEntity is BuildingBlock)
-                    {
-                        var buildingBlock = (BuildingBlock) baseEntity;
-
-                        foreach (BuildingGrade.Enum grade in Enum.GetValues(typeof (BuildingGrade.Enum)))
+                        else if (attackEntity != null)
                         {
-                            if (grade == BuildingGrade.Enum.None || grade == BuildingGrade.Enum.Count)
+                            // Don't include harmless items
+                            if (attackEntity is Hammer || attackEntity is BaseMelee && ((BaseMelee) attackEntity).TotalDamage() <= 0)
                                 continue;
-
-                            buildingBlock.SetGrade(grade);
-                            buildingBlock.SetHealthToMax();
-
-                            var strongHitInfo = new HitInfo();
-                            strongHitInfo.damageTypes.Add(damageTypes);
-                            buildingBlock.ScaleDamage(strongHitInfo);
-
-                            float totalDamage = strongHitInfo.damageTypes.Total();
-                            float hits = totalDamage > 0 ? (buildingBlock.MaxHealth() / totalDamage) : -1;
-                            //Debug.Log(item.displayName.english + ": " + totalDamage + "(" + grade + " " + prefab.name + ", " + Math.Ceiling(hits) + " hits)");
-
-                            damageInfo.Damages.Add(itemName + ":" + grade.ToCamelCaseString(), new DamageInfo.WeaponInfo
-                            {
-                                DPS = totalDamage,
-                                TotalHits = hits
-                            });
+                            
+                            if (attackEntity is BaseMelee || attackEntity is BaseProjectile)
+                                attackEntities.Add(item, attackEntity);
                         }
                     }
-                    else if (baseEntity is BaseCombatEntity)
+                }
+
+                if (baseCombatEntity is BuildingBlock)
+                {
+                    var destructible = (BuildingBlockDestructible) (result = new BuildingBlockDestructible());
+                    var buildingBlock = (BuildingBlock) baseCombatEntity;
+
+                    foreach (BuildingGrade.Enum grade in Enum.GetValues(typeof (BuildingGrade.Enum)))
                     {
-                        var combatEntity = (BaseCombatEntity) baseEntity;
+                        if (grade == BuildingGrade.Enum.None || grade == BuildingGrade.Enum.Count)
+                            continue;
 
-                        var strongHitInfo = new HitInfo();
-                        strongHitInfo.damageTypes.Add(damageTypes);
-                        combatEntity.ScaleDamage(strongHitInfo);
+                        buildingBlock.SetGrade(grade);
+                        buildingBlock.SetHealthToMax();
 
-                        float totalDamage = strongHitInfo.damageTypes.Total();
-                        float hits = totalDamage > 0 ? (combatEntity.MaxHealth() / totalDamage) : -1;
-
-                        damageInfo.Damages.Add(itemName, new DamageInfo.WeaponInfo
-                        {
-                            DPS = totalDamage,
-                            TotalHits = hits
-                        });
+                        var attackInfos = GetDamagesForCombatEntity(buildingBlock, attackEntities);
+                        destructible.Grades.Add(grade.ToCamelCaseString(), attackInfos);
                     }
+                }
+                else // BaseCombatEntity
+                {
+                    var destructible = (DeployableDestructible) (result = new DeployableDestructible());
+                    destructible.Values = GetDamagesForCombatEntity(baseCombatEntity, attackEntities);
                 }
             }
             finally
             {
-                if (!baseEntity.isDestroyed)
+                if (!baseCombatEntity.isDestroyed)
                 {
-                    if (baseEntity is BaseCombatEntity)
-                    {
-                        ((BaseCombatEntity)baseEntity).DestroyShared();
-                    }
-
-                    baseEntity.Kill();
+                    baseCombatEntity.DestroyShared();
+                    baseCombatEntity.Kill();
                 }
             }
 
+            result.HasProtection = GetField<DirectionProperties[], BaseCombatEntity>(baseCombatEntity, "propDirection").Any(protection => protection.bounds.size != Vector3.zero);
+
             return result;
+        }
+
+        private Dictionary<string, AttackInfo> GetDamagesForCombatEntity(BaseCombatEntity baseCombatEntity, Dictionary<ItemDefinition, BaseEntity> attackEntities)
+        {
+            var attackInfos = new Dictionary<string, AttackInfo>();
+
+            foreach (var keyval in attackEntities)
+            {
+                ItemDefinition item = keyval.Key;
+                BaseEntity attackEntity = keyval.Value;
+                AttackInfo attackInfo = null;
+
+                if (attackEntity is AttackEntity)
+                {
+                    if (attackEntity is BaseMelee)
+                    {
+                        var meleeInfo = (MeleeAttackInfo) (attackInfo = new MeleeAttackInfo());
+                        meleeInfo.Values = GetHitValues(baseCombatEntity, 1, item, null, null, (BaseMelee) attackEntity);
+                    }
+                    else if (attackEntity is BaseProjectile)
+                    {
+                        var weaponInfo = (WeaponAttackInfo) (attackInfo = new WeaponAttackInfo());
+                        AmmoTypes ammoFlags = ((BaseProjectile) attackEntity).primaryMagazine.definition.ammoTypes;
+                        ItemDefinition[] ammoTypes = GetAmmoDefinitions(ammoFlags);
+
+                        foreach (var ammoType in ammoTypes)
+                        {
+                            weaponInfo.Ammunitions.Add(ammoType.shortname, GetHitValues(baseCombatEntity, ((BaseProjectile) attackEntity).damageScale, item, ammoType.GetComponent<ItemModProjectile>(), null, null));
+                        }
+                    }
+                }
+                else if (attackEntity is TimedExplosive)
+                {
+                    var explosiveInfo = (ExplosiveAttackInfo) (attackInfo = new ExplosiveAttackInfo());
+                    explosiveInfo.Values = GetHitValues(baseCombatEntity, 1, item, null, (TimedExplosive) attackEntity, null);
+                }
+
+                if (attackInfo == null)
+                {
+                    Debug.LogError("Unexpected item: " + item.name);
+                    continue;
+                }
+
+                attackInfos.Add(item.shortname, attackInfo);
+            }
+            return attackInfos;
+        }
+
+        /// <summary>NOTE: Only one of modProjectile, explosive, and baseMelee should be assigned!</summary>
+        private HitValues GetHitValues(BaseCombatEntity entity, float damageScale, ItemDefinition itemDefinition, ItemModProjectile modProjectile, TimedExplosive explosive, BaseMelee baseMelee)
+        {
+            var hitValues = new HitValues();
+            var propDirections = GetField<DirectionProperties[], BaseCombatEntity>(entity, "propDirection");
+            List<DamageTypeEntry> damageTypes;
+
+            if (modProjectile != null)
+            {
+                GameObject projectileObject = modProjectile.projectileObject.Get();
+                Projectile projectile  = projectileObject.GetComponent<Projectile>();
+                TimedExplosive rocket = projectileObject.GetComponent<TimedExplosive>();
+
+                if (projectile != null)
+                {
+                    damageTypes = projectile.damageTypes;
+
+                    if (projectile.conditionLoss > 0)
+                    {
+                        Debug.Log(projectile.conditionLoss);
+                    }
+                }
+                else
+                    damageTypes = rocket.damageTypes;
+            }
+            else if (explosive != null)
+            {
+                damageTypes = explosive.damageTypes;
+            }
+            else if (baseMelee != null)
+            {
+                damageTypes = baseMelee.damageTypes;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+            
+            var weakHit = new HitInfo();
+            weakHit.damageTypes.Add(damageTypes);
+            weakHit.damageTypes.ScaleAll(damageScale);
+
+            if (modProjectile != null)
+            {
+                weakHit.damageTypes.ScaleAll(modProjectile.numProjectiles);
+            }
+
+            entity.ScaleDamage(weakHit);
+
+            var strongHit = new HitInfo();
+            strongHit.damageTypes.Add(damageTypes);
+            strongHit.damageTypes.ScaleAll(damageScale);
+
+            if (modProjectile != null)
+            {
+                strongHit.damageTypes.ScaleAll(modProjectile.numProjectiles);
+            }
+
+            entity.ScaleDamage(strongHit);
+
+            if (propDirections.Length > 1)
+            {
+                Debug.LogWarning(entity.name + ": propDirections.Length > 1, invalid strong hit scaling! " + propDirections.Length);
+            }
+            
+            foreach (var propDirection in propDirections)
+            {
+                propDirection.extraProtection.Scale(strongHit.damageTypes);
+
+                if (propDirection.bounds.size == Vector3.zero)
+                {
+                    // No weak spots, scale weak hit with protection.
+                    propDirection.extraProtection.Scale(weakHit.damageTypes);
+                }
+            }
+
+            hitValues.WeakDPS = weakHit.damageTypes.Total();
+            hitValues.StrongDPS = strongHit.damageTypes.Total();
+            hitValues.TotalWeakHits = hitValues.WeakDPS > 0 ? entity.health / hitValues.WeakDPS : -1;
+            hitValues.TotalStrongHits = hitValues.StrongDPS > 0 ? entity.health / hitValues.StrongDPS : -1;
+
+            float maxCondition = itemDefinition.condition.max;
+
+            // Calculate condition loss
+            if (baseMelee != null)
+            {
+                float conditionLoss = baseMelee.GetConditionLoss();
+                float num = 0;
+
+                foreach (var damageType in baseMelee.damageTypes)
+                {
+                    num += Mathf.Clamp(damageType.amount - strongHit.damageTypes.Get(damageType.type), 0, damageType.amount);
+                }
+                
+                conditionLoss = conditionLoss + num * 0.2f;
+
+                float hitsFromOne = maxCondition / conditionLoss;
+                float numStrongItems = hitValues.TotalStrongHits / hitsFromOne;
+                float numWeakItems = hitValues.TotalWeakHits / hitsFromOne;
+
+                hitValues.TotalStrongItems = hitValues.TotalStrongHits >= 0 ? numStrongItems : -1;
+                hitValues.TotalWeakItems = hitValues.TotalWeakHits >= 0 ? numWeakItems : -1;
+            }
+            else if (explosive != null)
+            {
+                hitValues.TotalStrongItems = Mathf.Ceil(hitValues.TotalStrongHits);
+                hitValues.TotalWeakItems = Mathf.Ceil(hitValues.TotalWeakHits);
+            }
+            else if (modProjectile != null)
+            {
+                var projectileObject = modProjectile.projectileObject.Get();
+                var projectile = projectileObject.GetComponent<Projectile>();
+                float conditionLoss;
+
+                if (projectile != null)
+                {
+                    // Source: BaseProjectile.UpdateItemCondition
+                    conditionLoss = 0.5f * 0.3333333f; // As accurate as it gets. The actual code uses Random.Range(0, 3) == 0 to apply 0.5f condition loss.
+                }
+                else // Explosives/Rockets/etc, shot from weapon
+                {
+                    conditionLoss = 4.5f; // The actual code applies Random.Range(4f, 5f) condition loss.
+                }
+
+                float hitsFromOne = maxCondition / conditionLoss;
+                float numStrongItems = hitValues.TotalStrongHits / hitsFromOne;
+                float numWeakItems = hitValues.TotalWeakHits / hitsFromOne;
+
+                hitValues.TotalStrongItems = hitValues.TotalStrongHits >= 0 ? numStrongItems : -1;
+                hitValues.TotalWeakItems = hitValues.TotalWeakHits >= 0 ? numWeakItems : -1;
+            }
+            
+            return hitValues;
+        }
+
+        private ItemDefinition[] GetAmmoDefinitions(AmmoTypes ammoTypes)
+        {
+            List<ItemDefinition> result = new List<ItemDefinition>();
+
+            foreach (var ammoDefinition in ammoDefinitions)
+            {
+                var projectile = ammoDefinition.GetComponent<ItemModProjectile>();
+
+                if ((projectile.ammoType & ammoTypes) > 0)
+                {
+                    result.Add(ammoDefinition);
+                }
+            }
+
+            return result.ToArray();
         }
 
         void OnPlayerAttack(BasePlayer attacker, HitInfo info)
@@ -727,7 +902,7 @@ namespace RustExportData
         public Dictionary<string, ExportRecipe> Recipes = new Dictionary<string, ExportRecipe>();
         
         [JsonProperty("damageInfo")]
-        public Dictionary<string, DamageInfo> DamageInfo = new Dictionary<string, DamageInfo>();
+        public Dictionary<string, Destructible> DamageInfo = new Dictionary<string, Destructible>();
 
         [JsonProperty("cookables")]
         public Dictionary<string, ExportCookable> CookableInfo = new Dictionary<string, ExportCookable>();
@@ -763,34 +938,6 @@ namespace RustExportData
 
         [JsonProperty("output")]
         public ExportRecipeItem Output;
-    }
-
-    internal class DamageInfo
-    {
-        public class WeaponInfo
-        {
-            [JsonProperty("dps")]
-            public float DPS;
-
-            [JsonProperty("totalHits")]
-            public float TotalHits;
-        }
-
-        [JsonProperty("damages")]
-        public Dictionary<string, WeaponInfo> Damages = new Dictionary<string, WeaponInfo>();
-
-        public void MergeWith(DamageInfo value)
-        {
-            foreach (var keyval in value.Damages)
-            {
-                if (Damages.ContainsKey(keyval.Key))
-                {
-                    continue;
-                }
-
-                Damages.Add(keyval.Key, keyval.Value);
-            }
-        }
     }
 
     internal class Meta
@@ -880,7 +1027,6 @@ namespace RustExportData
     [JsonObject(MemberSerialization.OptIn)]
     internal abstract class ItemMeta
     {
-        [JsonIgnore]
         public abstract string[] Descriptions { get; }
         
         public ItemDefinition Item { get; private set; }
@@ -1071,57 +1217,32 @@ namespace RustExportData
         public Projectile Projectile;
         
         public TimedExplosive TimedExplosive;
+        public BaseMelee Melee;
+
+        [JsonProperty("fireDelay")]
+        private float fireDelay => Melee?.repeatDelay
+                                 ?? BaseProjectile?.ScaleRepeatDelay(BaseProjectile.repeatDelay)
+                                 ?? 0;
+
+        [JsonProperty("reloadTime")]
+        private float? reloadTime => BaseProjectile?.reloadTime ?? 0;
+
+        [JsonProperty("magazineSize")]
+        private int magazineSize => BaseProjectile?.primaryMagazine.definition.builtInSize ?? 0;
 
         public override string[] Descriptions
         {
             get
             {
                 var descs = new List<string>();
-
-                DamageTypeList damageTypes = null;
                 
-                if (TimedExplosive != null)
+                if (Projectile != null && ProjectileMod != null)
                 {
-                    var hitInfo = new HitInfo();
-                    hitInfo.damageTypes = new DamageTypeList();
-
-                    TimedExplosive.damageTypes.ForEach(t => hitInfo.damageTypes.Add(t.type, t.amount));
-                    damageTypes = hitInfo.damageTypes;
-                }
-                else if (Projectile != null && ProjectileMod != null)
-                {
-                    // Scale damage with projectile mod
-                    var hitInfo = new HitInfo();
-                    Projectile.CalculateDamage(hitInfo, Projectile.Modifier.Default, BaseProjectile.damageScale);
-                    damageTypes = hitInfo.damageTypes;
-                    
-                    try
-                    {
-                        //Debug.Log(Item.shortname + ": " + BaseProjectile.projectileVelocityScale + ", " + BaseProjectile.damageScale);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.Log(ex);
-                        throw ex;
-                    }
-
                     if (ProjectileMod.numProjectiles > 1)
                         descs.Add("Fires " + ProjectileMod.numProjectiles + " projectiles per shot");
 
                     if (Projectile.breakProbability > 0)
                         descs.Add(Math.Round(Projectile.breakProbability * 100f) + "% to break ammo on impact");
-                }
-
-                if (damageTypes != null)
-                {
-                    for (int i = 0; i < damageTypes.types.Length; i++)
-                    {
-                        var damageType = (DamageType) i;
-                        var amount = damageTypes.types[i];
-
-                        //if (amount > 0)
-                        //    descs.Add("Inflicts " + Math.Round(amount) + " " + damageType.ToString().ToLower() + " base damage per " + projectileType);
-                    }
                 }
 
                 return descs.ToArray();
