@@ -47,6 +47,9 @@ namespace DiscordBot
             {
                 await Client.Connect(settings.Token, TokenType.Bot);
             });
+
+            // Prevent exiting the program.
+            while (true) { Console.ReadKey(true); }
         }
     }
 }
