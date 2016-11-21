@@ -2,11 +2,11 @@
 
 namespace DiscordBot.Modules
 {
-    public class RecipesModule : IModule
+    public class RecipesModule : CalcRustModule
     {
-        public void Install(ModuleManager manager)
+        public override void Install(ModuleManager manager)
         {
-
+            base.Install(manager);
         }
     }
 }

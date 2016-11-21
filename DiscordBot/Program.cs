@@ -43,6 +43,15 @@ namespace DiscordBot
             Client.AddModule<RecipesModule>();
             Client.AddModule<DestructiblesModule>();
 
+            // Debugging purposes only
+            Client.MessageReceived += (sender, eventArgs) =>
+            {
+                if (eventArgs.User.IsBot) // Don't listen to bots.
+                    return;
+
+                Console.WriteLine(eventArgs.User.Nickname + ": " + eventArgs.Message.Text);
+            };
+
             Client.ExecuteAndWait(async () =>
             {
                 await Client.Connect(settings.Token, TokenType.Bot);
