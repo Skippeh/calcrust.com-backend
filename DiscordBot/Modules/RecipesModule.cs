@@ -1,4 +1,7 @@
-﻿using Discord.Modules;
+﻿using System;
+using System.Threading.Tasks;
+using Discord.Commands;
+using Discord.Modules;
 
 namespace DiscordBot.Modules
 {
@@ -7,6 +10,20 @@ namespace DiscordBot.Modules
         public override void Install(ModuleManager manager)
         {
             base.Install(manager);
+            
+            Commands.CreateGroup("recipes", Config);
+        }
+
+        private void Config(CommandGroupBuilder cgb)
+        {
+            cgb.CreateCommand("requirements")
+                .Alias("reqs")
+                .Description("Prints the requirements for the specified item.")
+                .Parameter("item")
+                .Do(async args =>
+                {
+                    await args.Channel.SendMessage($"Request requirements for item '{args.GetArg("item")}'.");
+                });
         }
     }
 }

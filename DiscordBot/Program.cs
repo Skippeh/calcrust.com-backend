@@ -1,6 +1,7 @@
 ﻿using System;
 using CommandLineParser.Exceptions;
 using Discord;
+using Discord.Commands;
 using Discord.Modules;
 using DiscordBot.Modules;
 
@@ -39,6 +40,11 @@ namespace DiscordBot
             
             Client = new DiscordClient(builder.Build());
             Client.AddService<ModuleService>();
+            Client.UsingCommands(conf =>
+            {
+                conf.HelpMode = HelpMode.Public;
+                conf.AllowMentionPrefix = true;
+            });
 
             Client.AddModule<RecipesModule>();
             Client.AddModule<DestructiblesModule>();
