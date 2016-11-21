@@ -2,6 +2,7 @@
 using CommandLineParser.Exceptions;
 using Discord;
 using Discord.Modules;
+using DiscordBot.Modules;
 
 namespace DiscordBot
 {
@@ -39,8 +40,8 @@ namespace DiscordBot
             Client = new DiscordClient(builder.Build());
             Client.AddService<ModuleService>();
 
-            var calcModule = new RustCalcModule();
-            Client.AddModule(calcModule);
+            Client.AddModule<RecipesModule>();
+            Client.AddModule<DestructiblesModule>();
 
             Client.ExecuteAndWait(async () =>
             {

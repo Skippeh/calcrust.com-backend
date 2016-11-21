@@ -1,8 +1,8 @@
 ﻿using Discord.Modules;
 
-namespace DiscordBot
+namespace DiscordBot.Modules
 {
-    public class RustCalcModule : IModule
+    public class RecipesModule : IModule
     {
         public void Install(ModuleManager manager)
         {
