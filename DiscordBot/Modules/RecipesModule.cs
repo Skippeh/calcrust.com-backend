@@ -10,8 +10,8 @@ namespace DiscordBot.Modules
         public override void Install(ModuleManager manager)
         {
             base.Install(manager);
-            
-            Commands.CreateGroup("recipes", Config);
+
+            manager.CreateCommands("recipes", Config);
         }
 
         private void Config(CommandGroupBuilder cgb)
