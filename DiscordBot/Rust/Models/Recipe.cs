@@ -10,6 +10,6 @@ namespace DiscordBot.Rust.Models
 
         public ItemCount[] Input;
         public ItemCount Output;
-        public int TTC;
+        public float TTC;
     }
 }

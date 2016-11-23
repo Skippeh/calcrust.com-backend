@@ -3,11 +3,13 @@ using Discord.Modules;
 
 namespace DiscordBot.Modules
 {
-    public class DestructiblesModule : CalcRustModule
+    public class DamageInfo : CalcRustModule
     {
         public override void Install(ModuleManager manager)
         {
             base.Install(manager);
+
+
         }
     }
 }

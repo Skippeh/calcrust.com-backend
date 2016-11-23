@@ -61,5 +61,10 @@ namespace DiscordBot.Rust
                 return response;
             }
         }
+
+        public async Task<ApiResponse<RecipeRequirements>> GetRequirements(string shortname, int count)
+        {
+            return await MakeRequest<RecipeRequirements>($"recipes/{HttpUtility.UrlEncode(shortname)}/calculate/{count}/true/detailed");
+        }
     }
 }

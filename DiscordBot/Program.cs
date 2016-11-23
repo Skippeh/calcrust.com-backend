@@ -47,7 +47,7 @@ namespace DiscordBot
             // Testing
             Action apiTest = async () =>
             {
-                var search = await Api.SearchRecipe("rifle");
+
             };
 
             Task.Run(apiTest).Wait();
@@ -69,8 +69,8 @@ namespace DiscordBot
                 conf.AllowMentionPrefix = true;
             });
 
-            Client.AddModule<RecipesModule>();
-            Client.AddModule<DestructiblesModule>();
+            Client.AddModule<Blueprints>();
+            Client.AddModule<DamageInfo>();
 
             Client.ExecuteAndWait(async () =>
             {
