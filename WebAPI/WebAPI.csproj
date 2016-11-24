@@ -36,6 +36,10 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FuzzyString, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FuzzyString.1.0.0\lib\FuzzyString.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <HintPath>..\packages\Mono.Posix-4.5.4.5.0\lib\net45\Mono.Posix.dll</HintPath>
       <Private>True</Private>
@@ -71,7 +75,6 @@
     <Compile Include="ApiResult.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DataManager.cs" />
-    <Compile Include="DiffMatchPatch.cs" />
     <Compile Include="Models\Burnable.cs" />
     <Compile Include="Models\Cookable.cs" />
     <Compile Include="Models\Destructibles\AttackInfo.cs" />

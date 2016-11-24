@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Policy;
 using System.Text;
+using FuzzyString;
 using Nancy;
 using Nancy.Extensions;
 using Nancy.Routing;
@@ -350,9 +351,18 @@ namespace WebAPI
             return new ApiResponse(searchItems(searchTerm));
         }
 
+        private static readonly List<FuzzyStringComparisonOptions> compareOptions = new List<FuzzyStringComparisonOptions>
+        {
+            FuzzyStringComparisonOptions.UseHammingDistance,
+            FuzzyStringComparisonOptions.UseLongestCommonSubstring
+        }; 
+
         private Dictionary<string, Item> searchItems(string searchTerm)
         {
-            return data.Items.Where(keyval => keyval.Value.Name.ToLower().Contains(searchTerm.ToLower())).ToDictionary(keyval => keyval.Key, keyval => keyval.Value);
+            searchTerm = searchTerm.ToLower();
+            List<Item> approximateMatches = data.Items.Values.Where(item => searchTerm.ApproximatelyEquals(item.Name.ToLower(), compareOptions, FuzzyStringComparisonTolerance.Strong)).ToList();
+            
+            return approximateMatches.OrderBy(item => searchTerm.HammingDistance(item.Name.ToLower())).ToDictionary(item => item.Shortname, item => item);
         }
 
         private Dictionary<string, object> searchRecipes(string searchTerm, bool detailed)
