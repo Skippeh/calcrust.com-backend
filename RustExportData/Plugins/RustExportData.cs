@@ -383,44 +383,51 @@ namespace Oxide.Plugins
                 {
                     var prefab = entity.entityPrefab.Get();
 
-                    var thrownWeapon = prefab.GetComponent<ThrownWeapon>();
-                    var baseProjectile = prefab.GetComponent<global::BaseProjectile>();
-                    var meleeWeapon = prefab.GetComponent<BaseMelee>();
-                    
-                    if (thrownWeapon != null)
+                    if (prefab == null)
                     {
-                        var throwable = thrownWeapon.prefabToThrow.Get();
-                        var explosive = throwable.GetComponent<TimedExplosive>();
+                        Debug.LogWarning("ItemModEntity prefab null, ignoring: " + item.shortname);
+                    }
+                    else
+                    {
+                        var thrownWeapon = prefab.GetComponent<ThrownWeapon>();
+                        var baseProjectile = prefab.GetComponent<global::BaseProjectile>();
+                        var meleeWeapon = prefab.GetComponent<BaseMelee>();
 
-                        if (explosive != null)
+                        if (thrownWeapon != null)
+                        {
+                            var throwable = thrownWeapon.prefabToThrow.Get();
+                            var explosive = throwable.GetComponent<TimedExplosive>();
+
+                            if (explosive != null)
+                            {
+                                newItem.Meta.Add(MetaType.Weapon.ToCamelCaseString(), new MetaWeapon(item)
+                                {
+                                    TimedExplosive = explosive
+                                });
+                            }
+                        }
+                        else if (baseProjectile != null)
+                        {
+                            var primaryAmmo = baseProjectile.primaryMagazine.ammoType;
+                            var projectileMod = primaryAmmo.GetComponent<ItemModProjectile>();
+
+                            var projectilePrefab = projectileMod.projectileObject.Get();
+                            var projectile = projectilePrefab.GetComponent<Projectile>();
+
+                            newItem.Meta.Add(MetaType.Weapon.ToCamelCaseString(), new MetaWeapon(item)
+                            {
+                                ProjectileMod = projectileMod,
+                                BaseProjectile = baseProjectile,
+                                Projectile = projectile
+                            });
+                        }
+                        else if (meleeWeapon != null)
                         {
                             newItem.Meta.Add(MetaType.Weapon.ToCamelCaseString(), new MetaWeapon(item)
                             {
-                                TimedExplosive = explosive
+                                Melee = meleeWeapon
                             });
                         }
-                    }
-                    else if (baseProjectile != null)
-                    {
-                        var primaryAmmo = baseProjectile.primaryMagazine.ammoType;
-                        var projectileMod = primaryAmmo.GetComponent<ItemModProjectile>();
-
-                        var projectilePrefab = projectileMod.projectileObject.Get();
-                        var projectile = projectilePrefab.GetComponent<Projectile>();
-
-                        newItem.Meta.Add(MetaType.Weapon.ToCamelCaseString(), new MetaWeapon(item)
-                        {
-                            ProjectileMod = projectileMod,
-                            BaseProjectile = baseProjectile,
-                            Projectile = projectile
-                        });
-                    }
-                    else if (meleeWeapon != null)
-                    {
-                        newItem.Meta.Add(MetaType.Weapon.ToCamelCaseString(), new MetaWeapon(item)
-                        {
-                            Melee = meleeWeapon
-                        });
                     }
                 }
 
@@ -490,7 +497,7 @@ namespace Oxide.Plugins
             baseCombatEntity.Spawn();
 
             Destructible result;
-
+            
             try
             {
                 var attackEntities = new Dictionary<ItemDefinition, BaseEntity>();
@@ -505,6 +512,13 @@ namespace Oxide.Plugins
                     if (entityMod != null)
                     {
                         var entityPrefab = entityMod.entityPrefab.Get();
+
+                        if (entityPrefab == null)
+                        {
+                            Debug.LogWarning("ItemModEntity prefab null, ignoring damage info: " + item.shortname);
+                            continue;
+                        }
+                        
                         var thrownWeapon = entityPrefab.GetComponent<ThrownWeapon>();
                         var attackEntity = entityPrefab.GetComponent<AttackEntity>();
                         
