@@ -577,7 +577,7 @@ namespace Oxide.Plugins
             }
             finally
             {
-                if (!baseCombatEntity.isDestroyed)
+                if (!baseCombatEntity.IsDestroyed)
                 {
                     baseCombatEntity.DestroyShared();
                     baseCombatEntity.Kill();
