@@ -17,6 +17,7 @@ using Utility = Oxide.Classes.Utility;
 
 namespace Oxide.Plugins
 {
+    [Info("Rust Export Data", "Skipcast", "1.0.0")]
     public class RustExportData : RustPlugin
     {
         // debug
