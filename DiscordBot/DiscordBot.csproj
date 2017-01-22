@@ -92,6 +92,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Modules\Blueprints.cs" />
     <Compile Include="Rust\ApiResponse.cs" />
+    <Compile Include="Rust\Models\DamageInfo.cs" />
+    <Compile Include="Rust\Models\DeployableDestructible.cs" />
+    <Compile Include="Rust\Models\Destructible.cs" />
+    <Compile Include="Rust\Models\DestructibleValues.cs" />
     <Compile Include="Rust\Models\Item.cs" />
     <Compile Include="Rust\Models\Recipe.cs" />
     <Compile Include="Rust\Models\RecipeRequirements.cs" />

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
@@ -21,6 +22,21 @@ namespace DiscordBot.Rust
         public async Task<ApiResponse<Dictionary<string, Recipe>>> SearchRecipe(string term)
         {
             return await MakeRequest<Dictionary<string, Recipe>>($"recipes/search/{HttpUtility.UrlEncode(term)}/detailed");
+        }
+
+        public async Task<ApiResponse<Dictionary<string, Item>>> SearchItem(string term)
+        {
+            return await MakeRequest<Dictionary<string, Item>>($"items/search/{HttpUtility.UrlEncode(term)}");
+        }
+
+        public async Task<ApiResponse<Dictionary<string, Destructible>>> SearchDestructible(string term)
+        {
+            return await MakeRequest<Dictionary<string, Destructible>>($"destructibles/search/{HttpUtility.UrlEncode(term)}");
+        }
+
+        public async Task<ApiResponse<Destructible>> GetDestructible(string id, string[] grades)
+        {
+            return await MakeRequest<Destructible>($"destructibles/{id}/{HttpUtility.UrlEncode(string.Join("&", grades))}");
         }
 
         private async Task<ApiResponse<T>> MakeRequest<T>(string apiMethod)
@@ -65,6 +81,11 @@ namespace DiscordBot.Rust
         public async Task<ApiResponse<RecipeRequirements>> GetRequirements(string shortname, int count)
         {
             return await MakeRequest<RecipeRequirements>($"recipes/{HttpUtility.UrlEncode(shortname)}/calculate/{count}/true/detailed");
+        }
+
+        public async Task<ApiResponse<Models.DamageInfo>> GetDamageInfo(string buildingShortName, string buildingGrade = null)
+        {
+            return await MakeRequest<Models.DamageInfo>($"destructibles/{HttpUtility.UrlEncode(buildingShortName)}" + (buildingGrade != null ? $"/{buildingGrade}" : ""));
         }
     }
 }
