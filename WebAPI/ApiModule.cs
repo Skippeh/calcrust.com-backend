@@ -58,6 +58,7 @@ namespace WebAPI
             // Damage info
             Get["/destructibles"] = WrapMethod(_ => GetDestructibles());
             Get["/destructibles/{shortname}/{grades?}"] = WrapMethod((dynamic _) => GetDestructible(_.shortname, _.grades != null ? ((string) _.grades).Split('&') : null));
+            Get["/destructibles/search/{term}"] = WrapMethod((dynamic _) => SearchDestructibles(_.term));
 
             // Search all
             Get["/search/{term}"] = WrapMethod((dynamic _) => SearchAll(_.term, false));
@@ -114,12 +115,14 @@ namespace WebAPI
             var items = searchItems(term);
             var recipes = searchRecipes(term, detailed);
             var cookables = searchCookables(term, detailed);
+            var destructibles = searchDestructibles(term);
 
             return new ApiResponse(new
             {
                 items,
                 recipes,
-                cookables
+                cookables,
+                destructibles
             });
         }
 
@@ -291,6 +294,16 @@ namespace WebAPI
             }));
         }
 
+        private ApiResponse SearchDestructibles(string term)
+        {
+            string searchTerm = term.Trim().ToLower();
+
+            if (string.IsNullOrEmpty(searchTerm))
+                return Error(HttpStatusCode.BadRequest, "Search term is empty.");
+
+            return new ApiResponse(searchDestructibles(searchTerm));
+        }
+
         private ApiResponse GetDestructible(string shortname, string[] grades)
         {
             if (!data.DamageInfo.ContainsKey(shortname))
@@ -337,7 +350,7 @@ namespace WebAPI
             return new ApiResponse(new
             {
                 id = shortname,
-                name = destructible.Type == Destructible.DestructibleType.Deployable ? data.Items[shortname].Name : data.GetBuildingBlockName(shortname),
+                name = GetDestructibleName(shortname, destructible),
                 type = destructible.Type.ToCamelCaseString(),
                 destructible.HasProtection,
                 values = resultValues
@@ -363,6 +376,22 @@ namespace WebAPI
         private Dictionary<string, object> searchCookables(string searchTerm, bool detailed)
         {
             return data.Cookables.Where(keyval => keyval.Value.Output.Result.Name.ToLower().Contains(searchTerm)).ToDictionary(keyval => keyval.Key, keyval => WrapCookable(keyval.Value, detailed));
+        }
+
+        private Dictionary<string, object> searchDestructibles(string searchTerm)
+        {
+            return data.DamageInfo.Where(keyval => GetDestructibleName(keyval.Key, keyval.Value).ToLower().Contains(searchTerm.ToLower())).ToDictionary(kv => kv.Key, kv => (object) new
+            {
+                id = kv.Key,
+                name = GetDestructibleName(kv.Key, kv.Value),
+                type = kv.Value.Type.ToCamelCaseString(),
+                kv.Value.HasProtection
+            });
+        }
+
+        private string GetDestructibleName(string shortname, Destructible destructible)
+        {
+            return destructible.Type == Destructible.DestructibleType.Deployable ? data.Items[shortname].Name : data.GetBuildingBlockName(shortname);
         }
 
         private ApiResponse Error(HttpStatusCode statusCode, string message = null)
