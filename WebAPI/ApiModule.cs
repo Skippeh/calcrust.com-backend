@@ -325,14 +325,25 @@ namespace WebAPI
 
                 var buildingBlockDestructible = ((BuildingBlockDestructible)destructible);
 
-                foreach (string grade in grades.Distinct())
-                {
-                    if (!buildingBlockDestructible.Grades.ContainsKey(grade))
-                    {
-                        return Error(HttpStatusCode.NotFound, "Destructible was found but the specified building grade '" + grade + "'was not.");
-                    }
+                var distinctGrades = grades.Distinct().ToList();
+                var gradesNotFound = new List<string>(distinctGrades);
 
-                    values.Add(grade, buildingBlockDestructible.Grades[grade]);
+                foreach (string grade in distinctGrades)
+                {
+                    foreach (KeyValuePair<string, DestructibleValues> kv in buildingBlockDestructible.Grades)
+                    {
+                        if (kv.Key.ToLower() == grade.ToLower())
+                        {
+                            gradesNotFound.Remove(grade);
+                            values.Add(kv.Key, kv.Value);
+                            continue;
+                        }
+                    }
+                }
+
+                if (gradesNotFound.Count > 0)
+                {
+                    return Error(HttpStatusCode.NotFound, "Destructible was found but the specified building grades [" + string.Join(", ", gradesNotFound.Select(grade => "\"" + grade + "\"")) + "] was not.");
                 }
 
                 resultValues = values;
