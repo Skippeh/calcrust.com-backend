@@ -17,6 +17,7 @@ using Utility = Oxide.Classes.Utility;
 
 namespace Oxide.Plugins
 {
+    [Info("Rust Export Data", "Skipcast", "1.0.0")]
     public class RustExportData : RustPlugin
     {
         // debug
@@ -577,7 +578,7 @@ namespace Oxide.Plugins
             }
             finally
             {
-                if (!baseCombatEntity.isDestroyed)
+                if (!baseCombatEntity.IsDestroyed)
                 {
                     baseCombatEntity.DestroyShared();
                     baseCombatEntity.Kill();
@@ -702,12 +703,9 @@ namespace Oxide.Plugins
             
             foreach (var propDirection in propDirections)
             {
-                propDirection.extraProtection.Scale(strongHit.damageTypes);
-
-                if (propDirection.bounds.size == Vector3.zero)
+                if (propDirection.bounds.size != Vector3.zero) // Item has weakspot
                 {
-                    // No weak spots, scale weak hit with protection.
-                    propDirection.extraProtection.Scale(weakHit.damageTypes);
+                    propDirection.extraProtection.Scale(strongHit.damageTypes);
                 }
             }
 
