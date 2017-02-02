@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using CommandLineParser.Exceptions;
 using SteamKit2;
-using Updater.Pushover;
 using Updater.Steam;
 
 namespace Updater
@@ -10,16 +9,22 @@ namespace Updater
     internal static class Program
     {
         public static SteamSession Session { get; private set; }
-        public static Config Config { get; } = new Config();
+        public static LaunchArguments LaunchArguments { get; } = new LaunchArguments();
         
         public static void Main(string[] args)
         {
             var parser = new CommandLineParser.CommandLineParser();
-            parser.ExtractArgumentAttributes(Config);
+            parser.ExtractArgumentAttributes(LaunchArguments);
 
             try
             {
                 parser.ParseCommandLine(args);
+
+                if (LaunchArguments.ShowHelp)
+                {
+                    parser.ShowUsage();
+                    return;
+                }
             }
             catch (CommandLineArgumentException ex)
             {
