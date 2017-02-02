@@ -34,47 +34,11 @@ namespace Updater
                 }
             });
 
-            callbacks.Subscribe<SteamKit2.SteamClient.ConnectedCallback>(callback =>
+            callbacks.Subscribe<SteamClient.ConnectedCallback>(callback =>
             {
                 apps = client.GetHandler<SteamApps>();
                 user = client.GetHandler<SteamUser>();
             });
-
-            /*callbacks.Subscribe<SteamClient.ConnectedCallback>(callback =>
-            {
-                running = true;
-
-                updateThread = new Thread(RunCallbacks);
-                updateThread.Start();
-
-                apps = client.GetHandler<SteamApps>();
-                user = client.GetHandler<SteamUser>();
-
-                user.LogOnAnonymous(new SteamUser.AnonymousLogOnDetails { ClientLanguage = "en" });
-            });
-
-            callbacks.Subscribe<SteamClient.DisconnectedCallback>(callback =>
-            {
-                running = false;
-                Console.WriteLine("Disconnected from steam.");
-            });
-
-            callbacks.Subscribe<SteamUser.LoggedOffCallback>(callback =>
-            {
-                Console.WriteLine("Logged off: " + callback.Result);
-            });
-
-            callbacks.Subscribe<SteamUser.LoggedOnCallback>(callback =>
-            {
-                callbacks.Subscribe<SteamApps.PICSProductInfoCallback>(apps.PICSGetProductInfo(258550, null, false), productInfos =>
-                {
-                    var publicBranch = productInfos.Apps[258550].KeyValues["depots"]["branches"]["public"];
-                    uint buildId = publicBranch["buildid"].AsUnsignedInteger();
-                    DateTime timeUpdated = DateTimeOffset.FromUnixTimeSeconds(publicBranch["timeupdated"].AsLong()).UtcDateTime;
-
-                    Console.WriteLine("Build ID: " + buildId + ", time updated: " + timeUpdated + " UTC");
-                });
-            });*/
         }
 
         public void Dispose()
