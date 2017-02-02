@@ -4,10 +4,10 @@ namespace Updater
 {
     public class Config
     {
-        [ValueArgument(typeof(string), 'a', "pushoverApiKey", Optional = false)]
+        [ValueArgument(typeof(string), 'a', "pushoverApiKey")]
         public string PushoverApiKey;
 
-        [ValueArgument(typeof(string), 'u', "pushoverUserKey", Optional = false)]
+        [ValueArgument(typeof(string), 'u', "pushoverUserKey")]
         public string PushoverUserKey;
     }
 }
