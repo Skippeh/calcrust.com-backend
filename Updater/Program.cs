@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CommandLineParser.Exceptions;
 using SteamKit2;
 using Updater.Pushover;
+using Updater.Steam;
 
 namespace Updater
 {

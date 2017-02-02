@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SteamKit2;
 
-namespace Updater
+namespace Updater.Steam
 {
     public class SteamTask<T> where T : CallbackMsg
     {

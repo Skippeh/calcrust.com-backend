@@ -65,11 +65,11 @@
     <Compile Include="Pushover\MessageSound.cs" />
     <Compile Include="Pushover\PushoverClient.cs" />
     <Compile Include="Pushover\PushoverMessage.cs" />
-    <Compile Include="SteamTask.cs" />
+    <Compile Include="Steam\SteamTask.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SteamSession.cs" />
-    <Compile Include="TaskState.cs" />
+    <Compile Include="Steam\SteamSession.cs" />
+    <Compile Include="Steam\TaskState.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
