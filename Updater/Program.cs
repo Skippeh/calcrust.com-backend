@@ -2,13 +2,14 @@
 using System.Threading.Tasks;
 using CommandLineParser.Exceptions;
 using SteamKit2;
+using Updater.Pushover;
 
 namespace Updater
 {
     internal static class Program
     {
         public static SteamSession Session { get; private set; }
-        public static Config Config { get; private set; } = new Config();
+        public static Config Config { get; } = new Config();
         
         public static void Main(string[] args)
         {
