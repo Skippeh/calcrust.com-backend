@@ -56,6 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config.cs" />
     <Compile Include="Pushover\MessagePriority.cs" />
     <Compile Include="Pushover\MessageSound.cs" />
     <Compile Include="Pushover\PushoverClient.cs" />
