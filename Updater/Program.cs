@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using CommandLineParser.Exceptions;
 using SteamKit2;
@@ -37,6 +38,20 @@ namespace Updater
                 if (LaunchArguments.ShowHelp)
                 {
                     parser.ShowUsage();
+                    return;
+                }
+
+                if (!LaunchArguments.SteamCMDPath.EndsWith("/") &&
+                    !LaunchArguments.SteamCMDPath.EndsWith("\\") &&
+                    !LaunchArguments.SteamCMDPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                {
+                    LaunchArguments.SteamCMDPath += Path.DirectorySeparatorChar;
+                }
+
+                // Verify existence of SteamCMD
+                if (!File.Exists(LaunchArguments.SteamCMDPath + "steamcmd.exe"))
+                {
+                    Console.Error.WriteLine("Can not find SteamCMD.exe in '" + LaunchArguments.SteamCMDPath + "'.");
                     return;
                 }
             }

@@ -18,5 +18,8 @@ namespace Updater
 
         [ValueArgument(typeof(uint), 'i', "interval", Description = "Seconds between checking for updates.", DefaultValue = 120u)]
         public uint CheckInterval;
+
+        [ValueArgument(typeof(string), 's', "steamcmd", Description = "The filepath to SteamCMD root folder.", Optional = false)]
+        public string SteamCMDPath;
     }
 }
