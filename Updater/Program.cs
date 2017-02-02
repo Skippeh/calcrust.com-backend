@@ -12,9 +12,21 @@ namespace Updater
         public static SteamSession Session { get; private set; }
         public static List<AppPoller> AppPollers = new List<AppPoller>();  
         public static LaunchArguments LaunchArguments { get; } = new LaunchArguments();
+        public static bool RunningUnix { get; private set; }
         
         public static void Main(string[] args)
         {
+            RunningUnix = System.Environment.OSVersion.Platform == PlatformID.Unix;
+
+            if (RunningUnix)
+            {
+                Console.WriteLine("Unix system detected");
+            }
+            else if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                Console.WriteLine("Running on unsupported OS. Some things may not work properly.");
+            }
+
             var parser = new CommandLineParser.CommandLineParser();
             parser.ExtractArgumentAttributes(LaunchArguments);
 
