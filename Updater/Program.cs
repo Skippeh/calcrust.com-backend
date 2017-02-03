@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using CommandLineParser.Exceptions;
+using PushbulletSharp;
 using SteamKit2;
 using Updater.Steam;
 
@@ -14,7 +15,8 @@ namespace Updater
         public static List<AppPoller> AppPollers = new List<AppPoller>();  
         public static LaunchArguments LaunchArguments { get; } = new LaunchArguments();
         public static bool RunningUnix { get; private set; }
-        
+        public static PushbulletClient Pushbullet { get; private set; }
+
         public static void Main(string[] args)
         {
             RunningUnix = System.Environment.OSVersion.Platform == PlatformID.Unix;
@@ -61,7 +63,9 @@ namespace Updater
                 parser.ShowUsage();
                 return;
             }
-            
+
+            InitializePushbullet();
+
             Session = new SteamSession();
 
             AppPoller.LoadCurrentVersions(true);
@@ -86,6 +90,26 @@ namespace Updater
             {
                 poller.Dispose();
             }
+        }
+
+        private static void InitializePushbullet()
+        {
+            string apiKey = LaunchArguments.PushbulletToken;
+            string password = LaunchArguments.PushbulletPassword;
+            TimeZoneInfo timeZone = TimeZoneInfo.Utc;
+
+            if (apiKey == null)
+            {
+                Console.WriteLine("Pushbullet token not specified, notifications disabled.");
+                return;
+            }
+
+            Console.WriteLine("Pushbullet token specified, notifications will be sent.");
+
+            if (password != null)
+                Pushbullet = new PushbulletClient(apiKey, password, timeZone);
+            else
+                Pushbullet = new PushbulletClient(apiKey, timeZone);
         }
     }
 }
