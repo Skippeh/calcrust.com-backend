@@ -42,20 +42,6 @@ namespace Updater
                     parser.ShowUsage();
                     return;
                 }
-
-                if (!LaunchArguments.SteamCMDPath.EndsWith("/") &&
-                    !LaunchArguments.SteamCMDPath.EndsWith("\\") &&
-                    !LaunchArguments.SteamCMDPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                {
-                    LaunchArguments.SteamCMDPath += Path.DirectorySeparatorChar;
-                }
-
-                // Verify existence of SteamCMD
-                if (!File.Exists(LaunchArguments.SteamCMDPath + "steamcmd.exe"))
-                {
-                    Console.Error.WriteLine("Can not find SteamCMD.exe in '" + LaunchArguments.SteamCMDPath + "'.");
-                    return;
-                }
             }
             catch (CommandLineArgumentException ex)
             {
@@ -64,8 +50,21 @@ namespace Updater
                 return;
             }
 
-            InitializePushbullet();
+            if (!LaunchArguments.InstallPath.EndsWith("/") &&
+                !LaunchArguments.InstallPath.EndsWith("\\") &&
+                !LaunchArguments.InstallPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                LaunchArguments.InstallPath += Path.DirectorySeparatorChar;
+            }
 
+            if (!File.Exists("ThirdParty/DepotDownloader/DepotDownloader.exe"))
+            {
+                Console.Error.WriteLine("DepotDownloader.exe not found.");
+                return;
+            }
+
+            InitializePushbullet();
+            
             Session = new SteamSession();
 
             AppPoller.LoadCurrentVersions(true);

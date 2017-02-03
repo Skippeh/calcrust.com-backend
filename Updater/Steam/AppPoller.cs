@@ -69,8 +69,7 @@ namespace Updater.Steam
                 try
                 {
                     cancellation.Token.ThrowIfCancellationRequested();
-
-                    Console.WriteLine("Checking for updates for appid/branch: " + AppId + "/" + Branch);
+                    
                     UpdateInfo updateInfo;
 
                     if (!await Program.Session.ConnectAsync())
@@ -112,6 +111,7 @@ namespace Updater.Steam
                             if (await DownloadUpdates())
                             {
                                 currentVersions[AppId] = updateInfo.BuildID;
+                                Console.WriteLine("Successfully downloaded update.");
                             }
                             else
                             {
@@ -153,14 +153,9 @@ namespace Updater.Steam
             return 0;
         }
 
-        private Task<bool> DownloadUpdates()
+        private async Task<bool> DownloadUpdates()
         {
-            return Task.Run(() =>
-            {
-
-
-                return false;
-            });
+            return await DepotUtility.DownloadAppAsync(AppId, Branch);
         }
 
         private async Task<UpdateInfo> GetUpdateInfo()

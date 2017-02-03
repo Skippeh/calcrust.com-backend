@@ -71,6 +71,7 @@
     <Compile Include="LaunchArguments.cs" />
     <Compile Include="PushBulletExtensions.cs" />
     <Compile Include="Steam\AppPoller.cs" />
+    <Compile Include="Steam\DepotUtility.cs" />
     <Compile Include="Steam\SteamTask.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -81,6 +82,17 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ThirdParty\DepotDownloader\DepotDownloader.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ThirdParty\DepotDownloader\protobuf-net.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ThirdParty\DepotDownloader\SteamKit2.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
