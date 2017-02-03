@@ -17,7 +17,16 @@ namespace Updater.Steam
 
                 Directory.CreateDirectory(installDir);
 
-                var startInfo = new ProcessStartInfo(FilePath, $"-app {appId} -beta {branch} -dir {installDir}");
+                string filePath = FilePath;
+                string arguments = $"-app {appId} -beta {branch} -dir {installDir}";
+
+                if (Program.RunningUnix)
+                {
+                    filePath = "/usr/bin/mono"; // Todo: Don't assume mono location
+                    arguments = FilePath + " " + arguments;
+                }
+
+                var startInfo = new ProcessStartInfo(filePath, arguments);
                 startInfo.RedirectStandardOutput = true;
                 startInfo.RedirectStandardError = true;
                 startInfo.UseShellExecute = false;
