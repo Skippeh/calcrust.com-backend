@@ -44,9 +44,17 @@ namespace Updater.Steam
             return false;
         }
 
-        public static void SaveCurrentVersions()
+        public static bool SaveCurrentVersions()
         {
-            File.WriteAllText("versions.json", JsonConvert.SerializeObject(currentVersions));
+            try
+            {
+                File.WriteAllText("versions.json", JsonConvert.SerializeObject(currentVersions));
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public AppPoller(int appId, string branch)
@@ -106,11 +114,17 @@ namespace Updater.Steam
                     {
                         try
                         {
+                            Task notificationTask = null;
+
+                            if (Program.Pushbullet != null)
+                                notificationTask = Program.Pushbullet.SendNotificationAsync("Rust Calculator", $"Downloading update...\nAppId/Branch: {AppId}/{Branch}\nBuild id: {updateInfo.BuildID}\nReleased: {updateInfo.TimeUpdated} UTC");
+
                             Console.WriteLine("Downloading update. Build ID: " + updateInfo.BuildID + ", released: " + updateInfo.TimeUpdated);
 
                             if (await DownloadUpdates())
                             {
                                 currentVersions[AppId] = updateInfo.BuildID;
+                                SaveCurrentVersions();
                                 Console.WriteLine("Successfully downloaded update.");
                             }
                             else
@@ -119,6 +133,9 @@ namespace Updater.Steam
                                 await Retry();
                                 continue;
                             }
+
+                            if (notificationTask != null)
+                                await notificationTask; // Just incase it's not done (highly unlikely though).
                         }
                         catch (Exception ex)
                         {
