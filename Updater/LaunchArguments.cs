@@ -7,8 +7,11 @@ namespace Updater
         [ValueArgument(typeof(bool), 'h', "help")]
         public bool ShowHelp;
 
-        [ValueArgument(typeof(string), 'p', "pushbulletToken", Description = "Api key for Pushbullet. If specified notifications will be posted on certain events.")]
+        [ValueArgument(typeof(string), 't', "pushbulletToken", Description = "Api key for Pushbullet. If specified notifications will be posted on certain events.")]
         public string PushbulletToken;
+
+        [ValueArgument(typeof(string), 'p', "pushbulletPassword", Description = "Pushbullet encryption password.")]
+        public string PushbulletPassword;
 
         [ValueArgument(typeof(string), 'b', "branch", DefaultValue = "public", Description = "The game branch to use, for example staging or prerelease.")]
         public string Branch;
