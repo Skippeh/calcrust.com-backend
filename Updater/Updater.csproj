@@ -34,6 +34,10 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
+      <HintPath>..\packages\PushBulletSharp.3.0.1\lib\portable-windows8+net45\BouncyCastle.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="CommandLineArgumentsParser, Version=3.0.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CommandLineArgumentsParser.3.0.4\lib\net46\CommandLineArgumentsParser.dll</HintPath>
       <Private>True</Private>
@@ -44,6 +48,10 @@
     </Reference>
     <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PushbulletSharp, Version=3.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PushBulletSharp.3.0.1\lib\portable-windows8+net45\PushbulletSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SteamKit2, Version=1.8.0.26737, Culture=neutral, PublicKeyToken=ed3ce47ed5aad940, processorArchitecture=MSIL">
@@ -61,10 +69,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LaunchArguments.cs" />
-    <Compile Include="Pushover\MessagePriority.cs" />
-    <Compile Include="Pushover\MessageSound.cs" />
-    <Compile Include="Pushover\PushoverClient.cs" />
-    <Compile Include="Pushover\PushoverMessage.cs" />
     <Compile Include="Steam\AppPoller.cs" />
     <Compile Include="Steam\SteamTask.cs" />
     <Compile Include="Program.cs" />
