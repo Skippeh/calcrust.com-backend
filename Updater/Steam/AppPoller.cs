@@ -181,7 +181,7 @@ namespace Updater.Steam
 
             var branch = productInfo.Apps[258550].KeyValues["depots"]["branches"][Program.LaunchArguments.Branch]; // Todo: Verify that branch exists.
             uint buildId = branch["buildid"].AsUnsignedInteger();
-            DateTime timeUpdated = DateTimeOffset.FromUnixTimeSeconds(branch["timeupdated"].AsLong()).UtcDateTime;
+            DateTime timeUpdated = Utilities.FromUnixTimeSeconds(branch["timeupdated"].AsLong()).UtcDateTime;
             
             return new UpdateInfo
             {
