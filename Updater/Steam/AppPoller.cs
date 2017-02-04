@@ -80,18 +80,8 @@ namespace Updater.Steam
                     
                     UpdateInfo updateInfo;
 
-                    if (!await Program.Session.ConnectAsync())
+                    if (!Program.Session.LoggedIn)
                     {
-                        Console.Error.WriteLine("Failed to connect to Steam.");
-                        await Retry();
-                        continue;
-                    }
-
-                    var account = await Program.Session.Login();
-
-                    if (account.Result != EResult.OK)
-                    {
-                        Console.Error.WriteLine("Failed to log in to Steam: " + account.Result);
                         await Retry();
                         continue;
                     }
@@ -147,15 +137,16 @@ namespace Updater.Steam
                 {
                     Console.Error.WriteLine(ex);
                 }
-
-                await Program.Session.Logoff();
+                
                 await Task.Delay(checkDelay, cancellation.Token);
             }
         }
 
         private async Task Retry()
         {
-            Console.WriteLine("Retrying in 10 seconds...");
+            if (Program.Session.LoggedIn)
+                Console.WriteLine("Retrying in 10 seconds...");
+
             await Task.Delay(TimeSpan.FromSeconds(10), cancellation.Token);
         }
 

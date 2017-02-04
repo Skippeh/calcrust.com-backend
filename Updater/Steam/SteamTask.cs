@@ -57,5 +57,10 @@ namespace Updater.Steam
             Result = result;
             State = state;
         }
+
+        public void Cancel()
+        {
+            cancellation.Cancel();
+        }
     }
 }

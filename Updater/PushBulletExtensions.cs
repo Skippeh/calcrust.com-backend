@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using PushbulletSharp;
 using PushbulletSharp.Models.Requests;
@@ -9,29 +10,38 @@ namespace Updater
 {
     public static class PushBulletExtensions
     {
-        /// <summary>Broadcasts an notification ephemeral to all devices.</summary>
+        /// <summary>Tries to send a notification to all devices. Returns null if sent unsuccessfully.</summary>
         public static PushResponse SendNotification(this PushbulletClient client, string title, string text)
         {
-            if (client == null)
-                throw new NullReferenceException();
+            if (client == null) throw new NullReferenceException();
+            if (title == null) throw new ArgumentNullException(nameof(title));
+            if (text == null) throw new ArgumentNullException(nameof(text));
 
-            var currentUser = client.CurrentUsersInformation();
-
-            if (currentUser != null)
+            try
             {
-                var request = new PushNoteRequest
-                {
-                    Email = currentUser.Email,
-                    Title = title,
-                    Body = text
-                };
+                var currentUser = client.CurrentUsersInformation();
 
-                return client.PushNote(request);
+                if (currentUser != null)
+                {
+                    var request = new PushNoteRequest
+                    {
+                        Email = currentUser.Email,
+                        Title = title,
+                        Body = text
+                    };
+
+                    return client.PushNote(request);
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
 
             return null;
         }
 
+        /// <summary>Tries to send a notification to all devices. Returns null if sent unsuccessfully.</summary>
         public static Task<PushResponse> SendNotificationAsync(this PushbulletClient client, string title, string text)
         {
             return Task.Run(() => SendNotification(client, title, text));
