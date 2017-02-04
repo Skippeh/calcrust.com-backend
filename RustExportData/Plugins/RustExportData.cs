@@ -171,7 +171,8 @@ namespace Oxide.Plugins
                     "impact.prefab",
                     "knock.prefab",
                     "ladder_prop.prefab",
-                    "-deploy.asset"
+                    "-deploy.asset",
+                    ".skinnable.asset"
                 };
 
                 foreach (var str in GameManifest.Get().pooledStrings)
@@ -705,6 +706,11 @@ namespace Oxide.Plugins
             {
                 if (propDirection.bounds.size != Vector3.zero) // Item has weakspot
                 {
+                    propDirection.extraProtection.Scale(strongHit.damageTypes);
+                }
+                else
+                {
+                    propDirection.extraProtection.Scale(weakHit.damageTypes);
                     propDirection.extraProtection.Scale(strongHit.damageTypes);
                 }
             }
