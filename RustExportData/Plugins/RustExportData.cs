@@ -78,7 +78,7 @@ namespace Oxide.Plugins
         [ConsoleCommand("calcrust.upload")]
         void ConsoleCmd_Upload(ConsoleSystem.Arg arg)
         {
-            if (arg.FromClient)
+            if (arg.IsClientside)
                 return;
             
             string data = JsonConvert.SerializeObject(ParseData());
@@ -92,7 +92,7 @@ namespace Oxide.Plugins
         [ConsoleCommand("calcrust.export")]
         void ConsoleCmd_Export(ConsoleSystem.Arg arg)
         {
-            if (arg.FromClient)
+            if (arg.IsClientside)
                 return;
 
             var data = ParseData();
@@ -103,7 +103,7 @@ namespace Oxide.Plugins
         [ConsoleCommand("calcrust.uploadurl")]
         void ConsoleCmd_UploadUrl(ConsoleSystem.Arg arg)
         {
-            if (arg.FromClient)
+            if (arg.IsClientside)
                 return;
 
             string url = arg.GetString(0, null);
@@ -129,7 +129,7 @@ namespace Oxide.Plugins
         [ConsoleCommand("calcrust.uploadpass")]
         void ConsoleCmd_UploadPassword(ConsoleSystem.Arg arg)
         {
-            if (arg.FromClient)
+            if (arg.IsClientside)
                 return;
 
             string password = arg.GetString(0, null);
