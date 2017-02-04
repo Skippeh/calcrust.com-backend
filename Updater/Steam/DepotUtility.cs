@@ -9,7 +9,7 @@ namespace Updater.Steam
     {
         const string FilePath = "./ThirdParty/DepotDownloader/DepotDownloader.exe";
 
-        public static Task<bool> DownloadAppAsync(int appId, string branch)
+        public static Task<bool> DownloadAppAsync(uint appId, string branch)
         {
             return Task.Run<bool>(() =>
             {

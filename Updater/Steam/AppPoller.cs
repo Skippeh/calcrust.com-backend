@@ -10,13 +10,13 @@ namespace Updater.Steam
 {
     public class AppPoller : IDisposable
     {
-        public int AppId;
+        public uint AppId;
         public string Branch;
         
         private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
         private readonly TimeSpan checkDelay = TimeSpan.FromSeconds(Program.LaunchArguments.CheckInterval);
 
-        private static Dictionary<int, uint> currentVersions = new Dictionary<int, uint>();
+        private static Dictionary<uint, uint> currentVersions = new Dictionary<uint, uint>();
 
         private Task pollingTask; 
 
@@ -30,7 +30,7 @@ namespace Updater.Steam
 
             try
             {
-                currentVersions = JsonConvert.DeserializeObject<Dictionary<int, uint>>(File.ReadAllText("versions.json"));
+                currentVersions = JsonConvert.DeserializeObject<Dictionary<uint, uint>>(File.ReadAllText("versions.json"));
                 return true;
             }
             catch (JsonSerializationException)
@@ -57,7 +57,7 @@ namespace Updater.Steam
             }
         }
 
-        public AppPoller(int appId, string branch)
+        public AppPoller(uint appId, string branch)
         {
             AppId = appId;
             Branch = branch;
@@ -159,7 +159,7 @@ namespace Updater.Steam
             await Task.Delay(TimeSpan.FromSeconds(10), cancellation.Token);
         }
 
-        private uint GetInstalledVersion(int appId)
+        private uint GetInstalledVersion(uint appId)
         {
             if (currentVersions.ContainsKey(appId))
             {
