@@ -707,6 +707,11 @@ namespace Oxide.Plugins
                 {
                     propDirection.extraProtection.Scale(strongHit.damageTypes);
                 }
+                else
+                {
+                    propDirection.extraProtection.Scale(weakHit.damageTypes);
+                    propDirection.extraProtection.Scale(strongHit.damageTypes);
+                }
             }
 
             hitValues.WeakDPS = weakHit.damageTypes.Total();
