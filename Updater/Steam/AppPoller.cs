@@ -177,9 +177,9 @@ namespace Updater.Steam
 
         private async Task<UpdateInfo> GetUpdateInfo()
         {
-            var productInfo = await Program.Session.GetProductInfo(258550);
+            var productInfo = await Program.Session.GetProductInfo(AppId);
 
-            var branch = productInfo.Apps[258550].KeyValues["depots"]["branches"][Program.LaunchArguments.Branch]; // Todo: Verify that branch exists.
+            var branch = productInfo.Apps[AppId].KeyValues["depots"]["branches"][Program.LaunchArguments.Branch]; // Todo: Verify that branch exists.
             uint buildId = branch["buildid"].AsUnsignedInteger();
             DateTime timeUpdated = Utilities.FromUnixTimeSeconds(branch["timeupdated"].AsLong()).UtcDateTime;
             
