@@ -63,6 +63,12 @@ namespace Updater
                 return;
             }
 
+            if (!File.Exists("Data/RustExportData.cs"))
+            {
+                Console.Error.WriteLine("Data/RustExportData.cs not found.");
+                return;
+            }
+
             InitializePushbullet();
             
             Session = new SteamSession();

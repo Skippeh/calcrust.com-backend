@@ -72,6 +72,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Data\RustExportData.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Compile Include="LaunchArguments.cs" />
     <Compile Include="Oxide\PatcherUtility.cs" />
     <Compile Include="Extensions\ProcessStartInfoExtensions.cs" />
