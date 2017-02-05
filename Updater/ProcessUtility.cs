@@ -7,8 +7,9 @@ namespace Updater
 {
     public static class ProcessUtility
     {
-        /// <summary>Starts the process with the specified arguments and then redirects the output to the console with the specified prefix. Returns the exit code.</summary>
-        public static Task<int> StartAndRedirectProcess(string fileName, string outputPrefix = "-", params string[] arguments)
+        /// <summary>Starts the process with the specified arguments and then redirects the output to the console with the specified prefix. Returns the exit code, or null if process time exceeded timeout.</summary>
+        /// <param name="timeout">Max milliseconds to wait before forcefully closing process and failing.</param>
+        public static Task<int?> StartAndRedirectProcess(string fileName, string outputPrefix = "-", int timeout = -1, params string[] arguments)
         {
             for (int i = 0; i < arguments.Length; ++i)
             {
@@ -31,10 +32,11 @@ namespace Updater
             return StartAndRedirectProcess(process, outputPrefix);
         }
 
-        /// <summary>Starts the specified process and then redirects the output to the console with the specified prefix. Returns the exit code.</summary>
-        public static Task<int> StartAndRedirectProcess(Process process, string outputPrefix = "-")
+        /// <summary>Starts the specified process and then redirects the output to the console with the specified prefix. Returns the exit code, or null if process time exceeded timeout.</summary>
+        /// <param name="timeout">Max milliseconds to wait before forcefully closing process and failing.</param>
+        public static Task<int?> StartAndRedirectProcess(Process process, string outputPrefix = "-", int timeout = -1)
         {
-            return Task.Run<int>(() =>
+            return Task.Run<int?>(() =>
             {
                 var startInfo = process.StartInfo;
                 startInfo.RedirectStandardOutput = true;
@@ -59,7 +61,12 @@ namespace Updater
                 process.BeginErrorReadLine();
                 process.BeginOutputReadLine();
 
-                process.WaitForExit();
+                if (!process.WaitForExit(timeout))
+                {
+                    process.Kill();
+                    return null;
+                }
+
                 return process.ExitCode;
             });
         } 

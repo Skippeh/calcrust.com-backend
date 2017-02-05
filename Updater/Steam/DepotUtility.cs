@@ -14,7 +14,7 @@ namespace Updater.Steam
                 string installDir = $"{Program.LaunchArguments.InstallPath}{appId}-{branch}/";
                 Directory.CreateDirectory(installDir);
 
-                int exitCode = await ProcessUtility.StartAndRedirectProcess(FilePath, $"[{appId}/{branch}] ",
+                int? exitCode = await ProcessUtility.StartAndRedirectProcess(FilePath, $"[{appId}/{branch}] ", -1,
                                                                             "-app", appId.ToString(),
                                                                             "-beta", branch,
                                                                             "-dir", installDir);

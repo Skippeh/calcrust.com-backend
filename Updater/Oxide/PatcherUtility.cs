@@ -44,7 +44,7 @@ namespace Updater.Oxide
 
                         File.WriteAllText(serverRootPath + "patch.opj", JsonConvert.SerializeObject(jObject));
 
-                        int exitCode = await ProcessUtility.StartAndRedirectProcess("./ThirdParty/OxidePatcher/OxidePatcher.exe", "[OxidePatcher] ",
+                        int? exitCode = await ProcessUtility.StartAndRedirectProcess("./ThirdParty/OxidePatcher/OxidePatcher.exe", "[OxidePatcher] ", -1,
                                                                "-c",
                                                                "-p", $"{serverRootPath}patch.opj");
 
