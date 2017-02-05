@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using PushbulletSharp;
 using PushbulletSharp.Models.Requests;
@@ -45,5 +46,45 @@ namespace Updater.Extensions
         {
             return Task.Run(() => SendNotification(client, title, text));
         }
+
+        public static PushResponse SendFile(this PushbulletClient client, Stream fileStream, string text)
+        {
+            if (client == null) throw new NullReferenceException();
+            if (fileStream == null) throw new ArgumentNullException(nameof(fileStream));
+
+            try
+            {
+                var currentUser = client.CurrentUsersInformation();
+
+                if (currentUser != null)
+                {
+                    var request = new PushFileRequest
+                    {
+                        FileType = "text/plain",
+                        FileName = "ErrorLog.txt",
+                        Body = text,
+                        FileStream = fileStream
+                    };
+
+                    return client.PushFile(request);
+                }
+            }
+            catch (IOException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                return null;
+            }
+
+            return null;
+        }
+
+        public static Task<PushResponse> SendFileAsync(this PushbulletClient client, Stream fileStream, string text)
+        {
+            return Task.Run(() => SendFile(client, fileStream, text));
+        } 
     }
 }
