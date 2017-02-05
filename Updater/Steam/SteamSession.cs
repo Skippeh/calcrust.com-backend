@@ -123,32 +123,35 @@ namespace Updater.Steam
                 Task.WaitAll(Logoff());
         }
         
-        public async Task<bool> ConnectAsync()
+        public Task<bool> ConnectAsync()
         {
-            if (client.IsConnected)
-                return true;
-
-            stayConnected = true;
-            var steamTask1 = new SteamTask<SteamClient.ConnectedCallback>(callbacks);
-            var steamTask2 = new SteamTask<SteamClient.DisconnectedCallback>(callbacks);
-            client.Connect();
-
-            var task1 = steamTask1.WaitForResult();
-            var task2 = steamTask2.WaitForResult();
-            Task.WaitAny(task1, task2);
-
-            if (task1.IsCompleted) // Connected
+            return Task.Run<bool>(() =>
             {
-                steamTask2.Cancel();
-                return true;
-            }
-            else if (task2.IsCompleted) // Failed to connect
-            {
-                steamTask1.Cancel();
-                return false;
-            }
+                if (client.IsConnected)
+                    return true;
 
-            throw new NotImplementedException();
+                stayConnected = true;
+                var steamTask1 = new SteamTask<SteamClient.ConnectedCallback>(callbacks);
+                var steamTask2 = new SteamTask<SteamClient.DisconnectedCallback>(callbacks);
+                client.Connect();
+
+                var task1 = steamTask1.WaitForResult();
+                var task2 = steamTask2.WaitForResult();
+                Task.WaitAny(task1, task2);
+
+                if (task1.IsCompleted) // Connected
+                {
+                    steamTask2.Cancel();
+                    return true;
+                }
+                else if (task2.IsCompleted) // Failed to connect
+                {
+                    steamTask1.Cancel();
+                    return false;
+                }
+
+                throw new NotImplementedException();
+            });
         }
 
         /// <summary>Logs into steam anonymously.</summary>
