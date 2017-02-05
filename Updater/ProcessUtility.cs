@@ -48,8 +48,7 @@ namespace Updater
 
                 process.OutputDataReceived += onOutput;
                 process.ErrorDataReceived += onError;
-
-                Console.WriteLine("Starting process: " + startInfo.FileName + " " + startInfo.Arguments);
+                
                 process.Start();
                 process.BeginErrorReadLine();
                 process.BeginOutputReadLine();
