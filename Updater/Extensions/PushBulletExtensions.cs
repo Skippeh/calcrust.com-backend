@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using PushbulletSharp;
 using PushbulletSharp.Models.Requests;
-using PushbulletSharp.Models.Requests.Ephemerals;
 using PushbulletSharp.Models.Responses;
 
-namespace Updater
+namespace Updater.Extensions
 {
     public static class PushBulletExtensions
     {

@@ -4,6 +4,7 @@ using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
 using SteamKit2;
+using Updater.Extensions;
 
 namespace Updater.Steam
 {

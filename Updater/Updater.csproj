@@ -69,8 +69,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LaunchArguments.cs" />
-    <Compile Include="PushBulletExtensions.cs" />
     <Compile Include="Extensions\ProcessStartInfoExtensions.cs" />
+    <Compile Include="Extensions\PushBulletExtensions.cs" />
     <Compile Include="ProcessUtility.cs" />
     <Compile Include="Steam\AppPoller.cs" />
     <Compile Include="Steam\DepotUtility.cs" />
