@@ -113,6 +113,21 @@ namespace Updater.Steam
 
                             Console.WriteLine("Downloading update. Build ID: " + updateInfo.BuildID + ", released: " + updateInfo.TimeUpdated);
 
+                            // Delete managed dll's to avoid patching the same files multiple times.
+                            try
+                            {
+                                if (Directory.Exists($"depots/{AppId}-{Branch}/RustDedicated_Data/Managed"))
+                                {
+                                    Directory.Delete($"depots/{AppId}-{Branch}/RustDedicated_Data/Managed", true);
+                                }
+                            }
+                            catch (IOException ex)
+                            {
+                                Console.Error.WriteLine(ex);
+                                await Retry();
+                                continue;
+                            }
+
                             if (await DownloadUpdates())
                             {
                                 currentVersions[AppId] = updateInfo.BuildID;
@@ -125,6 +140,10 @@ namespace Updater.Steam
                                     await Retry();
                                     continue;
                                 }
+
+                                Console.WriteLine("Successfully patched server.");
+
+
 
                                 SaveCurrentVersions();
                             }
