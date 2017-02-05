@@ -11,8 +11,7 @@ namespace Updater
 {
     internal static class Program
     {
-        public static SteamSession Session { get; private set; }
-        public static List<AppPoller> AppPollers = new List<AppPoller>();  
+        public static List<AppPoller> AppPollers = new List<AppPoller>();
         public static LaunchArguments LaunchArguments { get; } = new LaunchArguments();
         public static bool RunningUnix { get; private set; }
         public static PushbulletClient Pushbullet { get; private set; }
@@ -71,10 +70,14 @@ namespace Updater
 
             InitializePushbullet();
             
-            Session = new SteamSession();
-
             AppPoller.LoadCurrentVersions(true);
-            AppPollers.Add(new AppPoller(258550, LaunchArguments.Branch));
+            AppPollers.Add(new AppPoller(258550, LaunchArguments.Branch, null, null)); // Server
+
+            if (LaunchArguments.SteamUsername != null && LaunchArguments.SteamPassword != null)
+            {
+                Console.WriteLine("Client will be updated too.");
+                AppPollers.Add(new AppPoller(252490, LaunchArguments.Branch, LaunchArguments.SteamUsername, LaunchArguments.SteamPassword)); // Client
+            }
 
             Console.WriteLine("Press CTRL+Q to quit.");
             
@@ -87,9 +90,7 @@ namespace Updater
                     break;
                 }
             }
-
-            Session.Dispose();
-
+            
             foreach (var poller in AppPollers)
             {
                 poller.Dispose();

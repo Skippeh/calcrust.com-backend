@@ -10,6 +10,9 @@ namespace Updater.Steam
 {
     public class SteamSession : IDisposable
     {
+        public string Username;
+        public string Password;
+
         public bool LoggedIn { get; private set; }
         private SteamUser.LoggedOnCallback currentLogin;
 
@@ -21,8 +24,11 @@ namespace Updater.Steam
         private bool stayConnected;
         private bool reconnecting;
 
-        public SteamSession()
+        public SteamSession(string username = null, string password = null)
         {
+            Username = username;
+            Password = password;
+
             client = new SteamClient();
             callbacks = new CallbackManager(client);
 
@@ -155,7 +161,7 @@ namespace Updater.Steam
             });
         }
 
-        /// <summary>Logs into steam anonymously.</summary>
+        /// <summary>Logs into steam anonymously or with the username and password fields.</summary>
         public async Task<SteamUser.LoggedOnCallback> Login()
         {
             if (!client.IsConnected)
@@ -165,8 +171,20 @@ namespace Updater.Steam
                 return currentLogin;
             
             var task = new SteamTask<SteamUser.LoggedOnCallback>(callbacks);
-            user.LogOnAnonymous();
-            
+
+            if (Username != null)
+            {
+                user.LogOn(new SteamUser.LogOnDetails
+                {
+                    Username = Username,
+                    Password = Password
+                });
+            }
+            else
+            {
+                user.LogOnAnonymous();
+            }
+
             var result = await task.WaitForResult();
             LoggedIn = result.Result == EResult.OK;
 

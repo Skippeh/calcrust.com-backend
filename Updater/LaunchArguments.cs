@@ -21,5 +21,11 @@ namespace Updater
 
         [ValueArgument(typeof(string), 'n', "installpath", Description = "The folder to download rust files to.", DefaultValue = "./depots/")]
         public string InstallPath;
+
+        [ValueArgument(typeof(string), 'u', "username", Description = "Steam username. If specified client item images will be downloaded as well.")]
+        public string SteamUsername;
+
+        [ValueArgument(typeof(string), 'a', "password", Description = "Steam password. If specified client item images will be downloaded as well.")]
+        public string SteamPassword;
     }
 }

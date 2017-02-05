@@ -20,7 +20,11 @@ namespace Updater.Steam
 
         private static Dictionary<uint, uint> currentVersions = new Dictionary<uint, uint>();
 
-        private Task pollingTask; 
+        private Task pollingTask;
+        private bool isServer => AppId == 258550;
+        private bool isClient => AppId == 252490;
+
+        private SteamSession session;
 
         public static bool LoadCurrentVersions(bool exitOnParseFailure)
         {
@@ -59,10 +63,12 @@ namespace Updater.Steam
             }
         }
 
-        public AppPoller(uint appId, string branch)
+        public AppPoller(uint appId, string branch, string username, string password)
         {
             AppId = appId;
             Branch = branch;
+
+            session = new SteamSession(username, password);
 
             pollingTask = Task.Run(PollUpdates, cancellation.Token);
         }
@@ -70,6 +76,7 @@ namespace Updater.Steam
         public void Dispose()
         {
             cancellation.Cancel();
+            session.Dispose();
         }
 
         private async Task PollUpdates()
@@ -82,7 +89,7 @@ namespace Updater.Steam
                     
                     UpdateInfo updateInfo;
 
-                    if (!Program.Session.LoggedIn)
+                    if (!session.LoggedIn)
                     {
                         await Retry();
                         continue;
@@ -110,7 +117,7 @@ namespace Updater.Steam
 
                             if (Program.Pushbullet != null)
                                 notificationTask = Program.Pushbullet.SendNotificationAsync("Rust Calculator",
-                                    $"Downloading update...\nAppId/Branch: {AppId}/{Branch}\n" +
+                                    $"Downloading update...\nAppId/Branch: {AppId}/{Branch} ({(isClient ? "client" : "server")})\n" +
                                     $"Build id: {updateInfo.BuildID}\nReleased: {updateInfo.TimeUpdated} UTC");
 
                             Console.WriteLine("Downloading update. Build ID: " + updateInfo.BuildID + ", released: " + updateInfo.TimeUpdated);
@@ -134,22 +141,30 @@ namespace Updater.Steam
                             {
                                 Console.WriteLine("Successfully downloaded update.");
 
-                                Console.WriteLine("Patching server...");
-                                if (!await PatcherUtility.PatchServer($"./depots/{AppId}-{Branch}/"))
+                                if (isServer)
                                 {
-                                    Console.Error.WriteLine("Failed to patch server.");
-                                    await Retry();
-                                    continue;
+                                    Console.WriteLine("Patching server...");
+                                    if (!await PatcherUtility.PatchServer($"./depots/{AppId}-{Branch}/"))
+                                    {
+                                        Console.Error.WriteLine("Failed to patch server.");
+                                        await Retry();
+                                        continue;
+                                    }
+
+                                    Console.WriteLine("Successfully patched server.");
+
+                                    Console.WriteLine("Running server and uploading data...");
+                                    if (!await ServerUtility.RunServerUpdateApi($"./depots/{AppId}-{Branch}/"))
+                                    {
+                                        Console.Error.WriteLine("Failed to run server and update api.");
+
+                                        await Retry();
+                                        continue;
+                                    }
                                 }
-
-                                Console.WriteLine("Successfully patched server.");
-
-                                if (!await ServerUtility.RunServerUpdateApi($"./depots/{AppId}-{Branch}/"))
+                                else if (isClient)
                                 {
-                                    Console.Error.WriteLine("Failed to run server and update api.");
 
-                                    await Retry();
-                                    continue;
                                 }
 
                                 currentVersions[AppId] = updateInfo.BuildID;
@@ -157,7 +172,7 @@ namespace Updater.Steam
                                 Console.WriteLine("Update finished successfully.");
 
                                 if (Program.Pushbullet != null)
-                                    await Program.Pushbullet.SendNotificationAsync("Rust Calculator", "Update finished successfully. 👌");
+                                    await Program.Pushbullet.SendNotificationAsync("Rust Calculator", (isClient ? "Client " : "Server ") + "update finished successfully. 👌");
                             }
                             else
                             {
@@ -186,7 +201,7 @@ namespace Updater.Steam
 
         private async Task Retry()
         {
-            if (Program.Session.LoggedIn)
+            if (session.LoggedIn)
                 Console.WriteLine("Retrying in 10 seconds...");
 
             await Task.Delay(TimeSpan.FromSeconds(10), cancellation.Token);
@@ -205,12 +220,20 @@ namespace Updater.Steam
 
         private async Task<bool> DownloadUpdates()
         {
-            return await DepotUtility.DownloadAppAsync(AppId, Branch);
+            if (session.Username != null)
+                await session.Logoff();
+
+            bool success = await DepotUtility.DownloadAppAsync(AppId, Branch, isClient ? "./Data/client-filelist.txt" : null, session.Username, session.Password);
+
+            if (session.Username != null)
+                await session.ConnectAndLoginAsync();
+
+            return success;
         }
 
         private async Task<UpdateInfo> GetUpdateInfo()
         {
-            var productInfo = await Program.Session.GetProductInfo(AppId);
+            var productInfo = await session.GetProductInfo(AppId);
 
             var branch = productInfo.Apps[AppId].KeyValues["depots"]["branches"][Program.LaunchArguments.Branch]; // Todo: Verify that branch exists.
             uint buildId = branch["buildid"].AsUnsignedInteger();

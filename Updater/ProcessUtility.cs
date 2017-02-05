@@ -11,14 +11,6 @@ namespace Updater
         /// <param name="timeout">Max milliseconds to wait before forcefully closing process and failing.</param>
         public static Task<int?> StartAndRedirectProcess(string fileName, string outputPrefix = "-", int timeout = -1, params string[] arguments)
         {
-            for (int i = 0; i < arguments.Length; ++i)
-            {
-                if (arguments[i].Contains(" "))
-                {
-                    arguments[i] = "\"" + arguments[i] + "\"";
-                }
-            }
-
             string strArguments = string.Join(" ", arguments);
 
             var startInfo = new ProcessStartInfo();
@@ -56,7 +48,8 @@ namespace Updater
 
                 process.OutputDataReceived += onOutput;
                 process.ErrorDataReceived += onError;
-                
+
+                Console.WriteLine("Starting process: " + startInfo.FileName + " " + startInfo.Arguments);
                 process.Start();
                 process.BeginErrorReadLine();
                 process.BeginOutputReadLine();
