@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using PushbulletSharp.Models.Requests;
+using Updater.Extensions;
 
 namespace Updater
 {
@@ -43,6 +45,25 @@ namespace Updater
                 if (processExitCode == null)
                 {
                     Console.Error.WriteLine("Server still running after 10 minutes, killed. Assuming it's failed.");
+
+                    if (Program.Pushbullet != null)
+                    {
+                        using (var file = File.OpenRead($"{serverRootPath}server/rustcalc/Log.Error.txt"))
+                        {
+                            string bodyText = "Server still running after 10 minutes, assuming it's failed.";
+
+                            if (file.Length > 0)
+                            {
+                                bodyText = "Rust Calculator\n\n" + bodyText;
+                                await Program.Pushbullet.SendFileAsync(file, bodyText + "\n\nAttached is the error log.");
+                            }
+                            else
+                            {
+                                await Program.Pushbullet.SendNotificationAsync("Rust Calculator", bodyText);
+                            }
+                        }
+                    }
+
                     return false;
                 }
 

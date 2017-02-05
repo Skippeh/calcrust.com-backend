@@ -149,9 +149,6 @@ namespace Updater.Steam
                                 {
                                     Console.Error.WriteLine("Failed to run server and update api.");
 
-                                    if (Program.Pushbullet != null)
-                                        await Program.Pushbullet.SendNotificationAsync("Rust Calculator", "Failed to run server and update api!");
-
                                     await Retry();
                                     continue;
                                 }
