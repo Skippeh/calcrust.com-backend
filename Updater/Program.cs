@@ -83,7 +83,6 @@ namespace Updater
             }
 
             Session.Dispose();
-            AppPoller.SaveCurrentVersions();
 
             foreach (var poller in AppPollers)
             {
