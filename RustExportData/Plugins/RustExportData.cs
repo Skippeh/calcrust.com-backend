@@ -65,6 +65,16 @@ namespace Oxide.Plugins
 
             if (Config["UploadPassword"] == null)
                 Debug.LogError("[RustExportData] Config UploadPassword not defined.");
+
+            object autoUploadObj = Config["AutoUpload"];
+            if (autoUploadObj is bool && (bool) autoUploadObj)
+            {
+                ParseAndUpload(true);
+            }
+            else if (autoUploadObj == null)
+            {
+                Debug.LogError("[RustExportData] Config AutoUpload not defined, assuming false.");
+            }
         }
 
         protected override void LoadDefaultConfig()
@@ -72,6 +82,7 @@ namespace Oxide.Plugins
             Config.Clear();
             Config["UploadPassword"] = "CHANGEME";
             Config["UploadUrl"] = "https://CHANGEME/upload";
+            Config["AutoUpload"] = false;
             SaveConfig();
         }
         
@@ -80,12 +91,23 @@ namespace Oxide.Plugins
         {
             if (arg.IsClientside)
                 return;
-            
+
+            ParseAndUpload(false);
+        }
+
+        private void ParseAndUpload(bool quitWhenDone)
+        {
             string data = JsonConvert.SerializeObject(ParseData());
             data = Utility.EncodeDataUri(data);
             webrequest.EnqueuePost((string) Config["UploadUrl"], "data=" + data, (statusCode, result) =>
             {
                 Debug.Log("Response: " + new {statusCode, result});
+
+                if (quitWhenDone)
+                {
+                    ServerMgr.Instance.GetType().GetMethod("Shutdown", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(ServerMgr.Instance, null);
+                    Rust.Application.Quit();
+                }
             }, this, new Dictionary<string, string> {{"pw", (string) Config["UploadPassword"]}});
         }
 

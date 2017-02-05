@@ -40,6 +40,10 @@
     <Reference Include="Facepunch.Console">
       <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.Console.dll</HintPath>
     </Reference>
+    <Reference Include="Facepunch.UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Facepunch.UnityEngine.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\..\..\Pluton-AutoDownload-Update-Compile\server\RustDedicated_Data\Managed\Newtonsoft.Json.dll</HintPath>
     </Reference>
