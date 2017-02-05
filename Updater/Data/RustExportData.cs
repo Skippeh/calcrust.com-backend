@@ -20,6 +20,7 @@ using System.Reflection;
 using Oxide.Classes;
 using Oxide.Classes.Destructibles;
 using Oxide.Core;
+using Oxide.Game.Rust.Libraries.Covalence;
 using Rust;
 using UnityEngine;
 using Component = UnityEngine.Component;
@@ -379,6 +380,23 @@ namespace Oxide.Plugins
 
             if (Config["UploadPassword"] == null)
                 Debug.LogError("[RustExportData] Config UploadPassword not defined.");
+
+            object autoUploadObj = Config["AutoUpload"];
+            if (autoUploadObj is bool && (bool) autoUploadObj)
+            {
+                try
+                {
+                    ParseAndUpload(true);
+                }
+                catch (Exception ex)
+                {
+                    ExitServer(1, ex.Message);
+                }
+            }
+            else if (autoUploadObj == null)
+            {
+                Debug.LogError("[RustExportData] Config AutoUpload not defined, assuming false.");
+            }
         }
 
         protected override void LoadDefaultConfig()
@@ -386,6 +404,7 @@ namespace Oxide.Plugins
             Config.Clear();
             Config["UploadPassword"] = "CHANGEME";
             Config["UploadUrl"] = "https://CHANGEME/upload";
+            Config["AutoUpload"] = false;
             SaveConfig();
         }
         
@@ -394,13 +413,41 @@ namespace Oxide.Plugins
         {
             if (arg.IsClientside)
                 return;
-            
+
+            ParseAndUpload(false);
+        }
+
+        private void ParseAndUpload(bool quitWhenDone)
+        {
             string data = JsonConvert.SerializeObject(ParseData());
             data = Utility.EncodeDataUri(data);
             webrequest.EnqueuePost((string) Config["UploadUrl"], "data=" + data, (statusCode, result) =>
             {
                 Debug.Log("Response: " + new {statusCode, result});
+                
+                if (quitWhenDone)
+                {
+                    if (statusCode != 200)
+                    {
+                        ExitServer(2, "Api response error: " + statusCode + " (" + result + ")");
+                        return;
+                    }
+
+                    ExitServer(0);
+                }
             }, this, new Dictionary<string, string> {{"pw", (string) Config["UploadPassword"]}});
+        }
+
+        private void ExitServer(int exitCode, string error = null)
+        {
+            Interface.Oxide.DataFileSystem.WriteObject("RustExportData_Exit", new
+            {
+                exitCode,
+                error
+            });
+
+            ServerMgr.Instance.GetType().GetMethod("Shutdown", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(ServerMgr.Instance, null);
+            Rust.Application.Quit();
         }
 
         [ConsoleCommand("calcrust.export")]
