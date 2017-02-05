@@ -132,7 +132,6 @@ namespace Updater.Steam
 
                             if (await DownloadUpdates())
                             {
-                                currentVersions[AppId] = updateInfo.BuildID;
                                 Console.WriteLine("Successfully downloaded update.");
 
                                 Console.WriteLine("Patching server...");
@@ -153,6 +152,7 @@ namespace Updater.Steam
                                     continue;
                                 }
 
+                                currentVersions[AppId] = updateInfo.BuildID;
                                 SaveCurrentVersions();
                                 Console.WriteLine("Update finished successfully.");
 
