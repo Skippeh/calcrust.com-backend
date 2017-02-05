@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SteamKit2;
 using Updater.Extensions;
+using Updater.Oxide;
 
 namespace Updater.Steam
 {
@@ -115,8 +116,17 @@ namespace Updater.Steam
                             if (await DownloadUpdates())
                             {
                                 currentVersions[AppId] = updateInfo.BuildID;
-                                SaveCurrentVersions();
                                 Console.WriteLine("Successfully downloaded update.");
+
+                                Console.WriteLine("Patching server...");
+                                if (!await PatcherUtility.PatchServer($"./depots/{AppId}-{Branch}/"))
+                                {
+                                    Console.Error.WriteLine("Failed to patch server.");
+                                    await Retry();
+                                    continue;
+                                }
+
+                                SaveCurrentVersions();
                             }
                             else
                             {

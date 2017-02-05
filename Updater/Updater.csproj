@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LaunchArguments.cs" />
+    <Compile Include="Oxide\PatcherUtility.cs" />
     <Compile Include="Extensions\ProcessStartInfoExtensions.cs" />
     <Compile Include="Extensions\PushBulletExtensions.cs" />
     <Compile Include="ProcessUtility.cs" />
@@ -94,6 +95,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ThirdParty\DepotDownloader\SteamKit2.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ThirdParty\OxidePatcher\Oxide.Core.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ThirdParty\OxidePatcher\OxidePatcher.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
