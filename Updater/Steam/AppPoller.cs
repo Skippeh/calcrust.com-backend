@@ -109,7 +109,9 @@ namespace Updater.Steam
                             Task notificationTask = null;
 
                             if (Program.Pushbullet != null)
-                                notificationTask = Program.Pushbullet.SendNotificationAsync("Rust Calculator", $"Downloading update...\nAppId/Branch: {AppId}/{Branch}\nBuild id: {updateInfo.BuildID}\nReleased: {updateInfo.TimeUpdated} UTC");
+                                notificationTask = Program.Pushbullet.SendNotificationAsync("Rust Calculator",
+                                    $"Downloading update...\nAppId/Branch: {AppId}/{Branch}\n" +
+                                    $"Build id: {updateInfo.BuildID}\nReleased: {updateInfo.TimeUpdated} UTC");
 
                             Console.WriteLine("Downloading update. Build ID: " + updateInfo.BuildID + ", released: " + updateInfo.TimeUpdated);
 

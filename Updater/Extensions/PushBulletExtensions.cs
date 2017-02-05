@@ -33,6 +33,7 @@ namespace Updater.Extensions
             }
             catch (Exception ex)
             {
+                Console.Error.WriteLine(ex);
                 return null;
             }
 
