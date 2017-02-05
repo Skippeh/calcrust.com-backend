@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 namespace Updater.Steam
@@ -11,50 +9,17 @@ namespace Updater.Steam
 
         public static Task<bool> DownloadAppAsync(uint appId, string branch)
         {
-            return Task.Run<bool>(() =>
+            return Task.Run<bool>(async () =>
             {
                 string installDir = $"{Program.LaunchArguments.InstallPath}{appId}-{branch}/";
-
                 Directory.CreateDirectory(installDir);
 
-                string filePath = FilePath;
-                string arguments = $"-app {appId} -beta {branch} -dir {installDir}";
+                int exitCode = await ProcessUtility.StartAndRedirectProcess(FilePath, $"[{appId}/{branch}] ",
+                                                                            "-app", appId.ToString(),
+                                                                            "-beta", branch,
+                                                                            "-dir", installDir);
 
-                if (Program.RunningUnix)
-                {
-                    filePath = "/usr/bin/mono"; // Todo: Don't assume mono location
-                    arguments = FilePath + " " + arguments;
-                }
-
-                var startInfo = new ProcessStartInfo(filePath, arguments);
-                startInfo.RedirectStandardOutput = true;
-                startInfo.RedirectStandardError = true;
-                startInfo.UseShellExecute = false;
-                startInfo.CreateNoWindow = true;
-
-                var process = new Process();
-
-                DataReceivedEventHandler onOutput = (sender, args) =>
-                {
-                    Console.WriteLine("-" + args.Data);
-                };
-
-                DataReceivedEventHandler onError = (sender, args) =>
-                {
-                    Console.Error.WriteLine("-" + args.Data);
-                };
-
-                process.OutputDataReceived += onOutput;
-                process.ErrorDataReceived += onError;
-
-                process.StartInfo = startInfo;
-                process.Start();
-
-                process.BeginErrorReadLine();
-                process.BeginOutputReadLine();
-                process.WaitForExit();
-
-                return process.ExitCode == 0;
+                return exitCode == 0;
             });
         }
     }
