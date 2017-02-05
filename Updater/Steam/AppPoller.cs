@@ -145,9 +145,22 @@ namespace Updater.Steam
 
                                 Console.WriteLine("Successfully patched server.");
 
+                                if (!await ServerUtility.RunServerUpdateApi($"./depots/{AppId}-{Branch}/"))
+                                {
+                                    Console.Error.WriteLine("Failed to run server and update api.");
 
+                                    if (Program.Pushbullet != null)
+                                        await Program.Pushbullet.SendNotificationAsync("Rust Calculator", "Failed to run server and update api!");
+
+                                    await Retry();
+                                    continue;
+                                }
 
                                 SaveCurrentVersions();
+                                Console.WriteLine("Update finished successfully.");
+
+                                if (Program.Pushbullet != null)
+                                    await Program.Pushbullet.SendNotificationAsync("Rust Calculator", "Update finished successfully. 👌");
                             }
                             else
                             {
