@@ -175,7 +175,9 @@ namespace Updater.Steam
                                 }
                                 else if (isClient)
                                 {
-                                    if (!await ClientUtility.UploadImages($"./depots/{AppId}-{Branch}/", new SSHFileTransferer(Program.LaunchArguments.SSHPublicKey)))
+                                    // Todo: Create smaller sized images next to original item images appended with _small.png.
+
+                                    if (!await ClientUtility.UploadImages($"./depots/{AppId}-{Branch}/"))
                                     {
                                         Console.WriteLine("Failed to upload client images.");
                                         await Retry();

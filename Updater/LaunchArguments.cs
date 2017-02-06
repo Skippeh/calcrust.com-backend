@@ -28,7 +28,22 @@ namespace Updater
         [ValueArgument(typeof(string), 'a', "password", Description = "Steam password. If specified client item images will be downloaded as well.")]
         public string SteamPassword;
 
-        [ValueArgument(typeof(string), 's', "publickey", Description = "Path to public key used to authenticate SSH client for uploading client images.")]
-        public string SSHPublicKey;
+        [ValueArgument(typeof(string), 's', "sshkey", Description = "Path to private key used to authenticate SSH client for uploading client images.")]
+        public string SSHPrivateKey;
+
+        [ValueArgument(typeof(string), 'c', "sshkeypass", Description = "Password for the private key used to authenticate SSH client for uploading client images.")]
+        public string SSHKeyPass;
+
+        [ValueArgument(typeof(string), 'v', "sshusername", Description = "SSH username used to authenticate SSH client for uploading client images.")]
+        public string SSHUsername;
+
+        [ValueArgument(typeof(string), 'x', "sshhost", Description = "SSH host to connect to for uploading images.")]
+        public string SSHHost;
+
+        [ValueArgument(typeof(int), 'y', "sshport", Description = "SSH host port to connect to for uploading images.", DefaultValue = 22)]
+        public int SSHHostPort;
+
+        [ValueArgument(typeof(string), 'e', "imagespath", Description = "The directory to upload images to on the remote server.")]
+        public string ImagesPath;
     }
 }

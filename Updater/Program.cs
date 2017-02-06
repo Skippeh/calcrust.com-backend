@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CommandLineParser.Exceptions;
 using PushbulletSharp;
 using SteamKit2;
+using Updater.Client;
 using Updater.Steam;
 
 namespace Updater

@@ -1,49 +1,97 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using Renci.SshNet;
+using Renci.SshNet.Common;
 
 namespace Updater.Client
 {
-    public class SSHFileTransferer : IFileTransferer
+    public class SSHFileTransferer : IDisposable
     {
-        public string PublicKeyPath;
-
-        public SSHFileTransferer(string publicKeyPath)
+        private SftpClient client;
+        
+        public Task<bool> Connect()
         {
-            if (publicKeyPath == null) throw new ArgumentNullException(nameof(publicKeyPath));
-            PublicKeyPath = publicKeyPath;
-        }
-
-        public async Task<bool> Connect()
-        {
-            string publicKey;
-
-            try
+            return Task.Run(() =>
             {
-                using (var reader = File.OpenText(PublicKeyPath))
+                try
                 {
-                    publicKey = await reader.ReadToEndAsync();
+                    client = new SftpClient(Program.LaunchArguments.SSHHost, Program.LaunchArguments.SSHHostPort, Program.LaunchArguments.SSHUsername, new PrivateKeyFile(Program.LaunchArguments.SSHPrivateKey, Program.LaunchArguments.SSHKeyPass));
+                    client.Connect();
                 }
-            }
-            catch (IOException ex)
-            {
-                Console.Error.WriteLine("Failed to read public key: " + ex);
-                return false;
-            }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return false;
+                }
 
-
-
-            return true;
+                return true;
+            });
         }
 
         public void Disconnect()
         {
-
+            client.Dispose();
+            client = null;
         }
         
-        public async Task<bool> UploadFile(string path)
+        public Task<bool> UploadFile(string filePath, Stream fileStream)
         {
-            return false;
+            return Task.Run<bool>(async () =>
+            {
+                string directory = Path.GetDirectoryName(filePath).Replace("\\", "/");
+                string fileName = Path.GetFileName(filePath);
+                
+                try
+                {
+                    if (!DirectoryExists(directory))
+                    {
+                        client.CreateDirectory(directory);
+                    }
+
+                    var task = client.BeginUploadFile(fileStream, filePath, true, null, fileStream);
+                    await Task.Factory.FromAsync(task, client.EndUploadFile);
+                    
+                    Console.WriteLine($"Uploaded \"{fileName}\".");
+                }
+                catch (SftpPathNotFoundException ex)
+                {
+                    Console.Error.WriteLine($"Specified path could not be found: \"{directory}\"");
+                    return false;
+                }
+                catch (SshException ex)
+                {
+                    Console.WriteLine(ex);
+                    return false;
+                }
+
+                return false;
+            });
+        }
+
+        private bool DirectoryExists(string directory)
+        {
+            string workingDirectory = client.WorkingDirectory;
+
+            try
+            {
+                client.ChangeDirectory(directory);
+                return true;
+            }
+            catch (SftpPathNotFoundException)
+            {
+                return false;
+            }
+            finally
+            {
+                client.ChangeDirectory(workingDirectory);
+            }
+        }
+
+        public void Dispose()
+        {
+            client?.Dispose();
         }
     }
 }
