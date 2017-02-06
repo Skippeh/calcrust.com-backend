@@ -18,7 +18,7 @@ namespace Updater.Steam
         private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
         private readonly TimeSpan checkDelay = TimeSpan.FromSeconds(Program.LaunchArguments.CheckInterval);
 
-        private static Dictionary<uint, uint> currentVersions = new Dictionary<uint, uint>();
+        private static Dictionary<uint, Dictionary<string, uint>> currentVersions = new Dictionary<uint, Dictionary<string, uint>>();
 
         private Task pollingTask;
         private bool isServer => AppId == 258550;
@@ -36,7 +36,7 @@ namespace Updater.Steam
 
             try
             {
-                currentVersions = JsonConvert.DeserializeObject<Dictionary<uint, uint>>(File.ReadAllText("versions.json"));
+                currentVersions = JsonConvert.DeserializeObject<Dictionary<uint, Dictionary<string, uint>>>(File.ReadAllText("versions.json"));
                 return true;
             }
             catch (JsonSerializationException)
@@ -63,7 +63,17 @@ namespace Updater.Steam
             }
         }
 
-        public AppPoller(uint appId, string branch, string username, string password)
+        private static void SetVersion(uint appId, string branch, uint buildId)
+        {
+            if (!currentVersions.ContainsKey(appId))
+            {
+                currentVersions[appId] = new Dictionary<string, uint>();
+            }
+
+            currentVersions[appId][branch] = buildId;
+        }
+
+        public AppPoller(uint appId, string branch, string username = null, string password = null)
         {
             AppId = appId;
             Branch = branch;
@@ -109,7 +119,7 @@ namespace Updater.Steam
                     // Check and throw if cancelled before starting update process.
                     cancellation.Token.ThrowIfCancellationRequested();
 
-                    if (updateInfo.BuildID > GetInstalledVersion(AppId))
+                    if (updateInfo.BuildID > GetInstalledVersion(AppId, Branch))
                     {
                         try
                         {
@@ -154,7 +164,7 @@ namespace Updater.Steam
                                     Console.WriteLine("Successfully patched server.");
 
                                     Console.WriteLine("Running server and uploading data...");
-                                    if (!await ServerUtility.RunServerUpdateApi($"./depots/{AppId}-{Branch}/"))
+                                    if (!await ServerUtility.RunServerUpdateApi($"./depots/{AppId}-{Branch}/", Branch))
                                     {
                                         Console.Error.WriteLine("Failed to run server and update api.");
 
@@ -165,9 +175,14 @@ namespace Updater.Steam
                                 else if (isClient)
                                 {
 
+
+                                    Console.Error.WriteLine("Client stuff not implemented yet.");
+                                    return;
+                                    //await Retry();
+                                    //continue;
                                 }
 
-                                currentVersions[AppId] = updateInfo.BuildID;
+                                SetVersion(AppId, Branch, updateInfo.BuildID);
                                 SaveCurrentVersions();
                                 Console.WriteLine("Update finished successfully.");
 
@@ -207,14 +222,14 @@ namespace Updater.Steam
             await Task.Delay(TimeSpan.FromSeconds(10), cancellation.Token);
         }
 
-        private uint GetInstalledVersion(uint appId)
+        private uint GetInstalledVersion(uint appId, string branch)
         {
-            if (currentVersions.ContainsKey(appId))
+            if (currentVersions.ContainsKey(appId) && currentVersions[appId].ContainsKey(branch))
             {
-                return currentVersions[appId];
+                return currentVersions[appId][branch];
             }
 
-            currentVersions[appId] = 0;
+            SetVersion(appId, branch, 0);
             return 0;
         }
 
@@ -235,7 +250,7 @@ namespace Updater.Steam
         {
             var productInfo = await session.GetProductInfo(AppId);
 
-            var branch = productInfo.Apps[AppId].KeyValues["depots"]["branches"][Program.LaunchArguments.Branch]; // Todo: Verify that branch exists.
+            var branch = productInfo.Apps[AppId].KeyValues["depots"]["branches"][Program.LaunchArguments.Branch];
             uint buildId = branch["buildid"].AsUnsignedInteger();
             DateTime timeUpdated = Utilities.FromUnixTimeSeconds(branch["timeupdated"].AsLong()).UtcDateTime;
             
