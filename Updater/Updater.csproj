@@ -81,6 +81,9 @@
     <Content Include="Data\public\RustExportData.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Compile Include="Client\ClientUtility.cs" />
+    <Compile Include="Client\IFileTransferer.cs" />
+    <Compile Include="Client\SSHFileTransferer.cs" />
     <Compile Include="LaunchArguments.cs" />
     <Compile Include="Oxide\PatcherUtility.cs" />
     <Compile Include="Extensions\ProcessStartInfoExtensions.cs" />

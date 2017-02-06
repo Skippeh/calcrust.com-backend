@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SteamKit2;
+using Updater.Client;
 using Updater.Extensions;
 using Updater.Oxide;
 
@@ -174,12 +175,12 @@ namespace Updater.Steam
                                 }
                                 else if (isClient)
                                 {
-
-
-                                    Console.Error.WriteLine("Client stuff not implemented yet.");
-                                    return;
-                                    //await Retry();
-                                    //continue;
+                                    if (!await ClientUtility.UploadImages($"./depots/{AppId}-{Branch}/", new SSHFileTransferer(Program.LaunchArguments.SSHPublicKey)))
+                                    {
+                                        Console.WriteLine("Failed to upload client images.");
+                                        await Retry();
+                                        continue;
+                                    }
                                 }
 
                                 SetVersion(AppId, Branch, updateInfo.BuildID);

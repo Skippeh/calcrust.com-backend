@@ -27,5 +27,8 @@ namespace Updater
 
         [ValueArgument(typeof(string), 'a', "password", Description = "Steam password. If specified client item images will be downloaded as well.")]
         public string SteamPassword;
+
+        [ValueArgument(typeof(string), 's', "publickey", Description = "Path to public key used to authenticate SSH client for uploading client images.")]
+        public string SSHPublicKey;
     }
 }
