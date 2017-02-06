@@ -65,12 +65,42 @@ namespace Updater
             InitializePushbullet();
             
             AppPoller.LoadCurrentVersions(true);
-            AppPollers.Add(new AppPoller(258550, LaunchArguments.Branch, null, null)); // Server
+
+            using (var session = new SteamSession())
+            {
+                Task.WaitAll(Task.Run(async () =>
+                {
+                    var productInfo = await session.GetProductInfo(258550);
+                    var branches = productInfo.Apps[258550].KeyValues["depots"]["branches"].Children;
+                    bool found = false;
+
+                    foreach (KeyValue branch in branches)
+                    {
+                        if (branch.Name.ToLower() == LaunchArguments.Branch)
+                        {
+                            LaunchArguments.Branch = branch.Name;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        Console.Error.WriteLine($"No branch found with the name \"{ LaunchArguments.Branch }\".");
+                        return;
+                    }
+                }));
+            }
+
+            AppPollers.Add(new AppPoller(258550, LaunchArguments.Branch)); // Server
 
             if (LaunchArguments.SteamUsername != null && LaunchArguments.SteamPassword != null)
             {
-                Console.WriteLine("Client will be updated too.");
                 AppPollers.Add(new AppPoller(252490, LaunchArguments.Branch, LaunchArguments.SteamUsername, LaunchArguments.SteamPassword)); // Client
+            }
+            else
+            {
+                Console.WriteLine("Steam credentials missing, item icons will not be downloaded.");
             }
 
             Console.WriteLine("Press CTRL+Q to quit.");
