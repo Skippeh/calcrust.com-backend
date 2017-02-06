@@ -75,7 +75,10 @@
     <Content Include="Data\client-filelist.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Data\RustExportData.cs">
+    <Content Include="Data\staging\RustExportData.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\public\RustExportData.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Compile Include="LaunchArguments.cs" />

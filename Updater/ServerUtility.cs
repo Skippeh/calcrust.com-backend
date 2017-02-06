@@ -10,7 +10,7 @@ namespace Updater
 {
     public static class ServerUtility
     {
-        public static Task<bool> RunServerUpdateApi(string serverRootPath)
+        public static Task<bool> RunServerUpdateApi(string serverRootPath, string branch)
         {
             return Task.Run(async () =>
             {
@@ -19,7 +19,7 @@ namespace Updater
                 {
                     string targetDirectory = $"{serverRootPath}server/rustcalc/oxide/plugins/";
                     Directory.CreateDirectory(targetDirectory);
-                    File.Copy("./Data/RustExportData.cs", targetDirectory + "RustExportData.cs", true);
+                    File.Copy($"./Data/{branch}/RustExportData.cs", targetDirectory + "RustExportData.cs", true);
                 }
                 catch (IOException ex)
                 {
