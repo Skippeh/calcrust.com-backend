@@ -38,8 +38,8 @@
       <HintPath>..\packages\PushBulletSharp.3.0.1\lib\portable-windows8+net45\BouncyCastle.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CommandLineArgumentsParser, Version=3.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommandLineArgumentsParser.3.0.4\lib\net45\CommandLineArgumentsParser.dll</HintPath>
+    <Reference Include="CommandLineArgumentsParser, Version=3.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CommandLineArgumentsParser.3.0.5\lib\net45\CommandLineArgumentsParser.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
@@ -86,7 +86,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Compile Include="Client\ClientUtility.cs" />
-    <Compile Include="Client\IFileTransferer.cs" />
     <Compile Include="Client\SSHFileTransferer.cs" />
     <Compile Include="LaunchArguments.cs" />
     <Compile Include="Oxide\PatcherUtility.cs" />
