@@ -30,7 +30,7 @@ namespace Updater
                 Console.WriteLine("Running on unsupported OS. Some things may not work properly.");
             }
 
-            var parser = new CommandLineParser.CommandLineParser();
+            var parser = new CommandLineParser.CommandLineParser { AcceptSlash = false };
             parser.ExtractArgumentAttributes(LaunchArguments);
 
             try
