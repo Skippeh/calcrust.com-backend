@@ -12,6 +12,8 @@ namespace WebAPI
 {
     internal static class DataManager
     {
+        public static string[] SupportedBranches = new[] {"public", "prerelease", "staging", "july2016", "october2016"};
+
         public static RustData Data { get; private set; }
 
         private static string filePath;
@@ -313,11 +315,13 @@ namespace WebAPI
             return new Recipe.Item(jItem["count"].Value<double>(), items[jItem["item"].Value<string>()]);
         }
 
-        public static void ChangeData(string json)
+        public static void ChangeData(string branch, string json)
         {
             var newData = ParseData(json);
             Data.Dispose();
             Data = newData;
+
+            Save(json);
         }
 
         public static bool IsBanned(string ip)
@@ -356,6 +360,8 @@ namespace WebAPI
 
         public static void Save(string json)
         {
+            // Todo: Stop watching file for changes while we save.
+
             using (var file = File.CreateText(filePath))
             {
                 file.Write(json);

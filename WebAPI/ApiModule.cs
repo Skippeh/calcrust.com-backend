@@ -76,7 +76,7 @@ namespace WebAPI
                 });
             });
             Get["/meta"] = WrapMethod(GetMeta);
-            Post["/upload"] = WrapMethod(UploadData, true);
+            Post["/upload/{branch}"] = WrapMethod((dynamic _) => UploadData(_.branch), true);
         }
 
         /// <param name="allowOffline">If true then this method will be called even if rust data is currently unavailable.</param>
@@ -157,7 +157,7 @@ namespace WebAPI
             return new ApiResponse(DataManager.Data.Meta);
         }
 
-        private ApiResponse UploadData(dynamic parameters)
+        private ApiResponse UploadData(string branch)
         {
             if (DataManager.IsBanned(Request.UserHostAddress))
                 return Error(HttpStatusCode.Forbidden);
@@ -180,13 +180,19 @@ namespace WebAPI
             try
             {
                 string json = (string) Request.Form.data;
-                DataManager.Save(json);
-                Console.WriteLine("Updated data from remote: " + Request.UserHostAddress + "!");
+
+                if (!DataManager.SupportedBranches.Contains(branch))
+                {
+                    return Error(HttpStatusCode.InternalServerError, "Unsupported branch: " + branch);
+                }
+                
+                DataManager.ChangeData(branch, json);
+                Console.WriteLine($"Updated data on branch {branch} from remote: " + Request.UserHostAddress + ".");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Failed to save data! Most likely input error.\n" + ex);
-                return Error(HttpStatusCode.InternalServerError, "Data invalid!");
+                Console.Error.WriteLine("Failed to save:\n" + ex);
+                return Error(HttpStatusCode.InternalServerError, "Failed to save: " + ex);
             }
 
             return OK();
