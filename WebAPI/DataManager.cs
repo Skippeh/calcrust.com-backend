@@ -360,12 +360,14 @@ namespace WebAPI
 
         public static void Save(string json)
         {
-            // Todo: Stop watching file for changes while we save.
+            watcher.EnableRaisingEvents = false;
 
             using (var file = File.CreateText(filePath))
             {
                 file.Write(json);
             }
+
+            watcher.EnableRaisingEvents = true;
         }
     }
 }
