@@ -15,6 +15,7 @@ namespace WebAPI.Models
         public Meta Meta { get; set; }
         public Dictionary<string, Cookable> Cookables { get; set; }
         public Dictionary<string, Destructible> DamageInfo { get; set; }
+        public BranchFeatures BranchFeatures { get; set; }
 
         public void Dispose()
         {

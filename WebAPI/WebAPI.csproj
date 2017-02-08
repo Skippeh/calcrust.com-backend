@@ -70,6 +70,7 @@
     <Compile Include="ApiResult.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DataManager.cs" />
+    <Compile Include="Models\BranchFeatures.cs" />
     <Compile Include="Models\Burnable.cs" />
     <Compile Include="Models\Cookable.cs" />
     <Compile Include="Models\Destructibles\AttackInfo.cs" />

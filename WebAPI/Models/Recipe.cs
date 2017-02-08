@@ -38,6 +38,7 @@ namespace WebAPI.Models
         public int TTC { get; set; }
         public int Level { get; set; }
         public int Price { get; set; }
+        public string Category { get; set; }
 
         [JsonIgnore]
         public Models.Item Parent { get; set; }
@@ -47,7 +48,7 @@ namespace WebAPI.Models
             return $"[Recipe] {Output.Result.Name} ({Output.Count}x)";
         }
 
-        public Requirements CalculateRequirements(double amount, bool totalRequirements, bool ceilValues)
+        public Requirements CalculateRequirements(double amount, bool totalRequirements, bool ceilValues, RustData rustData)
         {
             double outputCount = Output.Count * amount;
             var requirements = new Requirements
@@ -57,7 +58,7 @@ namespace WebAPI.Models
                 Output = new Item(outputCount, Output.Result)
             };
 
-            var neededItems = totalRequirements ? CalculateNeededItems() : Input.Select(item => new Item(item.Count, item.Result)).ToArray();
+            var neededItems = totalRequirements ? CalculateNeededItems(rustData) : Input.Select(item => new Item(item.Count, item.Result)).ToArray();
 
             foreach (var item in neededItems)
             {
@@ -68,7 +69,7 @@ namespace WebAPI.Models
             }
 
             requirements.Input.AddRange(neededItems);
-            requirements.TTC = totalRequirements ? CalculateTotalTTC(neededItems, amount) : TTC * amount;
+            requirements.TTC = totalRequirements ? CalculateTotalTTC(neededItems, amount, rustData) : TTC * amount;
 
             if (ceilValues)
                 requirements.TTC = Math.Round(requirements.TTC);
@@ -76,7 +77,7 @@ namespace WebAPI.Models
             return requirements;
         }
 
-        public Item[] CalculateNeededItems()
+        public Item[] CalculateNeededItems(RustData rustData)
         {
             var result = new Dictionary<string, Item>();
             
@@ -94,12 +95,12 @@ namespace WebAPI.Models
 
             foreach (Item item in Input)
             {
-                Recipe recipe = item.Result.GetRecipe();
+                Recipe recipe = item.Result.GetRecipe(rustData);
 
                 if (recipe != null)
                 {
                     var craftsNeeded = item.Count / recipe.Output.Count;
-                    var requirements = recipe.CalculateNeededItems();
+                    var requirements = recipe.CalculateNeededItems(rustData);
 
                     foreach (var neededItem in requirements)
                     {
@@ -117,13 +118,13 @@ namespace WebAPI.Models
             return result.Values.ToArray();
         }
 
-        private double CalculateTotalTTC(Item[] items, double count)
+        private double CalculateTotalTTC(Item[] items, double count, RustData rustData)
         {
             double ttc = TTC * count;
 
             foreach (var recipeItem in items)
             {
-                Recipe recipe = recipeItem.Result.GetRecipe();
+                Recipe recipe = recipeItem.Result.GetRecipe(rustData);
 
                 if (recipe != null)
                 {

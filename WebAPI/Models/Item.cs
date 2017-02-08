@@ -18,10 +18,10 @@ namespace WebAPI.Models
             return $"[Item] {Name}";
         }
 
-        public Recipe GetRecipe()
+        public Recipe GetRecipe(RustData rustData)
         {
-            if (DataManager.Data.Recipes.ContainsKey(Shortname))
-                return DataManager.Data.Recipes[Shortname];
+            if (rustData.Recipes.ContainsKey(Shortname))
+                return rustData.Recipes[Shortname];
 
             return null;
         }

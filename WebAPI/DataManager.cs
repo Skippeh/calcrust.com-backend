@@ -13,59 +13,79 @@ namespace WebAPI
     internal static class DataManager
     {
         public static string[] SupportedBranches = new[] {"public", "prerelease", "staging", "july2016", "october2016"};
+        
+        public static Dictionary<string, RustData> Branches { get; } = new Dictionary<string, RustData>();
 
-        public static RustData Data { get; private set; }
-
-        private static string filePath;
+        private static string directory;
 
         private static FileSystemWatcher watcher;
         private static DateTime lastWriteTime;
 
         private static Dictionary<string, int> authTries = new Dictionary<string, int>();
 
-        public static void Start(string _filePath)
+        public static void Start(string directory)
         {
-            filePath = _filePath;
+            DataManager.directory = directory;
 
             if (watcher != null)
                 throw new InvalidOperationException("Already started.");
-
-            if (!File.Exists(filePath))
-                throw new FileNotFoundException("The specified data file can't be found.", filePath);
             
-            string directory = Path.GetDirectoryName(Path.GetFullPath(filePath));
-            string fileName = Path.GetFileName(filePath);
-            watcher = new FileSystemWatcher(directory, fileName);
-            Console.WriteLine($"Watching directory {directory} for {fileName}");
+            watcher = new FileSystemWatcher(directory, "rust-*.json");
+            Console.WriteLine($"Watching directory {directory} for rust-*.json files.");
 
             watcher.Changed += OnChanged;
             watcher.EnableRaisingEvents = true;
 
-            LoadFile();
+            // Todo: Load all rust-*.json files with whitelisted branch names.
+            foreach (string filePath in Directory.GetFiles(directory, "rust-*.json"))
+            {
+                string branchName = Path.GetFileNameWithoutExtension(filePath).Split('-')[1];
+                Console.WriteLine("Loading branch '" + branchName + "'.");
+                LoadBranch(branchName);
+            }
         }
 
+        public static RustData GetData(string branch)
+        {
+            string lower = branch.ToLower();
+            if (Branches.ContainsKey(lower))
+                return Branches[lower];
+
+            return null;
+        }
+
+        public static void SetData(string branch, RustData data)
+        {
+            string lower = branch.ToLower();
+            GetData(lower)?.Dispose();
+            Branches[lower] = data;
+        }
+
+        private static readonly object onChangedLock = new object();
         private static void OnChanged(object sender, FileSystemEventArgs e)
         {
-            try
+            lock (onChangedLock)
             {
-                var writeTime = File.GetLastWriteTime(filePath);
+                try
+                {
+                    var writeTime = File.GetLastWriteTime(e.FullPath);
+                    string branch = Path.GetFileNameWithoutExtension(e.FullPath).Split('-')[1];
 
-                if (writeTime - lastWriteTime <= new TimeSpan(0, 0, 0, 0, 50)) // Hack: avoid event being triggered twice caused by bug by checking if time since last save is > 50ms.
-                    return;
+                    if (writeTime - lastWriteTime <= new TimeSpan(0, 0, 0, 0, 50)) // Hack: avoid event being triggered twice caused by bug by checking if time since last save is > 50ms.
+                        return;
 
-                lastWriteTime = writeTime;
+                    lastWriteTime = writeTime;
 
-                Thread.Sleep(100); // File in use for some reason (by the watcher i assume).
+                    Thread.Sleep(100); // File in use for some reason (by the watcher i assume).
 
-                Console.Write($"Reloading...");
-                Data?.Dispose();
-                Data = null;
-                LoadFile();
-                Console.WriteLine(" done.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex);
+                    Console.Write($"Reloading...");
+                    LoadBranch(branch);
+                    Console.WriteLine(" done.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                }
             }
         }
 
@@ -75,19 +95,10 @@ namespace WebAPI
             watcher = null;
         }
 
-        private static void LoadFile()
+        private static void LoadBranch(string branch)
         {
-            string contents = File.ReadAllText(filePath);
-            Data = ParseData(contents);
-
-            if (!File.Exists("auths.json"))
-            {
-                SaveAuthTries();
-            }
-            else
-            {
-                authTries = JsonConvert.DeserializeObject<Dictionary<string, int>>(File.ReadAllText("auths.json"));
-            }
+            string contents = File.ReadAllText($"{directory}/rust-{branch}.json");
+            SetData(branch, ParseData(contents));
         }
 
         private static RustData ParseData(string contents)
@@ -318,10 +329,8 @@ namespace WebAPI
         public static void ChangeData(string branch, string json)
         {
             var newData = ParseData(json);
-            Data.Dispose();
-            Data = newData;
-
-            Save(json);
+            SetData(branch, newData);
+            SaveBranch(branch, json);
         }
 
         public static bool IsBanned(string ip)
@@ -358,11 +367,23 @@ namespace WebAPI
             }
         }
 
-        public static void Save(string json)
+        private static void LoadAuthTries()
+        {
+            if (!File.Exists("auths.json"))
+            {
+                SaveAuthTries();
+            }
+            else
+            {
+                authTries = JsonConvert.DeserializeObject<Dictionary<string, int>>(File.ReadAllText("auths.json"));
+            }
+        }
+
+        public static void SaveBranch(string branch, string json)
         {
             watcher.EnableRaisingEvents = false;
 
-            using (var file = File.CreateText(filePath))
+            using (var file = File.CreateText($"{directory}/rust-{branch}.json"))
             {
                 file.Write(json);
             }

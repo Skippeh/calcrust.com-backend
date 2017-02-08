@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Policy;
@@ -16,7 +17,7 @@ namespace WebAPI
 {
     public class ApiModule : NancyModule
     {
-        private RustData data = DataManager.Data;
+        private RustData data;
 
         private readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings
         {
@@ -27,6 +28,30 @@ namespace WebAPI
         {
             Config.Load(); // Load config before every request.
 
+            this.AddBeforeHookOrExecute(context =>
+            {
+                string branch = Request.Headers["branch"].FirstOrDefault() ?? "public";
+                data = DataManager.GetData(branch);
+
+                if (data == null)
+                {
+                    return new Response
+                    {
+                        ContentType = "application/json",
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Contents = stream =>
+                        {
+                            using (var writer = new StreamWriter(stream))
+                            {
+                                writer.Write(JsonConvert.SerializeObject(Error(HttpStatusCode.BadRequest, "Unsupported branch '" + branch + "'."), serializerSettings));
+                            }
+                        }
+                    };
+                }
+
+                return null;
+            });
+            
             // Items
             Get["/items"] = WrapMethod(GetItems);
             Get["/items/{shortname}"] = WrapMethod(GetItem);
@@ -66,7 +91,6 @@ namespace WebAPI
             
             Get["/dump"] = WrapMethod(_ =>
             {
-                var data = DataManager.Data;
                 return new ApiResponse(new
                 {
                     data.Meta,
@@ -82,7 +106,6 @@ namespace WebAPI
         /// <param name="allowOffline">If true then this method will be called even if rust data is currently unavailable.</param>
         private Func<object, object> WrapMethod(Func<object, object> func, bool allowOffline = false)
         {
-            data = DataManager.Data;
             return parameters =>
             {
                 object apiResponse;
@@ -154,7 +177,7 @@ namespace WebAPI
 
         private ApiResponse GetMeta(dynamic parameters)
         {
-            return new ApiResponse(DataManager.Data.Meta);
+            return new ApiResponse(data.Meta);
         }
 
         private ApiResponse UploadData(string branch)
@@ -239,7 +262,7 @@ namespace WebAPI
             if (recipe == null)
                 return Error(HttpStatusCode.NotFound, "No recipe found with that shortname.");
 
-            var requirements = recipe.CalculateRequirements(amount, totalRequirements, !precise);
+            var requirements = recipe.CalculateRequirements(amount, totalRequirements, !precise, data);
 
             return new ApiResponse(new
             {
@@ -441,6 +464,7 @@ namespace WebAPI
                 recipe.TTC,
                 recipe.Level,
                 recipe.Price,
+                recipe.Category,
                 parent = detailed ? (object)recipe.Parent : recipe.Parent?.Shortname
             };
         }

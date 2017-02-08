@@ -15,7 +15,7 @@ namespace WebAPI
     {
         static void Main(string[] args)
         {
-            DataManager.Start("data/rust.json");
+            DataManager.Start("data");
 
             using (var host = new NancyHost(new ApiBootstrapper(), new HostConfiguration() { UrlReservations = new UrlReservations { CreateAutomatically = true } }, new Uri("http://localhost:7545")))
             {
