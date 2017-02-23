@@ -93,7 +93,7 @@ namespace Updater
                 }));
             }
 
-            //AppPollers.Add(new AppPoller(258550, LaunchArguments.Branch)); // Server
+            AppPollers.Add(new AppPoller(258550, LaunchArguments.Branch)); // Server
 
             if (LaunchArguments.SteamUsername != null && LaunchArguments.SteamPassword != null)
             {
