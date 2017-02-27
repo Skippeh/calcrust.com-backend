@@ -83,7 +83,7 @@ namespace Updater.Oxide
 
                     Console.WriteLine("Download Oxide for Rust...");
                     Console.WriteLine("0%");
-                    await webClient.DownloadFileTaskAsync("https://github.com/OxideMod/Snapshots/raw/master/Oxide-Rust.zip", $"{serverRootPath}oxide.zip");
+                    await webClient.DownloadFileTaskAsync("https://dl.bintray.com/oxidemod/builds/Oxide-Rust.zip", $"{serverRootPath}oxide.zip");
                 }
                 catch (WebException ex)
                 {
