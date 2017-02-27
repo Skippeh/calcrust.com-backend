@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using CommandLineParser.Exceptions;
+using Ionic.Zip;
 using PushbulletSharp;
 using SteamKit2;
 using Updater.Client;
@@ -57,10 +59,37 @@ namespace Updater
                 LaunchArguments.InstallPath += Path.DirectorySeparatorChar;
             }
 
-            if (!File.Exists("ThirdParty/DepotDownloader/DepotDownloader.exe"))
+            Directory.CreateDirectory("./SteamCMD");
+
+            if (!File.Exists("./SteamCMD/steamcmd.exe"))
             {
-                Console.Error.WriteLine("DepotDownloader.exe not found.");
-                return;
+                try
+                {
+                    Console.WriteLine("Downloading and extracting SteamCMD...");
+                    using (var webClient = new WebClient())
+                    {
+                        byte[] bytes = webClient.DownloadData("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip");
+
+                        using (var memstream = new MemoryStream(bytes))
+                        {
+                            using (var zipFile = ZipFile.Read(memstream))
+                            {
+                                zipFile.ExtractAll("./SteamCMD", ExtractExistingFileAction.OverwriteSilently);
+                            }
+                        }
+                    }
+
+                    Console.WriteLine("Launching first time...");
+                    Task.WaitAll(ProcessUtility.StartAndRedirectProcess("./SteamCMD/steamcmd.exe", "[SteamCMD] ", -1, "+exit"));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to download SteamCMD.");
+                    Console.Error.WriteLine(ex);
+                    return;
+                }
+
+                Console.WriteLine("Downloaded SteamCMD successfully.");
             }
 
             InitializePushbullet();

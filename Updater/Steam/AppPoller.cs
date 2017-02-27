@@ -241,7 +241,7 @@ namespace Updater.Steam
             if (session.Username != null)
                 await session.Logoff();
 
-            bool success = await DepotUtility.DownloadAppAsync(AppId, Branch, isClient ? "./Data/client-filelist.txt" : null, session.Username, session.Password);
+            bool success = await DepotUtility.DownloadAppAsync(AppId, Branch, session.Username, session.Password);
 
             if (session.Username != null)
                 await session.ConnectAndLoginAsync();
