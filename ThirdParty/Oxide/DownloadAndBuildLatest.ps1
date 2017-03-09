@@ -17,4 +17,4 @@ Invoke-Expression "git pull origin master"
 Set-Location ".."
 
 Write-Host "Building and bundling Oxide..."
-Invoke-MsBuild ".\Oxide\Oxide.sln" -MsBuildParameters "/target:Clean;Build" -AutoLaunchBuildLogOnFailure
+Invoke-MsBuild ".\Oxide\Oxide.sln" -MsBuildParameters "/target:Clean;Build /p:Configuration=Release" -AutoLaunchBuildLogOnFailure
