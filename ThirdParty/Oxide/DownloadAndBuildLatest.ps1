@@ -3,9 +3,9 @@
 #
 
 $gitUrl = "https://github.com/OxideMod/Oxide.git"
-$oxideDirectory = ".\Oxide\.git"
+$oxideDirectory = ".\Oxide\"
 
-If ((Test-Path $oxideDirectory) -eq $false)
+If ((Test-Path ($oxideDirectory + ".git")) -eq $false)
 {
 	Invoke-Expression "git clone -b master --single-branch --depth 1 $gitUrl"
 }
@@ -17,4 +17,4 @@ Invoke-Expression "git pull origin master"
 Set-Location ".."
 
 Write-Host "Building and bundling Oxide..."
-Invoke-MsBuild ".\Oxide\Oxide.sln" -MsBuildParameters "/target:Clean;Build /p:Configuration=Release" -AutoLaunchBuildLogOnFailure
+Invoke-MsBuild ($oxideDirectory + "Oxide.sln") -MsBuildParameters "/target:Clean;Build /p:Configuration=Release" -AutoLaunchBuildLogOnFailure
