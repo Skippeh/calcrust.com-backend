@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Oxide.Core;
+using RustCalc.Common.Models;
 using RustCalc.Common.Serializing;
 
 namespace RustCalc.Exporting
@@ -63,21 +64,25 @@ namespace RustCalc.Exporting
             return true;
         }
 
-        public static Dictionary<string, IBinarySerializable> ExportData()
+        public static ExportData ExportData()
         {
-            var result = new Dictionary<string, IBinarySerializable>();
+            var result = new ExportData();
 
             foreach (var exporter in Exporters)
             {
-                var exportData = exporter.ExportData();
+                var exportData = exporter.ExportData(result);
                 result.Add(exporter.ID, exportData);
             }
+
+            Interface.Oxide.LogInfo($"Exporting {result.Items.Count} items, and {result.Recipes.Count} recipes.");
             
             return result;
         }
 
-        public static void SerializeData(Dictionary<string, IBinarySerializable> data, BinaryWriter writer)
+        public static void SerializeData(ExportData data, BinaryWriter writer)
         {
+            Common.Models.ExportData.SetCurrent(data);
+
             writer.Write(data.Count);
 
             foreach (var kv in data)
@@ -86,11 +91,14 @@ namespace RustCalc.Exporting
                 writer.Write(kv.Value.GetType().FullName);
                 kv.Value.Serialize(writer);
             }
+
+            Common.Models.ExportData.SetCurrent(null);
         }
 
-        public static Dictionary<string, IBinarySerializable> DeserializeData(BinaryReader reader)
+        public static ExportData DeserializeData(BinaryReader reader)
         {
-            var result = new Dictionary<string, IBinarySerializable>();
+            var result = new ExportData();
+            Common.Models.ExportData.SetCurrent(result);
             int count = reader.ReadInt32();
 
             for (int i = 0; i < count; ++i)
@@ -100,13 +108,13 @@ namespace RustCalc.Exporting
 
                 Type type = Type.GetType(typeName);
                 if (type == null) throw new ArgumentNullException(nameof(type));
-
-                var instance = (IBinarySerializable)Activator.CreateInstance(type, true);
-                instance.Deserialize(reader);
+                
+                var instance = reader.Deserialize(type);
 
                 result.Add(key, instance);
             }
 
+            Common.Models.ExportData.SetCurrent(null);
             return result;
         }
     }

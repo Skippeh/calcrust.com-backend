@@ -36,8 +36,10 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\ThirdParty\Oxide\Oxide\Bundles\Rust\RustDedicated_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\Oxide\Oxide\Games\Unity\Oxide.Game.Rust\Patched\Assembly-CSharp.dll</HintPath>
+      <Aliases>global</Aliases>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>..\ThirdParty\Oxide\Oxide\Games\Unity\Oxide.Game.Rust\Dependencies\Assembly-CSharp-firstpass.dll</HintPath>
@@ -85,6 +87,7 @@
   <ItemGroup>
     <Compile Include="Exporters\ItemsExporter.cs" />
     <Compile Include="Exporters\MetaExporter.cs" />
+    <Compile Include="Exporters\RecipesExporter.cs" />
     <Compile Include="Exporting\ExporterAttribute.cs" />
     <Compile Include="Exporting\ExportManager.cs" />
     <Compile Include="Exporting\IExporter.cs" />

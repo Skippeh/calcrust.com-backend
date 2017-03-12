@@ -9,8 +9,14 @@
     <Import_RootNamespace>RustCalc.Common</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ExportData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Item.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ItemAmount.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Meta.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Recipe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializing\BinaryWriterExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializing\IBinarySerializable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serializing\SerializableList.cs" />
   </ItemGroup>
 </Project>

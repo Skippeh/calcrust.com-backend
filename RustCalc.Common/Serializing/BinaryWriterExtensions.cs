@@ -17,6 +17,7 @@ namespace RustCalc.Common.Serializing
             else
             {
                 writer.Write(true);
+                
                 var methodInfo = typeof(BinaryWriter).GetMethod("Write", BindingFlags.Public | BindingFlags.Instance, null, CallingConventions.Any, new Type[] {value.GetType()}, null);
 
                 if (methodInfo == null)
@@ -34,6 +35,23 @@ namespace RustCalc.Common.Serializing
                 return reader.ReadString();
 
             return null;
+        }
+
+        public static void Serialize(this BinaryWriter writer, IBinarySerializable serializable)
+        {
+            serializable.Serialize(writer);
+        }
+
+        public static T Deserialize<T>(this BinaryReader reader) where T : IBinarySerializable
+        {
+            return (T) Deserialize(reader, typeof (T));
+        }
+
+        public static IBinarySerializable Deserialize(this BinaryReader reader, Type type)
+        {
+            var instance = (IBinarySerializable)Activator.CreateInstance(type, true);
+            instance.Deserialize(reader);
+            return instance;
         }
     }
 }
