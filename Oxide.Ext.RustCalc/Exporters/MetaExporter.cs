@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using RustCalc.Common.Serializing;
 using RustCalc.Exporting;
 
 namespace RustCalc.Exporters
@@ -7,10 +8,13 @@ namespace RustCalc.Exporters
     public class MetaExporter : IExporter
     {
         public string ID => "meta";
-
-        public object ExportData()
+        public Dictionary<string, IBinarySerializer> ExportData()
         {
-            return null;
+            var result = new Dictionary<string, IBinarySerializer>();
+
+
+
+            return result;
         }
     }
 }

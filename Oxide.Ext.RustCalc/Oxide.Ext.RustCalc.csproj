@@ -57,9 +57,6 @@
     <Reference Include="Facepunch.UnityEngine">
       <HintPath>..\ThirdParty\Oxide\Oxide\Games\Unity\Oxide.Game.Rust\Dependencies\Facepunch.UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\ThirdParty\Oxide\Oxide\Bundles\Rust\RustDedicated_Data\Managed\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="Oxide.Core">
       <HintPath>..\ThirdParty\Oxide\Oxide\Bundles\Rust\RustDedicated_Data\Managed\Oxide.Core.dll</HintPath>
     </Reference>
@@ -95,7 +92,7 @@
     <Compile Include="Oxide\RustCalcPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <Import Project="..\RustCalc.Common\RustCalc.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y "$(TargetPath)" "%25RustServerDev%25\RustDedicated_Data\Managed\"
