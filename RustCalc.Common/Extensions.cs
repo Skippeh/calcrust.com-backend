@@ -5,7 +5,7 @@ namespace RustCalc.Common
 {
     public static class Extensions
     {
-        public static SerializableList<T> ToSerializableList<T>(this IEnumerable<T> enumerable, bool hasDerivativeTypes = true) where T : IBinarySerializable
+        public static SerializableList<T> ToSerializableList<T>(this IEnumerable<T> enumerable, bool hasDerivativeTypes = false) where T : IBinarySerializable
         {
             var list = new SerializableList<T>(hasDerivativeTypes);
             list.AddRange(enumerable);

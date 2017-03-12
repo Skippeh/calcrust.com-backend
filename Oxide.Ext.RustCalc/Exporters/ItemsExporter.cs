@@ -11,7 +11,7 @@ namespace RustCalc.Exporters
         public string ID => "items";
         public IBinarySerializable ExportData(ExportData data)
         {
-            var list = new SerializableList<Common.Models.Item>(false);
+            var list = new SerializableList<Common.Models.Item>();
             list.AddRange(ItemManager.itemList.Select(itemDefinition => new Common.Models.Item
             {
                 Shortname = itemDefinition.shortname,

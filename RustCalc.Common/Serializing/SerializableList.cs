@@ -9,7 +9,7 @@ namespace RustCalc.Common.Serializing
         /// <summary>If set to false, the item type names will not be written and on deserialization it will be assumed that all items are of the same type as <typeparamref name="T"/>.</summary>
         public bool HasDerivativeTypes { get; set; }
 
-        public SerializableList(bool hasDerivativeTypes = true)
+        public SerializableList(bool hasDerivativeTypes = false)
         {
             HasDerivativeTypes = hasDerivativeTypes;
         } 

@@ -13,7 +13,7 @@ namespace RustCalc.Exporters
         public string ID => "recipes";
         public IBinarySerializable ExportData(ExportData data)
         {
-            var recipes = new SerializableList<Recipe>(false);
+            var recipes = new SerializableList<Recipe>();
 
             foreach (var itemRecipe in ItemManager.bpList)
             {
@@ -27,7 +27,7 @@ namespace RustCalc.Exporters
                     {
                         Item = data.Items.First(item => item.ItemId == itemAmount.itemid),
                         Amount = itemAmount.amount
-                    }).ToSerializableList(false),
+                    }).ToSerializableList(),
                     Output = new Common.Models.ItemAmount
                     {
                         Item = data.Items.First(item => item.ItemId == itemRecipe.targetItem.itemid),
