@@ -3,7 +3,7 @@ using RustCalc.Common.Serializing;
 
 namespace RustCalc.Common.Models
 {
-    public class Item : IBinarySerializer
+    public class Item : IBinarySerializable
     {
         public string Name { get; set; }
         public string Shortname { get; set; }

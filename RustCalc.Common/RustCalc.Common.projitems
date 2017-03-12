@@ -11,6 +11,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Models\Item.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializing\BinaryWriterExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serializing\IBinarySerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serializing\IBinarySerializable.cs" />
   </ItemGroup>
 </Project>

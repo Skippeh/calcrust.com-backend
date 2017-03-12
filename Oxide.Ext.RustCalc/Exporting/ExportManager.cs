@@ -63,9 +63,9 @@ namespace RustCalc.Exporting
             return true;
         }
 
-        public static Dictionary<string, Dictionary<string, IBinarySerializer>> ExportData()
+        public static Dictionary<string, Dictionary<string, IBinarySerializable>> ExportData()
         {
-            var result = new Dictionary<string, Dictionary<string, IBinarySerializer>>();
+            var result = new Dictionary<string, Dictionary<string, IBinarySerializable>>();
 
             foreach (var exporter in Exporters)
             {
@@ -76,7 +76,7 @@ namespace RustCalc.Exporting
             return result;
         }
 
-        public static void SerializeData(Dictionary<string, Dictionary<string, IBinarySerializer>> data, BinaryWriter writer)
+        public static void SerializeData(Dictionary<string, Dictionary<string, IBinarySerializable>> data, BinaryWriter writer)
         {
             writer.Write(data.Count);
 
@@ -94,14 +94,14 @@ namespace RustCalc.Exporting
             }
         }
 
-        public static Dictionary<string, Dictionary<string, IBinarySerializer>> DeserializeData(BinaryReader reader)
+        public static Dictionary<string, Dictionary<string, IBinarySerializable>> DeserializeData(BinaryReader reader)
         {
-            var result = new Dictionary<string, Dictionary<string, IBinarySerializer>>();
+            var result = new Dictionary<string, Dictionary<string, IBinarySerializable>>();
 
             int rootCount = reader.ReadInt32();
             for (int i = 0; i < rootCount; ++i)
             {
-                var childDict = new Dictionary<string, IBinarySerializer>();
+                var childDict = new Dictionary<string, IBinarySerializable>();
                 string rootKey = reader.ReadString();
                 int subCount = reader.ReadInt32();
 
@@ -112,7 +112,7 @@ namespace RustCalc.Exporting
                     Type type = Type.GetType(typeName);
                     if (type == null) throw new ArgumentNullException(nameof(type));
 
-                    var instance = (IBinarySerializer)Activator.CreateInstance(type, true);
+                    var instance = (IBinarySerializable)Activator.CreateInstance(type, true);
                     instance.Deserialize(reader);
 
                     childDict.Add(childKey, instance);

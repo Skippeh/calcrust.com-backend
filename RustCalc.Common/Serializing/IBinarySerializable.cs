@@ -2,7 +2,7 @@
 
 namespace RustCalc.Common.Serializing
 {
-    public interface IBinarySerializer
+    public interface IBinarySerializable
     {
         void Serialize(BinaryWriter writer);
         void Deserialize(BinaryReader reader);
