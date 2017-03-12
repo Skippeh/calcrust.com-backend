@@ -1,4 +1,8 @@
-﻿using RustCalc.Exporting;
+﻿using System.Collections.Generic;
+using System.IO;
+using RustCalc.Common.Models;
+using RustCalc.Common.Serializing;
+using RustCalc.Exporting;
 
 namespace RustCalc.Exporters
 {
@@ -6,10 +10,13 @@ namespace RustCalc.Exporters
     public class ItemsExporter : IExporter
     {
         public string ID => "items";
-
-        public object ExportData()
+        public Dictionary<string, IBinarySerializer> ExportData()
         {
-            return null;
+            var result = new Dictionary<string, IBinarySerializer>();
+
+
+
+            return result;
         }
     }
 }

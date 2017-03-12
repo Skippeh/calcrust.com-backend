@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Oxide.Core;
+using RustCalc.Common.Serializing;
 
 namespace RustCalc.Exporting
 {
@@ -61,26 +61,65 @@ namespace RustCalc.Exporting
             }
 
             Interface.Oxide.LogInfo("Exporters loaded:");
-            foreach (var exporter in Exporters)
-            {
-                Interface.Oxide.LogInfo(" - " + exporter.GetType().Name);
-            }
-
             return true;
         }
 
-        public static JObject ExportData()
+        public static Dictionary<string, Dictionary<string, IBinarySerializer>> ExportData()
         {
-            var result = new JObject();
+            var result = new Dictionary<string, Dictionary<string, IBinarySerializer>>();
 
             foreach (var exporter in Exporters)
             {
-                object exportData = exporter.ExportData();
+                var exportData = exporter.ExportData();
+                result.Add(exporter.ID, exportData);
+            }
+            
+            return result;
+        }
 
-                if (exportData != null)
-                    result.Add(exporter.ID, JToken.FromObject(exportData));
-                else
-                    result.Add(exporter.ID, null);
+        public static void SerializeData(Dictionary<string, Dictionary<string, IBinarySerializer>> data, BinaryWriter writer)
+        {
+            writer.Write(data.Count);
+
+            foreach (var kv in data)
+            {
+                writer.Write(kv.Key);
+                writer.Write(kv.Value.Count);
+
+                foreach (var kv2 in kv.Value)
+                {
+                    writer.Write(kv2.Key);
+                    writer.Write(kv2.Value.GetType().FullName);
+                    kv2.Value.Serialize(writer);
+                }
+            }
+        }
+
+        public static Dictionary<string, Dictionary<string, IBinarySerializer>> DeserializeData(BinaryReader reader)
+        {
+            var result = new Dictionary<string, Dictionary<string, IBinarySerializer>>();
+
+            int rootCount = reader.ReadInt32();
+            for (int i = 0; i < rootCount; ++i)
+            {
+                var childDict = new Dictionary<string, IBinarySerializer>();
+                string rootKey = reader.ReadString();
+                int subCount = reader.ReadInt32();
+
+                for (int j = 0; j < subCount; ++j)
+                {
+                    string childKey = reader.ReadString();
+                    string typeName = reader.ReadString();
+                    Type type = Type.GetType(typeName);
+                    if (type == null) throw new ArgumentNullException(nameof(type));
+
+                    var instance = (IBinarySerializer)Activator.CreateInstance(type, true);
+                    instance.Deserialize(reader);
+
+                    childDict.Add(childKey, instance);
+                }
+
+                result.Add(rootKey, childDict);
             }
 
             return result;
