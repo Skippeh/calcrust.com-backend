@@ -8,13 +8,9 @@ namespace RustCalc.Exporters
     public class MetaExporter : IExporter
     {
         public string ID => "meta";
-        public Dictionary<string, IBinarySerializable> ExportData()
+        public IBinarySerializable ExportData()
         {
-            var result = new Dictionary<string, IBinarySerializable>();
-
-
-
-            return result;
+            return null;
         }
     }
 }

@@ -10,13 +10,9 @@ namespace RustCalc.Exporters
     public class ItemsExporter : IExporter
     {
         public string ID => "items";
-        public Dictionary<string, IBinarySerializable> ExportData()
+        public IBinarySerializable ExportData()
         {
-            var result = new Dictionary<string, IBinarySerializable>();
-
-
-
-            return result;
+            return null;
         }
     }
 }

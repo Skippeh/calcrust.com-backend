@@ -7,6 +7,6 @@ namespace RustCalc.Exporting
     public interface IExporter
     {
         string ID { get; }
-        Dictionary<string, IBinarySerializable> ExportData();
+        IBinarySerializable ExportData();
     }
 }

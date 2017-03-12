@@ -63,9 +63,9 @@ namespace RustCalc.Exporting
             return true;
         }
 
-        public static Dictionary<string, Dictionary<string, IBinarySerializable>> ExportData()
+        public static Dictionary<string, IBinarySerializable> ExportData()
         {
-            var result = new Dictionary<string, Dictionary<string, IBinarySerializable>>();
+            var result = new Dictionary<string, IBinarySerializable>();
 
             foreach (var exporter in Exporters)
             {
@@ -76,49 +76,35 @@ namespace RustCalc.Exporting
             return result;
         }
 
-        public static void SerializeData(Dictionary<string, Dictionary<string, IBinarySerializable>> data, BinaryWriter writer)
+        public static void SerializeData(Dictionary<string, IBinarySerializable> data, BinaryWriter writer)
         {
             writer.Write(data.Count);
 
             foreach (var kv in data)
             {
                 writer.Write(kv.Key);
-                writer.Write(kv.Value.Count);
-
-                foreach (var kv2 in kv.Value)
-                {
-                    writer.Write(kv2.Key);
-                    writer.Write(kv2.Value.GetType().FullName);
-                    kv2.Value.Serialize(writer);
-                }
+                writer.Write(kv.Value.GetType().FullName);
+                kv.Value.Serialize(writer);
             }
         }
 
-        public static Dictionary<string, Dictionary<string, IBinarySerializable>> DeserializeData(BinaryReader reader)
+        public static Dictionary<string, IBinarySerializable> DeserializeData(BinaryReader reader)
         {
-            var result = new Dictionary<string, Dictionary<string, IBinarySerializable>>();
+            var result = new Dictionary<string, IBinarySerializable>();
+            int count = reader.ReadInt32();
 
-            int rootCount = reader.ReadInt32();
-            for (int i = 0; i < rootCount; ++i)
+            for (int i = 0; i < count; ++i)
             {
-                var childDict = new Dictionary<string, IBinarySerializable>();
-                string rootKey = reader.ReadString();
-                int subCount = reader.ReadInt32();
+                string key = reader.ReadString();
+                string typeName = reader.ReadString();
 
-                for (int j = 0; j < subCount; ++j)
-                {
-                    string childKey = reader.ReadString();
-                    string typeName = reader.ReadString();
-                    Type type = Type.GetType(typeName);
-                    if (type == null) throw new ArgumentNullException(nameof(type));
+                Type type = Type.GetType(typeName);
+                if (type == null) throw new ArgumentNullException(nameof(type));
 
-                    var instance = (IBinarySerializable)Activator.CreateInstance(type, true);
-                    instance.Deserialize(reader);
+                var instance = (IBinarySerializable)Activator.CreateInstance(type, true);
+                instance.Deserialize(reader);
 
-                    childDict.Add(childKey, instance);
-                }
-
-                result.Add(rootKey, childDict);
+                result.Add(key, instance);
             }
 
             return result;
