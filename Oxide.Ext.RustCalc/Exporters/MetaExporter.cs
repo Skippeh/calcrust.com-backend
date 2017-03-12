@@ -1,4 +1,5 @@
-﻿using RustCalc.Common.Models;
+﻿using System;
+using RustCalc.Common.Models;
 using RustCalc.Common.Serializing;
 using RustCalc.Exporting;
 
@@ -10,10 +11,11 @@ namespace RustCalc.Exporters
         public string ID => "meta";
         public IBinarySerializable ExportData(ExportData data)
         {
-            var meta = new Meta();
-
-
-
+            var meta = new Meta
+            {
+                Time = DateTime.UtcNow
+            };
+            
             return meta;
         }
     }
