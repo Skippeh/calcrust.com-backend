@@ -23,8 +23,16 @@ namespace RustCalc.Exporters
                 recipes.Add(new Recipe
                 {
                     TimeToCraft = itemRecipe.time,
-                    Input = itemRecipe.ingredients.Select(itemAmount => new Common.Models.ItemAmount { Item = data.Items.First(item => item.ItemId == itemAmount.itemid), Amount = itemAmount.amount }).ToSerializableList(false),
-                    Output = new Common.Models.ItemAmount { Item = data.Items.First(item => item.ItemId == itemRecipe.targetItem.itemid), Amount = itemRecipe.amountToCreate }
+                    Input = itemRecipe.ingredients.Select(itemAmount => new Common.Models.ItemAmount
+                    {
+                        Item = data.Items.First(item => item.ItemId == itemAmount.itemid),
+                        Amount = itemAmount.amount
+                    }).ToSerializableList(false),
+                    Output = new Common.Models.ItemAmount
+                    {
+                        Item = data.Items.First(item => item.ItemId == itemRecipe.targetItem.itemid),
+                        Amount = itemRecipe.amountToCreate
+                    }
                 });
             }
 
