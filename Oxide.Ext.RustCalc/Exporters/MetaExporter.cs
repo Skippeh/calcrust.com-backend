@@ -4,7 +4,7 @@ using RustCalc.Exporting;
 
 namespace RustCalc.Exporters
 {
-    [Exporter(typeof(ItemsExporter))]
+    [Exporter(typeof(ItemsExporter), typeof(RecipesExporter))]
     public class MetaExporter : IExporter
     {
         public string ID => "meta";
