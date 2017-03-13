@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using RustCalc.Common.Serializing;
 
 namespace RustCalc.Common.Models
@@ -15,6 +16,8 @@ namespace RustCalc.Common.Models
         public Item()
         {
             Data = new SerializableDictionary<string, ItemData>();
+            Data.OnSerializeItem = (itemData, writer) => writer.Write(itemData.GetType().FullName);
+            Data.OnDeserializeItem = (type, reader) => (ItemData) Activator.CreateInstance(Type.GetType(reader.ReadString()), true);
         }
 
         void IBinarySerializable.Serialize(BinaryWriter writer)
