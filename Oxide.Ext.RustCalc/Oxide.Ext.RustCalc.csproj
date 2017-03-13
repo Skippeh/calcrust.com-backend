@@ -88,9 +88,6 @@
     <Compile Include="Exporters\ItemsExporter.cs" />
     <Compile Include="Exporters\MetaExporter.cs" />
     <Compile Include="Exporters\RecipesExporter.cs" />
-    <Compile Include="Exporting\ExporterAttribute.cs" />
-    <Compile Include="Exporting\ExportManager.cs" />
-    <Compile Include="Exporting\IExporter.cs" />
     <Compile Include="Oxide\RustCalcExtension.cs" />
     <Compile Include="Oxide\RustCalcPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

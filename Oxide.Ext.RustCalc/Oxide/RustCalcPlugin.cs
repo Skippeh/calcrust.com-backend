@@ -2,8 +2,7 @@
 using System.IO;
 using Oxide.Core;
 using Oxide.Core.Plugins;
-using RustCalc.Common.Models;
-using RustCalc.Exporting;
+using RustCalc.Common.Exporting;
 
 namespace RustCalc.Oxide
 {

@@ -7,7 +7,7 @@ using Oxide.Core;
 using RustCalc.Common.Models;
 using RustCalc.Common.Serializing;
 
-namespace RustCalc.Exporting
+namespace RustCalc.Common.Exporting
 {
     public static class ExportManager
     {
@@ -99,8 +99,8 @@ namespace RustCalc.Exporting
         {
             var result = new ExportData();
             Common.Models.ExportData.SetCurrent(result);
-            int count = reader.ReadInt32();
 
+            int count = reader.ReadInt32();
             for (int i = 0; i < count; ++i)
             {
                 string key = reader.ReadString();

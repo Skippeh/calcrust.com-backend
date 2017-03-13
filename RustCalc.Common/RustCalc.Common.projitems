@@ -9,6 +9,9 @@
     <Import_RootNamespace>RustCalc.Common</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Exporting\ExporterAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exporting\ExportManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exporting\IExporter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ExportData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Item.cs" />

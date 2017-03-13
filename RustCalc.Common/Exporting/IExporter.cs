@@ -1,7 +1,7 @@
 ﻿using RustCalc.Common.Models;
 using RustCalc.Common.Serializing;
 
-namespace RustCalc.Exporting
+namespace RustCalc.Common.Exporting
 {
     public interface IExporter
     {

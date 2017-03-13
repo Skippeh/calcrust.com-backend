@@ -1,7 +1,7 @@
 ﻿using System.Linq;
+using RustCalc.Common.Exporting;
 using RustCalc.Common.Models;
 using RustCalc.Common.Serializing;
-using RustCalc.Exporting;
 
 namespace RustCalc.Exporters
 {

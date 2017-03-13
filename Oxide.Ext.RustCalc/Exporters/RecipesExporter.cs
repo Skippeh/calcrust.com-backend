@@ -1,9 +1,8 @@
 ﻿using System.Linq;
 using RustCalc.Common;
+using RustCalc.Common.Exporting;
 using RustCalc.Common.Models;
 using RustCalc.Common.Serializing;
-using RustCalc.Exporting;
-using ItemAmount = RustCalc.Common.Models.ItemAmount;
 
 namespace RustCalc.Exporters
 {

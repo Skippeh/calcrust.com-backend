@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RustCalc.Exporting
+namespace RustCalc.Common.Exporting
 {
     public class ExporterAttribute : Attribute
     {
