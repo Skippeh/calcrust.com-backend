@@ -22,7 +22,7 @@ namespace RustCalc.Common.Serializing
                 if (HasDerivativeTypes)
                     writer.Write(val.GetType().FullName);
 
-                writer.Serialize(val);
+                writer.Write(val);
             }
         }
 

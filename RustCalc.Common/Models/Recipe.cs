@@ -11,8 +11,8 @@ namespace RustCalc.Common.Models
 
         public void Serialize(BinaryWriter writer)
         {
-            writer.Serialize(Input);
-            writer.Serialize(Output);
+            writer.Write(Input);
+            writer.Write(Output);
             writer.Write(TimeToCraft);
         }
 

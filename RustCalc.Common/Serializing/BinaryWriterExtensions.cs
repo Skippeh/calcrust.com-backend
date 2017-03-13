@@ -37,7 +37,7 @@ namespace RustCalc.Common.Serializing
             return null;
         }
 
-        public static void Serialize(this BinaryWriter writer, IBinarySerializable serializable)
+        public static void Write(this BinaryWriter writer, IBinarySerializable serializable)
         {
             serializable.Serialize(writer);
         }
