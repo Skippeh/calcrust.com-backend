@@ -11,7 +11,7 @@ namespace RustCalc.Common.Models
         public ItemCategory Category { get; set; }
         public int StackSize { get; set; }
         public int ItemId { get; set; }
-        public SerializableDictionary<string, ItemData> Data { get; set; }
+        public SerializableDictionary<string, ItemData> Data { get; private set; }
 
         public Item()
         {
