@@ -12,10 +12,16 @@ namespace RustCalc.Common.Serializing
         public SerializableList(bool hasDerivativeTypes = false)
         {
             HasDerivativeTypes = hasDerivativeTypes;
-        } 
+        }
+
+        // For deserialization
+        private SerializableList()
+        {
+        }
 
         public void Serialize(BinaryWriter writer)
         {
+            writer.Write(HasDerivativeTypes);
             writer.Write(Count);
             foreach (T val in this)
             {
@@ -28,6 +34,7 @@ namespace RustCalc.Common.Serializing
 
         public void Deserialize(BinaryReader reader)
         {
+            HasDerivativeTypes = reader.ReadBoolean();
             int count = reader.ReadInt32();
             for (int i = 0; i < count; ++i)
             {
