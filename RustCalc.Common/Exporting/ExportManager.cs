@@ -81,7 +81,7 @@ namespace RustCalc.Common.Exporting
 
         public static void SerializeData(ExportData data, BinaryWriter writer)
         {
-            Common.Models.ExportData.SetCurrent(data);
+            Models.ExportData.SetCurrent(data);
 
             writer.Write(data.Count);
 
@@ -92,13 +92,13 @@ namespace RustCalc.Common.Exporting
                 kv.Value.Serialize(writer);
             }
 
-            Common.Models.ExportData.SetCurrent(null);
+            Models.ExportData.SetCurrent(null);
         }
 
         public static ExportData DeserializeData(BinaryReader reader)
         {
             var result = new ExportData();
-            Common.Models.ExportData.SetCurrent(result);
+            Models.ExportData.SetCurrent(result);
 
             int count = reader.ReadInt32();
             for (int i = 0; i < count; ++i)
@@ -114,7 +114,7 @@ namespace RustCalc.Common.Exporting
                 result.Add(key, instance);
             }
 
-            Common.Models.ExportData.SetCurrent(null);
+            Models.ExportData.SetCurrent(null);
             return result;
         }
     }
