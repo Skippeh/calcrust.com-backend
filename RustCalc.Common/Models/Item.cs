@@ -10,6 +10,12 @@ namespace RustCalc.Common.Models
         public ItemCategory Category { get; set; }
         public int StackSize { get; set; }
         public int ItemId { get; set; }
+        public SerializableDictionary<string, ItemData> Data { get; set; }
+
+        public Item()
+        {
+            Data = new SerializableDictionary<string, ItemData>();
+        }
 
         void IBinarySerializable.Serialize(BinaryWriter writer)
         {
@@ -18,6 +24,7 @@ namespace RustCalc.Common.Models
             writer.Write((int)Category);
             writer.Write(StackSize);
             writer.Write(ItemId);
+            writer.Write(Data);
         }
 
         void IBinarySerializable.Deserialize(BinaryReader reader)
@@ -27,6 +34,7 @@ namespace RustCalc.Common.Models
             Category = (ItemCategory) reader.ReadInt32();
             StackSize = reader.ReadInt32();
             ItemId = reader.ReadInt32();
+            Data = reader.Deserialize<SerializableDictionary<string, ItemData>>();
         }
     }
 }
