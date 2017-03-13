@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace RustCalc.Common.Serializing
 {
-    public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IBinarySerializable where TValue : IBinarySerializable
+    public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IBinarySerializable where TValue : class, IBinarySerializable
     {
         private static readonly Type[] allowedKeyTypes =
         {
@@ -26,6 +26,12 @@ namespace RustCalc.Common.Serializing
         /// <summary>If set to false, the value type names will not be written and on deserialization it will be assumed that all items are of the same type as <typeparamref name="T"/>.</summary>
         public bool HasDerivativeTypes { get; set; }
 
+        /// <summary>Called right before serializing an item.</summary>
+        public Action<TValue, BinaryWriter> OnSerializeItem { get; set; }
+
+        /// <summary>Called right before deserializing an item. If a non null value is returned that instance will be used for deserializing instead.</summary>
+        public Func<Type, BinaryReader, TValue> OnDeserializeItem { get; set; }
+
         public SerializableDictionary(bool hasDerivativeTypes = false)
         {
             HasDerivativeTypes = hasDerivativeTypes;
@@ -42,6 +48,7 @@ namespace RustCalc.Common.Serializing
                 if (HasDerivativeTypes)
                     writer.Write(typeof (TValue).FullName);
 
+                OnSerializeItem?.Invoke(kv.Value, writer);
                 writer.Write(kv.Value);
             }
         }
@@ -64,7 +71,9 @@ namespace RustCalc.Common.Serializing
                 else
                     valueType = typeof (TValue);
 
-                var instance = (TValue) Activator.CreateInstance(valueType, true);
+                TValue instance;
+
+                instance = OnDeserializeItem?.Invoke(valueType, reader) ?? (TValue) Activator.CreateInstance(valueType, true);
                 instance.Deserialize(reader);
 
                 Add((TKey) key, instance);
