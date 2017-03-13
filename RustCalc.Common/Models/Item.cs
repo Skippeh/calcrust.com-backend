@@ -16,8 +16,6 @@ namespace RustCalc.Common.Models
         public Item()
         {
             Data = new SerializableDictionary<string, ItemData>();
-            Data.OnSerializeItem = (itemData, writer) => writer.Write(itemData.GetType().FullName);
-            Data.OnDeserializeItem = (type, reader) => (ItemData) Activator.CreateInstance(Type.GetType(reader.ReadString()), true);
         }
 
         void IBinarySerializable.Serialize(BinaryWriter writer)
@@ -27,6 +25,8 @@ namespace RustCalc.Common.Models
             writer.Write((int)Category);
             writer.Write(StackSize);
             writer.Write(ItemId);
+
+            Data.OnSerializeItem = (itemData, writer2) => writer2.Write(itemData.GetType().FullName);
             writer.Write(Data);
         }
 
@@ -37,6 +37,8 @@ namespace RustCalc.Common.Models
             Category = (ItemCategory) reader.ReadInt32();
             StackSize = reader.ReadInt32();
             ItemId = reader.ReadInt32();
+
+            Data.OnDeserializeItem = (type, reader2) => (ItemData)Activator.CreateInstance(Type.GetType(reader2.ReadString()), true);
             Data = reader.Deserialize<SerializableDictionary<string, ItemData>>();
         }
     }
