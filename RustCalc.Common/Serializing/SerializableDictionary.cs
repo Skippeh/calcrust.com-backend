@@ -35,6 +35,11 @@ namespace RustCalc.Common.Serializing
         public SerializableDictionary(bool hasDerivativeTypes = false)
         {
             HasDerivativeTypes = hasDerivativeTypes;
+        }
+
+        // For deserialization
+        private SerializableDictionary()
+        {
         }  
         
         public void Serialize(BinaryWriter writer)
