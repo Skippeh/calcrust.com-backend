@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Oxide.Core;
 using Oxide.Core.Plugins;
@@ -8,9 +9,26 @@ namespace RustCalc.Oxide
 {
     public class RustCalcPlugin : CSPlugin
     {
+        private class OxideTraceListener : TraceListener
+        {
+            public override void Write(string message)
+            {
+                Interface.Oxide.LogInfo(message);
+            }
+
+            public override void WriteLine(string message)
+            {
+                Interface.Oxide.LogInfo(message);
+            }
+        }
+
         [HookMethod("Init")]
         private void Init()
         {
+            Trace.Listeners.Clear();
+            Trace.Listeners.Add(new OxideTraceListener());
+            Trace.AutoFlush = true;
+
             ExportManager.LoadExporters();
         }
 

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Oxide.Core;
 using RustCalc.Common.Models;
 using RustCalc.Common.Serializing;
 
@@ -25,7 +25,7 @@ namespace RustCalc.Common.Exporting
 
                 if (attribute == null)
                 {
-                    Interface.Oxide.LogError("Exporter missing ExporterAttribute: " + exportType.FullName);
+                    Trace.TraceError("Exporter missing ExporterAttribute: " + exportType.FullName);
                     return false;
                 }
 
@@ -53,7 +53,7 @@ namespace RustCalc.Common.Exporting
 
                     if (circularDependencies.Count > 0)
                     {
-                        Interface.Oxide.LogError("Circular exporter dependency detected between " + exporterType.FullName + " and:\n\t- {0}", String.Join("\n\t- ", circularDependencies.Select(type => type.FullName).ToArray()));
+                        Trace.TraceError("Circular exporter dependency detected between " + exporterType.FullName + " and:\n\t- {0}", String.Join("\n\t- ", circularDependencies.Select(type => type.FullName).ToArray()));
                         return false;
                     }
 
@@ -74,7 +74,7 @@ namespace RustCalc.Common.Exporting
                 result.Add(exporter.ID, exportData);
             }
 
-            Interface.Oxide.LogInfo($"Exporting {result.Items.Count} items, and {result.Recipes.Count} recipes.");
+            Trace.TraceError($"Exporting {result.Items.Count} items, and {result.Recipes.Count} recipes.");
             
             return result;
         }
