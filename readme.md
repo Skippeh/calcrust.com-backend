@@ -4,4 +4,4 @@
 
 ## Projects information
 
-All projects are developed using Visual Studio 2017.
+All projects are developed using Visual Studio 2015.
