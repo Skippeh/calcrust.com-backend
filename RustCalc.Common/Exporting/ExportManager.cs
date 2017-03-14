@@ -74,7 +74,7 @@ namespace RustCalc.Common.Exporting
                 result.Add(exporter.ID, exportData);
             }
 
-            Trace.TraceError($"Exporting {result.Items.Count} items, and {result.Recipes.Count} recipes.");
+            Trace.TraceInformation($"Exporting {result.Items.Count} items, and {result.Recipes.Count} recipes.");
             
             return result;
         }
