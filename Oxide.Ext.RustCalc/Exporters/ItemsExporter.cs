@@ -16,7 +16,7 @@ namespace RustCalc.Exporters
             {
                 Shortname = itemDefinition.shortname,
                 Name = itemDefinition.displayName.english,
-                Category = itemDefinition.category,
+                Category = (Common.Models.ItemCategory) itemDefinition.category,
                 StackSize = itemDefinition.stackable,
                 ItemId = itemDefinition.itemid
             }));
