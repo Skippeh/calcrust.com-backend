@@ -26,7 +26,7 @@ namespace RustCalc.Common.Models
             writer.Write(StackSize);
             writer.Write(ItemId);
 
-            Data.OnSerializeItem = (itemData, writer2) => writer2.Write(itemData.GetType().FullName);
+            Data.OnSerializeItem = (itemData, writer2) => writer2.Write(itemData.GetType().GetTypeName());
             writer.Write(Data);
         }
 

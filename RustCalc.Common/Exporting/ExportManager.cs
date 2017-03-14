@@ -88,7 +88,7 @@ namespace RustCalc.Common.Exporting
             foreach (var kv in data)
             {
                 writer.Write(kv.Key);
-                writer.Write(kv.Value.GetType().FullName);
+                writer.Write(kv.Value.GetType().GetTypeName());
                 kv.Value.Serialize(writer);
             }
 

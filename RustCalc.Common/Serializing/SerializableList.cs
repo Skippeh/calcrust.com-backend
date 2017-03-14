@@ -26,7 +26,7 @@ namespace RustCalc.Common.Serializing
             foreach (T val in this)
             {
                 if (HasDerivativeTypes)
-                    writer.Write(val.GetType().FullName);
+                    writer.Write(val.GetType().GetTypeName());
 
                 writer.Write(val);
             }
