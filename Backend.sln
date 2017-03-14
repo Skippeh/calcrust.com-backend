@@ -21,8 +21,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "RustDedicated", "%RustServe
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RustCalc.Common", "RustCalc.Common\RustCalc.Common.shproj", "{89894758-83DA-47E5-B4BD-44DD19A423B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RustCalc.Api", "RustCalc.Api\RustCalc.Api.csproj", "{1482CE62-8C6A-4DFC-A0CA-1BA5B4D6AE47}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		RustCalc.Common\RustCalc.Common.projitems*{1482ce62-8c6a-4dfc-a0ca-1ba5b4d6ae47}*SharedItemsImports = 4
 		RustCalc.Common\RustCalc.Common.projitems*{89894758-83da-47e5-b4bd-44dd19a423b2}*SharedItemsImports = 13
 		RustCalc.Common\RustCalc.Common.projitems*{eb573858-9f95-471d-b1f0-d175476fbabd}*SharedItemsImports = 4
 	EndGlobalSection
@@ -45,6 +48,14 @@ Global
 		{B4DC3CB9-61FB-450B-9838-1D1EDBCCC196}.Debug|x64.ActiveCfg = Release
 		{B4DC3CB9-61FB-450B-9838-1D1EDBCCC196}.Release|Any CPU.ActiveCfg = Release
 		{B4DC3CB9-61FB-450B-9838-1D1EDBCCC196}.Release|x64.ActiveCfg = Release
+		{1482CE62-8C6A-4DFC-A0CA-1BA5B4D6AE47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1482CE62-8C6A-4DFC-A0CA-1BA5B4D6AE47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1482CE62-8C6A-4DFC-A0CA-1BA5B4D6AE47}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1482CE62-8C6A-4DFC-A0CA-1BA5B4D6AE47}.Debug|x64.Build.0 = Debug|Any CPU
+		{1482CE62-8C6A-4DFC-A0CA-1BA5B4D6AE47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1482CE62-8C6A-4DFC-A0CA-1BA5B4D6AE47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1482CE62-8C6A-4DFC-A0CA-1BA5B4D6AE47}.Release|x64.ActiveCfg = Release|Any CPU
+		{1482CE62-8C6A-4DFC-A0CA-1BA5B4D6AE47}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
