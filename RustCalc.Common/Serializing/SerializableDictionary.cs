@@ -23,7 +23,7 @@ namespace RustCalc.Common.Serializing
             }
         }
 
-        /// <summary>If set to false, the value type names will not be written and on deserialization it will be assumed that all items are of the same type as <typeparamref name="T"/>.</summary>
+        /// <summary>If set to false, the value type names will not be serialized and on deserialization it will be assumed that all items are of the same type as <typeparamref name="T"/>.</summary>
         public bool HasDerivativeTypes { get; set; }
 
         /// <summary>Called right before serializing an item.</summary>
