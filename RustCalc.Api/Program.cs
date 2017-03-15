@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Nancy.Hosting.Self;
 using RustCalc.Common.Exporting;
 using RustCalc.Common.Models;
 
@@ -8,6 +9,8 @@ namespace RustCalc.Api
 {
     public static class Program
     {
+        private const short serverPort = 7545;
+
         public static Dictionary<GameBranch, ExportData> Data { get; private set; }
 
         static Program()
@@ -32,6 +35,21 @@ namespace RustCalc.Api
                         Console.Error.WriteLine(loadException.Message);
                     }
                 }
+            }
+
+            using (var host = new NancyHost(new ApiBootstrapper(), new HostConfiguration() { UrlReservations = new UrlReservations { CreateAutomatically = true } }, new Uri($"http://localhost:{serverPort}")))
+            {
+                host.Start();
+
+                Console.WriteLine($"Starting api server on port {serverPort}...");
+
+                Console.WriteLine("Press CTRL+Q to stop the server.");
+                ConsoleKeyInfo consoleKeyInfo;
+                while ((consoleKeyInfo = Console.ReadKey(true)).Key != ConsoleKey.Q || consoleKeyInfo.Modifiers != ConsoleModifiers.Control)
+                    continue;
+
+                Console.WriteLine("Stopping api server...");
+                host.Stop();
             }
         }
 
