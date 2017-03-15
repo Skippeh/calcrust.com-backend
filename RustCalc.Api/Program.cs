@@ -43,6 +43,7 @@ namespace RustCalc.Api
                 {
                     var reader = new BinaryReader(fs);
                     var data = ExportManager.DeserializeData(reader);
+                    Data.Add(branch, data);
                 }
 
                 return null;
