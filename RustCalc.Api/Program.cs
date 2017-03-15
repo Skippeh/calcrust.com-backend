@@ -17,25 +17,34 @@ namespace RustCalc.Api
 
         static void Main(string[] args)
         {
-            Exception loadException = LoadBranch("public");
-
-            if (loadException != null)
+            foreach (GameBranch branch in Enum.GetValues(typeof (GameBranch)))
             {
-                Console.Error.WriteLine("Failed to load public branch:");
-                Console.Error.WriteLine(loadException.ToString());
+                Exception loadException = LoadBranch(branch);
+
+                if (loadException != null)
+                {
+                    Console.Error.WriteLine($"Failed to load branch {branch}:");
+
+                    if (!(loadException is FileNotFoundException) && !(loadException is DirectoryNotFoundException))
+                        Console.Error.WriteLine(loadException.ToString());
+                    else
+                    {
+                        Console.Error.WriteLine(loadException.Message);
+                    }
+                }
             }
         }
 
-        private static Exception LoadBranch(string branchName)
+        private static Exception LoadBranch(GameBranch branch)
         {
             try
             {
-                using (var fs = File.OpenRead($"data/{branchName}/rustcalc-export.bin"))
+                using (var fs = File.OpenRead($"data/{branch}/rustcalc-export.bin"))
                 {
                     var reader = new BinaryReader(fs);
                     var data = ExportManager.DeserializeData(reader);
                 }
-                
+
                 return null;
             }
             catch (Exception ex)
