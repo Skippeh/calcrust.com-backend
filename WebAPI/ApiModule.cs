@@ -63,18 +63,9 @@ namespace WebAPI
             // Search all
             Get["/search/{term}"] = WrapMethod((dynamic _) => SearchAll(_.term, false));
             Get["/search/{term}/detailed"] = WrapMethod((dynamic _) => SearchAll(_.term, true));
-            
-            Get["/dump"] = WrapMethod(_ =>
-            {
-                var data = DataManager.Data;
-                return new ApiResponse(new
-                {
-                    data.Meta,
-                    data.Items,
-                    recipes = data.Recipes.ToDictionary(keyval => keyval.Key, keyval => WrapRecipe(keyval.Value, false)),
-                    cookables = data.Cookables.ToDictionary(keyval => keyval.Key, keyval => WrapCookable(keyval.Value, false))
-                });
-            });
+
+            Get["/dump"] = WrapMethod(_ => GetDump(false));
+            Get["/dump/full"] = WrapMethod(_ => GetDump(true));
             Get["/meta"] = WrapMethod(GetMeta);
             Post["/upload"] = WrapMethod(UploadData, true);
         }
@@ -108,6 +99,32 @@ namespace WebAPI
                 };
                 return response;
             };
+        }
+
+        private object GetDump(bool full)
+        {
+            var data = DataManager.Data;
+            Dictionary<string, object> response = new Dictionary<string, object>()
+            {
+                {"meta", data.Meta},
+                {"items", data.Items},
+                {"recipes", data.Recipes.ToDictionary(keyval => keyval.Key, keyval => WrapRecipe(keyval.Value, false))},
+                {"cookables", data.Cookables.ToDictionary(keyval => keyval.Key, keyval => WrapCookable(keyval.Value, false))}
+            };
+
+            if (full)
+            {
+                response["destructibles"] = data.DamageInfo.Select(keyval => new
+                {
+                    id = keyval.Key,
+                    type = keyval.Value.Type.ToCamelCaseString(),
+                    keyval.Value.HasProtection,
+                    name = keyval.Value.Type == Destructible.DestructibleType.Deployable ? data.Items[keyval.Key].Name : data.GetBuildingBlockName(keyval.Key),
+                    data = keyval.Value.Type == Destructible.DestructibleType.Deployable ? (object)((DeployableDestructible)keyval.Value).Values : ((BuildingBlockDestructible)keyval.Value).Grades 
+                });
+            }
+
+            return new ApiResponse(response);
         }
 
         private ApiResponse SearchAll(string term, bool detailed)
