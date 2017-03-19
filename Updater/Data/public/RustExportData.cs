@@ -317,9 +317,6 @@ namespace Oxide.Classes.Destructibles
 
 
 
-
-
-
 namespace Oxide.Plugins
 {
     [Info("Rust Export Data", "Skipcast", "1.0.0")]
@@ -994,6 +991,7 @@ namespace Oxide.Plugins
             var hitValues = new HitValues();
             var propDirections = GetField<DirectionProperties[], BaseCombatEntity>(entity, "propDirection");
             List<DamageTypeEntry> damageTypes;
+            bool usesPropProtection = false;
 
             if (modProjectile != null)
             {
@@ -1004,6 +1002,7 @@ namespace Oxide.Plugins
                 if (projectile != null)
                 {
                     damageTypes = projectile.damageTypes;
+                    usesPropProtection = true;
 
                     if (projectile.conditionLoss > 0)
                     {
@@ -1020,6 +1019,7 @@ namespace Oxide.Plugins
             else if (baseMelee != null)
             {
                 damageTypes = baseMelee.damageTypes;
+                usesPropProtection = true;
             }
             else
             {
@@ -1030,39 +1030,37 @@ namespace Oxide.Plugins
             weakHit.damageTypes.Add(damageTypes);
             weakHit.damageTypes.ScaleAll(damageScale);
 
-            if (modProjectile != null)
-            {
-                weakHit.damageTypes.ScaleAll(modProjectile.numProjectiles);
-            }
-
-            entity.ScaleDamage(weakHit);
-
             var strongHit = new HitInfo();
             strongHit.damageTypes.Add(damageTypes);
             strongHit.damageTypes.ScaleAll(damageScale);
 
-            if (modProjectile != null)
+            if (modProjectile != null && modProjectile.numProjectiles > 1)
             {
+                weakHit.damageTypes.ScaleAll(modProjectile.numProjectiles);
                 strongHit.damageTypes.ScaleAll(modProjectile.numProjectiles);
             }
 
-            entity.ScaleDamage(strongHit);
-
-            if (propDirections.Length > 1)
+            if (entity.baseProtection != null)
             {
-                Debug.LogWarning(entity.name + ": propDirections.Length > 1, invalid strong hit scaling! " + propDirections.Length);
+                entity.baseProtection.Scale(weakHit.damageTypes);
+                entity.baseProtection.Scale(strongHit.damageTypes);
             }
-            
-            foreach (var propDirection in propDirections)
+
+            if (usesPropProtection)
             {
-                if (propDirection.bounds.size != Vector3.zero) // Item has weakspot
+                if (propDirections.Length > 1)
                 {
-                    propDirection.extraProtection.Scale(strongHit.damageTypes);
+                    Debug.LogWarning(entity.name + ": propDirections.Length > 1, invalid strong hit scaling! " + propDirections.Length);
                 }
-                else
+
+                foreach (var propDirection in propDirections)
                 {
-                    propDirection.extraProtection.Scale(weakHit.damageTypes);
                     propDirection.extraProtection.Scale(strongHit.damageTypes);
+
+                    if (propDirection.bounds.size == Vector3.zero) // Item doesn't have a weakspot
+                    {
+                        propDirection.extraProtection.Scale(weakHit.damageTypes);
+                    }
                 }
             }
 
