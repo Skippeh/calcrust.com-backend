@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using RustCalc.Common.Models;
 
 namespace RustCalc.Common.Serializing
 {
@@ -49,12 +50,16 @@ namespace RustCalc.Common.Serializing
             foreach (var kv in this)
             {
                 WriteKey(kv.Key, writer);
+                writer.Write(kv.Value != null);
 
-                if (HasDerivativeTypes)
-                    writer.Write(typeof (TValue).GetTypeName());
+                if (kv.Value != null)
+                {
+                    if (HasDerivativeTypes)
+                        writer.Write(typeof (TValue).GetTypeName());
 
-                OnSerializeItem?.Invoke(kv.Value, writer);
-                writer.Write(kv.Value);
+                    OnSerializeItem?.Invoke(kv.Value, writer);
+                    writer.Write(kv.Value);
+                }
             }
         }
 
@@ -66,22 +71,29 @@ namespace RustCalc.Common.Serializing
             for (int i = 0; i < count; ++i)
             {
                 object key = ReadKey(reader);
-                Type valueType;
 
-                if (HasDerivativeTypes)
+                if (reader.ReadBoolean())
                 {
-                    valueType = Type.GetType(reader.ReadString());
-                    if (valueType == null) throw new ArgumentNullException(nameof(valueType));
+                    Type valueType;
+
+                    if (HasDerivativeTypes)
+                    {
+                        string valueTypeName = reader.ReadString();
+                        valueType = Type.GetType(valueTypeName);
+                        if (valueType == null) throw new ArgumentNullException(nameof(valueType), valueTypeName);
+                    }
+                    else
+                        valueType = typeof (TValue);
+
+                    var instance = OnDeserializeItem?.Invoke(valueType, reader) ?? (TValue) Activator.CreateInstance(valueType, true);
+                    instance.Deserialize(reader);
+
+                    Add((TKey) key, instance);
                 }
                 else
-                    valueType = typeof (TValue);
-
-                TValue instance;
-
-                instance = OnDeserializeItem?.Invoke(valueType, reader) ?? (TValue) Activator.CreateInstance(valueType, true);
-                instance.Deserialize(reader);
-
-                Add((TKey) key, instance);
+                {
+                    Add((TKey) key, null);
+                }
             }
         }
 

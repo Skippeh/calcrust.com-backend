@@ -4,7 +4,7 @@ using System.IO;
 
 namespace RustCalc.Common.Serializing
 {
-    public class SerializableList<T> : List<T>, IBinarySerializable where T : IBinarySerializable
+    public class SerializableList<T> : List<T>, IBinarySerializable where T : class, IBinarySerializable
     {
         /// <summary>If set to false, the item type names will not be written and on deserialization it will be assumed that all items are of the same type as <typeparamref name="T"/>.</summary>
         public bool HasDerivativeTypes { get; set; }
@@ -25,10 +25,15 @@ namespace RustCalc.Common.Serializing
             writer.Write(Count);
             foreach (T val in this)
             {
-                if (HasDerivativeTypes)
-                    writer.Write(val.GetType().GetTypeName());
+                writer.Write(val != null);
 
-                writer.Write(val);
+                if (val != null)
+                {
+                    if (HasDerivativeTypes)
+                        writer.Write(val.GetType().GetTypeName());
+
+                    writer.Write(val);
+                }
             }
         }
 
@@ -40,19 +45,26 @@ namespace RustCalc.Common.Serializing
             {
                 Type type;
 
-                if (HasDerivativeTypes)
+                if (reader.ReadBoolean())
                 {
-                    string typeName = reader.ReadString();
-                    type = Type.GetType(typeName);
-                    if (type == null) throw new ArgumentNullException(nameof(type));
+                    if (HasDerivativeTypes)
+                    {
+                        string typeName = reader.ReadString();
+                        type = Type.GetType(typeName);
+                        if (type == null) throw new ArgumentNullException(nameof(type));
+                    }
+                    else
+                    {
+                        type = typeof (T);
+                    }
+
+                    var instance = (T) reader.Deserialize(typeof (T));
+                    Add(instance);
                 }
                 else
                 {
-                    type = typeof (T);
+                    Add(null);
                 }
-
-                var instance = (T)reader.Deserialize(typeof (T));
-                Add(instance);
             }
         }
     }
