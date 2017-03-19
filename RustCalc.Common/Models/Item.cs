@@ -41,5 +41,10 @@ namespace RustCalc.Common.Models
             Data.OnDeserializeItem = (type, reader2) => (ItemData)Activator.CreateInstance(Type.GetType(reader2.ReadString()), true);
             Data = reader.Deserialize<SerializableDictionary<string, ItemData>>();
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
