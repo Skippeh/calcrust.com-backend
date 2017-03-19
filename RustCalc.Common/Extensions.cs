@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using RustCalc.Common.Serializing;
 
 namespace RustCalc.Common
 {
     public static class Extensions
     {
-        public static SerializableList<T> ToSerializableList<T>(this IEnumerable<T> enumerable, bool hasDerivativeTypes = false) where T : IBinarySerializable
+        public static SerializableList<T> ToSerializableList<T>(this IEnumerable<T> enumerable, bool hasDerivativeTypes = false) where T : class, IBinarySerializable
         {
             var list = new SerializableList<T>(hasDerivativeTypes);
             list.AddRange(enumerable);
@@ -20,6 +18,18 @@ namespace RustCalc.Common
         public static string GetTypeName(this Type type)
         {
             return type.ToString();
+        }
+
+        public static SerializableDictionary<TKey, TValue> ToSerializableDictionary<TDictKey, TDictValue, TKey, TValue>(this IDictionary<TDictKey, TDictValue> dictionary,
+                                                                                                                        Func<KeyValuePair<TDictKey, TDictValue>, TKey> keySelector,
+                                                                                                                        Func<KeyValuePair<TDictKey, TDictValue>, TValue> valueSelector) where TValue : class, IBinarySerializable
+        {
+            var result = new SerializableDictionary<TKey, TValue>();
+
+            foreach (KeyValuePair<TDictKey, TDictValue> kv in dictionary)
+                result.Add(keySelector(kv), valueSelector(kv));
+
+            return result;
         }
     }
 }
