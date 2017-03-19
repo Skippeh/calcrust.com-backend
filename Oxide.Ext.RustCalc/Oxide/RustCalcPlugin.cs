@@ -40,8 +40,15 @@ namespace RustCalc.Oxide
                 using (var memstream = new MemoryStream())
                 {
                     var writer = new BinaryWriter(memstream);
+
+                    DateTime start = DateTime.UtcNow;
+
                     var data = ExportManager.ExportData();
                     ExportManager.SerializeData(data, writer);
+
+                    DateTime end = DateTime.UtcNow;
+
+                    data.Meta.ExportTime = end - start;
 
                     Interface.Oxide.LogInfo("Serialized " + memstream.Length + " bytes of data");
 
