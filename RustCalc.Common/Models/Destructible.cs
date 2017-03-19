@@ -5,7 +5,16 @@ namespace RustCalc.Common.Models
 {
     public abstract class Destructible : IBinarySerializable
     {
-        public abstract void Serialize(BinaryWriter writer);
-        public abstract void Deserialize(BinaryReader reader);
+        public bool HasWeakspot { get; set; }
+
+        public virtual void Serialize(BinaryWriter writer)
+        {
+            writer.Write(HasWeakspot);
+        }
+
+        public virtual void Deserialize(BinaryReader reader)
+        {
+            HasWeakspot = reader.ReadBoolean();
+        }
     }
 }

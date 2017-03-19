@@ -67,6 +67,7 @@ namespace RustCalc.Common.Exporting
         public static ExportData ExportData()
         {
             var result = new ExportData();
+            Models.ExportData.SetCurrent(result);
 
             foreach (var exporter in Exporters)
             {
@@ -77,7 +78,8 @@ namespace RustCalc.Common.Exporting
             }
 
             Trace.TraceInformation($"Exporting {result.Items.Count} items, and {result.Recipes.Count} recipes.");
-            
+
+            Models.ExportData.SetCurrent(null);
             return result;
         }
 

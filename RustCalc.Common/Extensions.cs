@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using RustCalc.Common.Serializing;
 
 namespace RustCalc.Common
@@ -20,16 +21,47 @@ namespace RustCalc.Common
             return type.ToString();
         }
 
-        public static SerializableDictionary<TKey, TValue> ToSerializableDictionary<TDictKey, TDictValue, TKey, TValue>(this IDictionary<TDictKey, TDictValue> dictionary,
+        public static SerializableDictionary<TKey, TValue> ToSerializableDictionary<TDictKey, TDictValue, TKey, TValue>(this IDictionary<TDictKey, TDictValue> dictionary, bool hasDerivativeTypes,
                                                                                                                         Func<KeyValuePair<TDictKey, TDictValue>, TKey> keySelector,
                                                                                                                         Func<KeyValuePair<TDictKey, TDictValue>, TValue> valueSelector) where TValue : class, IBinarySerializable
         {
-            var result = new SerializableDictionary<TKey, TValue>();
+            var result = new SerializableDictionary<TKey, TValue>(hasDerivativeTypes);
 
             foreach (KeyValuePair<TDictKey, TDictValue> kv in dictionary)
                 result.Add(keySelector(kv), valueSelector(kv));
 
             return result;
+        }
+
+        public static T GetField<T, TClassType>(this object obj, string memberName)
+        {
+            var fieldInfo = GetFieldInfo<TClassType>(obj, memberName);
+            return (T)fieldInfo.GetValue(obj);
+        }
+
+        private static FieldInfo GetFieldInfo<TClassType>(object obj, string memberName)
+        {
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+
+            var targetType = typeof (TClassType);
+            var type = obj.GetType();
+
+            while (type != targetType)
+            {
+                if (!type.IsSubclassOf(targetType) || type.BaseType == null)
+                    throw new ArgumentException(obj.GetType().FullName + " does not equal or inherit type " + targetType.FullName + ".");
+
+                type = type.BaseType;
+            }
+
+            var fieldInfo = type.GetField(memberName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+            return fieldInfo;
+        }
+
+        public static void SetField<TClassType>(this object obj, string memberName, object value)
+        {
+            var fieldInfo = GetFieldInfo<TClassType>(obj, memberName);
+            fieldInfo.SetValue(obj, value);
         }
     }
 }

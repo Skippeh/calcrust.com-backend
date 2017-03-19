@@ -14,6 +14,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exporting\IExporter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AttackInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\AttackInfoImplementations\ExplosiveAttackInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\AttackInfoImplementations\MeleeAttackInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\AttackInfoImplementations\WeaponAttackInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\BuildingGrade.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Destructible.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\DestructibleImplementations\BuildingBlockDestructible.cs" />
@@ -33,6 +36,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Models\ItemDataTypes\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Models\AttackInfoImplementations\" />
   </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@ namespace RustCalc.Common.Models
 {
     public class ExportData : Dictionary<string, IBinarySerializable>
     {
-        /// <summary>The current ExportData object being serialized or deserialized. Only safe to use in IBinarySerializable.Serialize and IBinarySerializable.Deserialize.</summary>
+        /// <summary>The current ExportData object being exported, serialized, or deserialized. Only safe to use in IExporter.ExportData, IBinarySerializable.Serialize, and IBinarySerializable.Deserialize.</summary>
         public static ExportData Current { get; private set; }
 
         public SerializableList<Item> Items => Get<SerializableList<Item>>("items");

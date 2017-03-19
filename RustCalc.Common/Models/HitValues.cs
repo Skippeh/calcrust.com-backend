@@ -26,8 +26,8 @@ namespace RustCalc.Common.Models
             }
         }
 
-        public Values Strong { get; set; }
-        public Values Weak { get; set; }
+        public Values Strong { get; set; } = new Values();
+        public Values Weak { get; set; } = new Values();
 
         public void Serialize(BinaryWriter writer)
         {
