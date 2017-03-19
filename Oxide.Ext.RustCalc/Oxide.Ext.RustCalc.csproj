@@ -91,6 +91,7 @@
     <Compile Include="Oxide\RustCalcExtension.cs" />
     <Compile Include="Oxide\RustCalcPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility.cs" />
   </ItemGroup>
   <Import Project="..\RustCalc.Common\RustCalc.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
