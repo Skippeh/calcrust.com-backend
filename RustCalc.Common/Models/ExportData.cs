@@ -11,6 +11,7 @@ namespace RustCalc.Common.Models
         public SerializableList<Item> Items => Get<SerializableList<Item>>("items");
         public SerializableList<Recipe> Recipes => Get<SerializableList<Recipe>>("recipes");
         public Meta Meta => Get<Meta>("meta");
+        public SerializableDictionary<string, Destructible> Destructibles => Get<SerializableDictionary<string, Destructible>>("destructibles"); 
 
         internal static void SetCurrent(ExportData data)
         {
