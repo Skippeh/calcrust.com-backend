@@ -350,12 +350,12 @@ namespace RustCalc.Exporters
                 }
             }
 
-            FillHitValues(ref result, normalHit, protectedHit, entity, itemDefinition, baseMelee, explosive, modProjectile);
+            FillHitValues(result, normalHit, protectedHit, entity, itemDefinition, baseMelee, explosive, modProjectile);
 
             return result;
         }
 
-        private void FillHitValues(ref HitValues result, HitInfo normalHit, HitInfo protectedHit, BaseCombatEntity entity, ItemDefinition itemDefinition, BaseMelee baseMelee, TimedExplosive explosive, ItemModProjectile modProjectile)
+        private void FillHitValues(HitValues result, HitInfo normalHit, HitInfo protectedHit, BaseCombatEntity entity, ItemDefinition itemDefinition, BaseMelee baseMelee, TimedExplosive explosive, ItemModProjectile modProjectile)
         {
             result.Weak.DPS = normalHit.damageTypes.Total();
             result.Strong.DPS = protectedHit.damageTypes.Total();
