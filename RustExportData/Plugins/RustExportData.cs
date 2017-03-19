@@ -707,9 +707,11 @@ namespace Oxide.Plugins
 
                 foreach (var propDirection in propDirections)
                 {
-                    if (propDirection.bounds.size != Vector3.zero) // Item has weakspot
+                    propDirection.extraProtection.Scale(strongHit.damageTypes);
+
+                    if (propDirection.bounds.size == Vector3.zero) // Item doesn't have a weakspot
                     {
-                        propDirection.extraProtection.Scale(strongHit.damageTypes);
+                        propDirection.extraProtection.Scale(weakHit.damageTypes);
                     }
                 }
             }
