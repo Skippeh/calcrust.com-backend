@@ -55,7 +55,7 @@ namespace RustCalc.Common.Serializing
                 if (kv.Value != null)
                 {
                     if (HasDerivativeTypes)
-                        writer.Write(typeof (TValue).GetTypeName());
+                        writer.Write(kv.Value.GetType().GetTypeName());
 
                     OnSerializeItem?.Invoke(kv.Value, writer);
                     writer.Write(kv.Value);
