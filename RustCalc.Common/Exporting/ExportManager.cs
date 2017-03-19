@@ -71,7 +71,9 @@ namespace RustCalc.Common.Exporting
             foreach (var exporter in Exporters)
             {
                 var exportData = exporter.ExportData(result);
-                result.Add(exporter.ID, exportData);
+
+                if (exportData != null)
+                    result.Add(exporter.ID, exportData);
             }
 
             Trace.TraceInformation($"Exporting {result.Items.Count} items, and {result.Recipes.Count} recipes.");
