@@ -85,8 +85,7 @@ namespace RustCalc.Common.Serializing
                     else
                         valueType = typeof (TValue);
 
-                    var instance = OnDeserializeItem?.Invoke(valueType, reader) ?? (TValue) Activator.CreateInstance(valueType, true);
-                    instance.Deserialize(reader);
+                    var instance = OnDeserializeItem?.Invoke(valueType, reader) ?? (TValue) reader.Deserialize(valueType);
 
                     Add((TKey) key, instance);
                 }

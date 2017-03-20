@@ -93,7 +93,7 @@ namespace RustCalc.Common.Exporting
             {
                 writer.Write(kv.Key);
                 writer.Write(kv.Value.GetType().GetTypeName());
-                kv.Value.Serialize(writer);
+                writer.Write(kv.Value);
             }
 
             Models.ExportData.SetCurrent(null);
