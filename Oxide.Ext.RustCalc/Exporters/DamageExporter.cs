@@ -24,13 +24,13 @@ namespace RustCalc.Exporters
 
         private ExportData exportData;
 
-        public string ID => "destructibles";
+        public string ID => "Destructibles";
 
-        public IBinarySerializable ExportData(ExportData data)
+        public object ExportData(ExportData data)
         {
             exportData = data;
 
-            var result = new SerializableDictionary<string, Destructible>(true);
+            var result = new Dictionary<string, Destructible>();
             var prefabs = new List<string>();
 
             foreach (var str in GameManifest.Get().pooledStrings)

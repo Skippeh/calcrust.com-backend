@@ -9,8 +9,8 @@ namespace RustCalc.Exporters
     [Exporter(typeof(ItemsExporter))]
     public class RecipesExporter : IExporter
     {
-        public string ID => "recipes";
-        public IBinarySerializable ExportData(ExportData data)
+        public string ID => "Recipes";
+        public object ExportData(ExportData data)
         {
             var recipes = new SerializableList<Recipe>();
 

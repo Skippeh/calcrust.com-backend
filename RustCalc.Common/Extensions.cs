@@ -29,6 +29,16 @@ namespace RustCalc.Common
             return type.ToString();
         }
 
+        public static SerializableDictionary<TKey, TValue> ToSerializableDictionary<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, bool hasDerivativeTypes) where TValue : class, IBinarySerializable
+        {
+            var result = new SerializableDictionary<TKey, TValue>(hasDerivativeTypes);
+
+            foreach (var kv in dictionary)
+                result.Add(kv.Key, kv.Value);
+
+            return result;
+        } 
+
         public static SerializableDictionary<TKey, TValue> ToSerializableDictionary<TDictKey, TDictValue, TKey, TValue>(this IDictionary<TDictKey, TDictValue> dictionary, bool hasDerivativeTypes,
                                                                                                                         Func<KeyValuePair<TDictKey, TDictValue>, TKey> keySelector,
                                                                                                                         Func<KeyValuePair<TDictKey, TDictValue>, TValue> valueSelector) where TValue : class, IBinarySerializable
@@ -40,6 +50,11 @@ namespace RustCalc.Common
 
             return result;
         }
+
+        public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this SerializableDictionary<TKey, TValue> dictionary) where TValue : class, IBinarySerializable
+        {
+            return dictionary.ToDictionary(kv => kv.Key, kv => kv.Value);
+        } 
 
         public static T GetField<T, TClassType>(this object obj, string memberName)
         {

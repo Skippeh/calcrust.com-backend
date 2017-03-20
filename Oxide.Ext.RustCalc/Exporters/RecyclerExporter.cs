@@ -1,19 +1,19 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using RustCalc.Common;
 using RustCalc.Common.Exporting;
 using RustCalc.Common.Models;
-using RustCalc.Common.Serializing;
 
 namespace RustCalc.Exporters
 {
     [Exporter(typeof(ItemsExporter))]
     public class RecyclerExporter : IExporter
     {
-        public string ID => "recycler";
+        public string ID => "Recycler";
 
-        public IBinarySerializable ExportData(ExportData data)
+        public object ExportData(ExportData data)
         {
-            var result = new SerializableDictionary<int, RecycleOutput>();
+            var result = new Dictionary<Common.Models.Item, RecycleOutput>();
 
             foreach (Common.Models.Item item in data.Items)
             {
@@ -29,7 +29,7 @@ namespace RustCalc.Exporters
                     Item = data.Items.First(x => x.ItemId == amount.itemid)
                 }));
 
-                result.Add(item.ItemId, recycleOutput);
+                result.Add(item, recycleOutput);
             }
 
             return result;

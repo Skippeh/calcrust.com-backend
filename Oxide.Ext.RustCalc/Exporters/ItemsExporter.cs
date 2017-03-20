@@ -8,8 +8,8 @@ namespace RustCalc.Exporters
     [Exporter]
     public class ItemsExporter : IExporter
     {
-        public string ID => "items";
-        public IBinarySerializable ExportData(ExportData data)
+        public string ID => "Items";
+        public object ExportData(ExportData data)
         {
             var list = new SerializableList<Common.Models.Item>();
             list.AddRange(ItemManager.itemList.Where(def => !Utility.ItemExcludeList.Contains(def.shortname)).Select(itemDefinition => new Common.Models.Item

@@ -8,8 +8,8 @@ namespace RustCalc.Exporters
     [Exporter(typeof(ItemsExporter), typeof(RecipesExporter))]
     public class MetaExporter : IExporter
     {
-        public string ID => "meta";
-        public IBinarySerializable ExportData(ExportData data)
+        public string ID => "Meta";
+        public object ExportData(ExportData data)
         {
             var meta = new Meta
             {

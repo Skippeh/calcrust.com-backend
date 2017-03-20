@@ -74,7 +74,17 @@ namespace RustCalc.Common.Exporting
                 var exportData = exporter.ExportData(result);
 
                 if (exportData != null)
-                    result.Add(exporter.ID, exportData);
+                {
+                    try
+                    {
+                        var propertyInfo = typeof (ExportData).GetProperty(exporter.ID, BindingFlags.Instance | BindingFlags.Public);
+                        propertyInfo.SetValue(result, exportData, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceError("Failed to set exported data for " + exporter.ID + ": " + ex.Message);
+                    }
+                }
             }
 
             Trace.TraceInformation($"Exporting {result.Items.Count} items, and {result.Recipes.Count} recipes.");
@@ -86,16 +96,7 @@ namespace RustCalc.Common.Exporting
         public static void SerializeData(ExportData data, BinaryWriter writer)
         {
             Models.ExportData.SetCurrent(data);
-
-            writer.Write(data.Count);
-
-            foreach (var kv in data)
-            {
-                writer.Write(kv.Key);
-                writer.Write(kv.Value.GetType().GetTypeName());
-                writer.Write(kv.Value);
-            }
-
+            writer.Write(data);
             Models.ExportData.SetCurrent(null);
         }
 
@@ -103,21 +104,7 @@ namespace RustCalc.Common.Exporting
         {
             var result = new ExportData();
             Models.ExportData.SetCurrent(result);
-
-            int count = reader.ReadInt32();
-            for (int i = 0; i < count; ++i)
-            {
-                string key = reader.ReadString();
-                string typeName = reader.ReadString();
-
-                Type type = Type.GetType(typeName);
-                if (type == null) throw new ArgumentNullException(nameof(type));
-                
-                var instance = reader.Deserialize(type);
-
-                result.Add(key, instance);
-            }
-
+            result.Deserialize(reader);
             Models.ExportData.SetCurrent(null);
             return result;
         }
