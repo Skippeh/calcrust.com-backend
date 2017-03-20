@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\ItemCategory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Meta.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Recipe.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\RecycleOutput.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializing\BinaryWriterExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializing\IBinarySerializable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializing\SerializableDictionary.cs" />
