@@ -399,7 +399,7 @@ namespace RustCalc.Exporters
                 if (projectile != null)
                 {
                     // Source: BaseProjectile.UpdateItemCondition
-                    conditionLoss = 0.5f * 0.3333333f; // As accurate as it gets. The actual code uses Random.Range(0, 3) == 0 to apply 0.5f condition loss.
+                    conditionLoss = (float) (0.5 * (1.0 / 3.0)); // As accurate as it gets. The actual code uses Random.Range(0, 2) != 0 to not apply 0.5 condition loss.
                 }
                 else // Explosives/Rockets/etc, shot from weapon
                 {
