@@ -20,7 +20,7 @@ namespace RustCalc.Common.Models
             int itemId = reader.ReadInt32();
 
             Item = ExportData.Current.Items.First(item => item.ItemId == itemId);
-            Amount = reader.ReadInt32();
+            Amount = reader.ReadSingle();
         }
     }
 }
