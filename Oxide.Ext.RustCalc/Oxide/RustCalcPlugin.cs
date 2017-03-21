@@ -22,6 +22,8 @@ namespace RustCalc.Oxide
             }
         }
 
+        private bool loadedExporters = true;
+
         [HookMethod("Init")]
         private void Init()
         {
@@ -29,12 +31,19 @@ namespace RustCalc.Oxide
             Trace.Listeners.Add(new OxideTraceListener());
             Trace.AutoFlush = true;
 
-            ExportManager.LoadExporters();
+            if (!ExportManager.LoadExporters())
+            {
+                Trace.TraceError("Failed to load exporters.");
+                loadedExporters = false;
+            }
         }
 
         [HookMethod("OnServerInitialized")]
         private void OnServerInitialized()
         {
+            if (!loadedExporters)
+                return;
+
             try
             {
                 using (var memstream = new MemoryStream())
