@@ -10,8 +10,8 @@ namespace RustCalc.Common.Models
         /// <summary>The current ExportData object being exported, serialized, or deserialized. Only safe to use in IExporter.ExportData, IBinarySerializable.Serialize, and IBinarySerializable.Deserialize.</summary>
         public static ExportData Current { get; private set; }
 
-        public SerializableList<Item> Items { get; set; }
-        public SerializableList<Recipe> Recipes { get; set; }
+        public Dictionary<int, Item> Items { get; set; }
+        public Dictionary<Item, Recipe> Recipes { get; set; }
         public Meta Meta { get; set; }
         public Dictionary<string, Destructible> Destructibles { get; set; }
         public Dictionary<Item, RecycleOutput> Recycler { get; set; }
@@ -23,8 +23,8 @@ namespace RustCalc.Common.Models
 
         public void Serialize(BinaryWriter writer)
         {
-            writer.Write(Items);
-            writer.Write(Recipes);
+            writer.Write(Items.ToSerializableList(false, kv => kv.Value));
+            writer.Write(Recipes.ToSerializableDictionary(false, kv => kv.Key.ItemId, kv => kv.Value));
             writer.Write(Meta);
             writer.Write(Destructibles.ToSerializableDictionary(true));
             writer.Write(Recycler.ToSerializableDictionary(false, kv => kv.Key.ItemId, kv => kv.Value));
@@ -32,11 +32,11 @@ namespace RustCalc.Common.Models
 
         public void Deserialize(BinaryReader reader)
         {
-            Items = reader.Deserialize<SerializableList<Item>>();
-            Recipes = reader.Deserialize<SerializableList<Recipe>>();
+            Items = reader.Deserialize<SerializableList<Item>>().ToDictionary(item => item.ItemId, item => item);
+            Recipes = reader.Deserialize<SerializableDictionary<int, Recipe>>().ToDictionary(kv => Items[kv.Key], kv => kv.Value);
             Meta = reader.Deserialize<Meta>();
             Destructibles = reader.Deserialize<SerializableDictionary<string, Destructible>>().ToDictionary();
-            Recycler = reader.Deserialize<SerializableDictionary<int, RecycleOutput>>().ToDictionary(kv => Current.Items.First(x => x.ItemId == kv.Key), kv => kv.Value);
+            Recycler = reader.Deserialize<SerializableDictionary<int, RecycleOutput>>().ToDictionary(kv => Items[kv.Key], kv => kv.Value);
         }
     }
 }

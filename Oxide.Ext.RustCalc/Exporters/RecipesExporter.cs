@@ -1,8 +1,8 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using RustCalc.Common;
 using RustCalc.Common.Exporting;
 using RustCalc.Common.Models;
-using RustCalc.Common.Serializing;
 
 namespace RustCalc.Exporters
 {
@@ -12,24 +12,24 @@ namespace RustCalc.Exporters
         public string ID => "Recipes";
         public object ExportData(ExportData data)
         {
-            var recipes = new SerializableList<Recipe>();
+            var recipes = new Dictionary<Common.Models.Item, Recipe>();
 
             foreach (var itemRecipe in ItemManager.bpList)
             {
                 if (!itemRecipe.userCraftable || !itemRecipe.enabled)
                     continue;
 
-                recipes.Add(new Recipe
+                recipes.Add(data.Items[itemRecipe.targetItem.itemid], new Recipe
                 {
                     TimeToCraft = itemRecipe.time,
                     Input = itemRecipe.ingredients.Select(itemAmount => new Common.Models.ItemAmount
                     {
-                        Item = data.Items.First(item => item.ItemId == itemAmount.itemid),
+                        Item = data.Items[itemAmount.itemid],
                         Amount = itemAmount.amount
                     }).ToSerializableList(),
                     Output = new Common.Models.ItemAmount
                     {
-                        Item = data.Items.First(item => item.ItemId == itemRecipe.targetItem.itemid),
+                        Item = data.Items[itemRecipe.targetItem.itemid],
                         Amount = itemRecipe.amountToCreate
                     }
                 });

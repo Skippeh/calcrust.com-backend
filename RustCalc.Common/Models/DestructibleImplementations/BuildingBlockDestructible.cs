@@ -34,7 +34,7 @@ namespace RustCalc.Common.Models.DestructibleImplementations
         {
             base.Deserialize(reader);
             Grades = reader.Deserialize<SerializableDictionary<int, SerializableDictionary<int, AttackInfo>>>()
-                .ToDictionary(kv => (BuildingGrade) kv.Key, kv => kv.Value.ToDictionary(kv2 => ExportData.Current.Items.First(x => x.ItemId == kv2.Key), kv2 => kv2.Value));
+                .ToDictionary(kv => (BuildingGrade) kv.Key, kv => kv.Value.ToDictionary(kv2 => ExportData.Current.Items[kv2.Key], kv2 => kv2.Value));
 
             GradesHealth = new Dictionary<BuildingGrade, float>();
             int count = reader.ReadInt32();

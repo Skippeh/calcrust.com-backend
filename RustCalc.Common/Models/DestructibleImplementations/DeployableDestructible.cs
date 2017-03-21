@@ -25,7 +25,7 @@ namespace RustCalc.Common.Models.DestructibleImplementations
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            Values = reader.Deserialize<SerializableDictionary<int, AttackInfo>>().ToDictionary(kv => ExportData.Current.Items.First(item => item.ItemId == kv.Key), kv => kv.Value);
+            Values = reader.Deserialize<SerializableDictionary<int, AttackInfo>>().ToDictionary(kv => ExportData.Current.Items[kv.Key], kv => kv.Value);
             Health = reader.ReadSingle();
         }
     }

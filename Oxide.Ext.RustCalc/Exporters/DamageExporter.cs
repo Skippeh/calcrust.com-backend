@@ -206,7 +206,7 @@ namespace RustCalc.Exporters
             foreach (var kv in attackEntities)
             {
                 ItemDefinition item = kv.Key;
-                var modelItem = exportData.Items.First(x => x.ItemId == item.itemid);
+                var modelItem = exportData.Items[item.itemid];
                 BaseEntity attackEntity = kv.Value;
                 AttackInfo attackInfo = null;
 
@@ -229,7 +229,7 @@ namespace RustCalc.Exporters
 
                         foreach (var ammoType in ammoTypes)
                         {
-                            weaponInfo.Ammunitions.Add(exportData.Items.First(x => x.ItemId == ammoType.itemid), GetHitValues(baseCombatEntity, ((BaseProjectile)attackEntity).damageScale, item, ammoType.GetComponent<ItemModProjectile>(), null, null));
+                            weaponInfo.Ammunitions.Add(exportData.Items[ammoType.itemid], GetHitValues(baseCombatEntity, ((BaseProjectile)attackEntity).damageScale, item, ammoType.GetComponent<ItemModProjectile>(), null, null));
                         }
                     }
                 }

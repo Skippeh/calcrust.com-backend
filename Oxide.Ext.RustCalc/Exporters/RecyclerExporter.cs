@@ -15,7 +15,7 @@ namespace RustCalc.Exporters
         {
             var result = new Dictionary<Common.Models.Item, RecycleOutput>();
 
-            foreach (Common.Models.Item item in data.Items)
+            foreach (Common.Models.Item item in data.Items.Values)
             {
                 var blueprint = ItemManager.itemList.First(x => x.itemid == item.ItemId).Blueprint;
 
@@ -26,7 +26,7 @@ namespace RustCalc.Exporters
                 recycleOutput.Output.AddRange(blueprint.ingredients.ToSerializableList(false, amount => new Common.Models.ItemAmount
                 {
                     Amount = amount.amount,
-                    Item = data.Items.First(x => x.ItemId == amount.itemid)
+                    Item = data.Items[amount.itemid]
                 }));
 
                 result.Add(item, recycleOutput);

@@ -21,7 +21,7 @@ namespace RustCalc.Common.Models.AttackInfoImplementations
 
         public override void Deserialize(BinaryReader reader)
         {
-            Ammunitions = reader.Deserialize<SerializableDictionary<int, HitValues>>().ToDictionary(kv => ExportData.Current.Items.First(item => item.ItemId == kv.Key), kv => kv.Value);
+            Ammunitions = reader.Deserialize<SerializableDictionary<int, HitValues>>().ToDictionary(kv => ExportData.Current.Items[kv.Key], kv => kv.Value);
         }
     }
 }
