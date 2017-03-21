@@ -22,5 +22,10 @@ namespace RustCalc.Common.Models
             Item = ExportData.Current.Items[itemId];
             Amount = reader.ReadSingle();
         }
+
+        public override string ToString()
+        {
+            return $"x{Amount} {Item.Name}";
+        }
     }
 }
