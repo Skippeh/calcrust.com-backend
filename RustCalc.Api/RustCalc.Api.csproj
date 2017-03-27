@@ -65,6 +65,7 @@
     <Compile Include="V1\ApiResponseV1.cs" />
     <Compile Include="V1\RustCalcModuleV1.cs" />
     <Compile Include="SkinsManager.cs" />
+    <Compile Include="V1\Modules\SkinsModuleV1.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
