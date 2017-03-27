@@ -129,10 +129,15 @@ namespace RustCalc.Api
             }
         }
 
+        // ReSharper disable once ClassNeverInstantiated.Local
         private class ItemSkinsResponse
         {
+#pragma warning disable 169
+#pragma warning disable 649
             public int Appid;
             public ItemSkin[] Items;
+#pragma warning restore 169
+#pragma warning restore 649
         }
     }
 }
