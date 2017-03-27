@@ -31,8 +31,8 @@ namespace RustCalc.Common.Models
             result.Tags = jSkin["tags"].Value<string>().Split(';');
             result.StoreTags = jSkin["store_tags"].Value<string>().Split(';');
             result.StoreHidden = jSkin["store_hidden"].Value<bool>();
-            result.BackgroundColor = jSkin["background_color"].Value<string>();
-            result.NameColor = jSkin["name_color"].Value<string>();
+            result.BackgroundColor = "#" + jSkin["background_color"].Value<string>();
+            result.NameColor = "#" + jSkin["name_color"].Value<string>();
 
             return result;
         }
