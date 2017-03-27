@@ -59,6 +59,10 @@
     <Reference Include="Facepunch.UnityEngine">
       <HintPath>..\ThirdParty\Oxide\Oxide\Games\Unity\Oxide.Game.Rust\Dependencies\Facepunch.UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\Oxide\Oxide\Bundles\Rust\RustDedicated_Data\Managed\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Oxide.Core">
       <HintPath>..\ThirdParty\Oxide\Oxide\Bundles\Rust\RustDedicated_Data\Managed\Oxide.Core.dll</HintPath>
     </Reference>

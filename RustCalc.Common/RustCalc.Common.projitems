@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\Item.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ItemAmount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ItemCategory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ItemSkin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Meta.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Recipe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\RecycleOutput.cs" />

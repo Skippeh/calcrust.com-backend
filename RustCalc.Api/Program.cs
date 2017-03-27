@@ -37,6 +37,13 @@ namespace RustCalc.Api
                 }
             }
 
+            if (Data.ContainsKey(GameBranch.Public))
+                SkinsManager.Initialize(Data[GameBranch.Public]);
+            else
+            {
+                Console.Error.WriteLine("Public branch not loaded, skins won't be available.");
+            }
+
             using (var host = new NancyHost(new ApiBootstrapper(), new HostConfiguration() { UrlReservations = new UrlReservations { CreateAutomatically = true } }, new Uri($"http://localhost:{serverPort}")))
             {
                 host.Start();
@@ -51,6 +58,8 @@ namespace RustCalc.Api
                 Console.WriteLine("Stopping api server...");
                 host.Stop();
             }
+
+            SkinsManager.Shutdown();
         }
 
         private static Exception LoadBranch(GameBranch branch)
