@@ -57,9 +57,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiBootstrapper.cs" />
+    <Compile Include="ApiResponseException.cs" />
     <Compile Include="GameBranch.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RustCalcModule.cs" />
+    <Compile Include="V1\ApiResponseV1.cs" />
+    <Compile Include="V1\RustCalcModuleV1.cs" />
     <Compile Include="SkinsManager.cs" />
   </ItemGroup>
   <ItemGroup>
