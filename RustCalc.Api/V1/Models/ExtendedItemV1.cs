@@ -36,6 +36,11 @@ namespace RustCalc.Api.V1.Models
             {
                 Tags.Add("recyclable");
             }
+
+            if (SkinsManager.Skins.Any(kv => kv.Key == item))
+            {
+                Tags.Add("skinnable");
+            }
         }
     }
 }
