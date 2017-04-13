@@ -336,7 +336,7 @@ namespace Oxide.Plugins
                 player.ChatMessage("Nothing found.");
                 return;
             }
-
+            
             string layerName = LayerMask.LayerToName(lookObject.layer);
             player.ChatMessage("[" + lookObject.tag + "] " + layerName + ": " + lookObject.name + " (" + String.Join(", ", (lookObject.transform.GetComponents<Component>().Select(comp => comp.GetType().Name)).ToArray()) + ")");
 
@@ -526,7 +526,7 @@ namespace Oxide.Plugins
                     ".skinnable.asset"
                 };
 
-                foreach (var str in GameManifest.Get().pooledStrings)
+                foreach (var str in GameManifest.Current.pooledStrings)
                 {
                     if (!str.str.StartsWith("assets/")) continue;
                     if (!str.str.StartsWith("assets/prefabs/building")) continue;
