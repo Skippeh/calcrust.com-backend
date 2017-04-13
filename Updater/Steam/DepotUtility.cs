@@ -7,32 +7,34 @@ namespace Updater.Steam
 {
     public static class DepotUtility
     {
-        const string FilePath = "./ThirdParty/DepotDownloader/DepotDownloader.exe";
+        const string FilePath = "./SteamCMD/steamcmd.exe";
 
-        public static Task<bool> DownloadAppAsync(uint appId, string branch, string fileList = null, string username = null, string password = null)
+        public static Task<bool> DownloadAppAsync(uint appId, string branch, string username = null, string password = null)
         {
             return Task.Run<bool>(async () =>
             {
                 string installDir = $"{Program.LaunchArguments.InstallPath}{appId}-{branch}/";
                 Directory.CreateDirectory(installDir);
 
-                List<string> arguments = new List<string>
-                {
-                    { "-app" }, { appId.ToString() },
-                    { "-beta" }, { branch },
-                    { "-dir" }, { "\"" + installDir + "\"" }
-                };
-
-                if (fileList != null)
-                {
-                    arguments.Add($"-filelist {fileList}");
-                }
+                List<string> arguments = new List<string>();
 
                 if (username != null)
                 {
-                    arguments.Add($"-username {username}");
-                    arguments.Add($"-password {password}");
+                    arguments.Add($"+login {username} {password}");
                 }
+                else
+                {
+                    arguments.Add("+login anonymous");
+                }
+
+                arguments.AddRange(new[]
+                {
+                    $"+force_install_dir \"../{installDir}\"",
+                    $"+app_update {appId}",
+                    "validate",
+                    $"-beta {branch}",
+                    "+exit"
+                });
 
                 int? exitCode = await ProcessUtility.StartAndRedirectProcess(FilePath, $"[{appId}/{branch}] ", -1, arguments.ToArray());
 
