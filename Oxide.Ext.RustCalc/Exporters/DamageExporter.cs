@@ -33,7 +33,7 @@ namespace RustCalc.Exporters
             var result = new Dictionary<string, Destructible>();
             var prefabs = new List<string>();
 
-            foreach (var str in GameManifest.Get().pooledStrings)
+            foreach (var str in GameManifest.Current.pooledStrings)
             {
                 if (!str.str.StartsWith("assets/")) continue;
                 if (!str.str.StartsWith("assets/prefabs/building")) continue;
